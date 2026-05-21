@@ -282,7 +282,9 @@ def _resolve_path(
 
     # Chặn hoàn toàn nếu không có workspace roots để đảm bảo an toàn bảo mật, tránh path traversal bypass
     if not workspace_roots:
-        log_error("Security Alert: Blocked access as workspace_roots list is empty or None")
+        log_error(
+            "Security Alert: Blocked access as workspace_roots list is empty or None"
+        )
         raise ValueError("Access denied: No workspace roots configured")
 
     # --- Resolve path thanh absolute ---

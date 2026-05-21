@@ -271,7 +271,7 @@ class TokenizationService(ITokenizationService):
 
                 self._encoder_type = _enc._encoder_type
                 self._using_estimation = False
-            
+
             # Gan self._encoder o cuoi cung de cac thread khac chi thay no
             # khi cac truong thiet lap di kem da hoan tat
             self._encoder = encoder

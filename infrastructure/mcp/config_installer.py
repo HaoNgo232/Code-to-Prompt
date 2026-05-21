@@ -233,7 +233,10 @@ def install_config(
             if content.strip():
                 json.loads(content)
         except json.JSONDecodeError as e:
-            return False, f"Existing config file is corrupted (invalid JSON). To prevent data loss, install aborted: {e}"
+            return (
+                False,
+                f"Existing config file is corrupted (invalid JSON). To prevent data loss, install aborted: {e}",
+            )
         except OSError as e:
             return False, f"Failed to read existing config: {e}"
 

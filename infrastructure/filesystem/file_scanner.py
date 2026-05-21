@@ -219,7 +219,7 @@ class FileScanner:
         # Build initial ignore patterns (root + default + user)
         ignore_patterns = self._build_ignore_patterns(root_path, config)
         root_spec = pathspec.PathSpec.from_lines("gitignore", tuple(ignore_patterns))  # type: ignore[arg-type]
-        
+
         spec_stack = []
         if config.use_gitignore:
             git_root = self.ignore_engine.find_git_root(root_path)
@@ -230,7 +230,7 @@ class FileScanner:
                     use_gitignore=True,
                 )
                 spec_stack.append((parent_spec, git_root))
-                
+
         spec_stack.append((root_spec, root_path))
 
         try:

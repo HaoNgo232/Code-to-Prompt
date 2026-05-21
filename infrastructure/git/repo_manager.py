@@ -234,7 +234,9 @@ class RepoManager:
             # Add branch if specified
             if repo_info.ref:
                 if repo_info.ref.startswith("-"):
-                    raise RepoError(f"Invalid branch name (cannot start with dash): {repo_info.ref}")
+                    raise RepoError(
+                        f"Invalid branch name (cannot start with dash): {repo_info.ref}"
+                    )
                 cmd.extend(["--branch", repo_info.ref])
 
             cmd.extend(["--", clone_url, str(target_path)])

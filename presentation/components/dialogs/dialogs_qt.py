@@ -283,9 +283,9 @@ class DiffOnlyDialogQt(BaseDialogQt):
         self.output_format = output_format
         self._file_checkboxes: dict[str, QCheckBox] = {}
         self._refresh_generation = 0  # Generation counter để tránh race condition
-        self._active_workers: list[Any] = (
-            []
-        )  # Giữ strong reference để tránh GC gây SEGV khi worker đang chạy
+        self._active_workers: list[
+            Any
+        ] = []  # Giữ strong reference để tránh GC gây SEGV khi worker đang chạy
 
         # Khởi tạo timer cho cơ chế debounce khi refresh danh sách file
         # Điều này giúp tránh việc quét git liên tục khi người dùng thay đổi settings nhanh
@@ -1103,9 +1103,7 @@ class DirtyRepoDialogQt(BaseDialogQt):
         def work():
             try:
                 self.repo_manager.stash_changes(self.repo_path)
-                self.repo_manager._update_repo(
-                    self.repo_path, None, None
-                )  # pyright: ignore[reportPrivateUsage]
+                self.repo_manager._update_repo(self.repo_path, None, None)  # pyright: ignore[reportPrivateUsage]
                 run_on_main_thread(
                     lambda: self.on_done(f"Updated {self.repo_name} (stashed)")
                 )
@@ -1133,9 +1131,7 @@ class DirtyRepoDialogQt(BaseDialogQt):
         def work():
             try:
                 self.repo_manager.discard_changes(self.repo_path)
-                self.repo_manager._update_repo(
-                    self.repo_path, None, None
-                )  # pyright: ignore[reportPrivateUsage]
+                self.repo_manager._update_repo(self.repo_path, None, None)  # pyright: ignore[reportPrivateUsage]
                 run_on_main_thread(
                     lambda: self.on_done(f"Updated {self.repo_name} (discarded)")
                 )

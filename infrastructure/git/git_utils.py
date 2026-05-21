@@ -558,10 +558,11 @@ def _unescape_git_path(path: str) -> str:
 
     if "\\" in path:
         try:
-            bytes_path = path.encode('utf-8')
+            bytes_path = path.encode("utf-8")
             import codecs
+
             unescaped_bytes, _ = codecs.escape_decode(bytes_path)
-            path = unescaped_bytes.decode('utf-8')
+            path = unescaped_bytes.decode("utf-8")
         except Exception:
             pass
     return path
