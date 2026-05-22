@@ -6,77 +6,66 @@ This is the instruction given to LLMs to format their responses in OPX format.
 """
 
 # Giữ nguyên từ TypeScript, chỉ chuyển từ template literal sang Python string
-XML_FORMATTING_INSTRUCTIONS = """<opx_instructions>
+XML_FORMATTING_INSTRUCTIONS = """<search_replace_instructions>
 
 # Role
-You produce OPX (Overwrite Patch XML) that precisely describes file edits to apply to the current workspace.
+You produce Search/Replace blocks (Aider-style) that precisely describe file edits to apply to the current workspace.
 
 # What you can do
 - Create files
 - Patch specific regions of files (search-and-replace)
-- Replace entire files
-- Remove files
-- Move/rename files
+- Replace/Rewrite entire files
+- Remove/Delete files
+- Move/Rename files
 
-# OPX at a glance
-- One <edit> per file operation. Optionally wrap multiple edits in a single <opx>...</opx> container.
-- Attributes on <edit>:
-  - file="path/to/file" (required)
-  - op="new|patch|replace|remove|move" (required)
-  - root="workspaceRootName" (optional for multi-root workspaces)
-- Optional <why> per edit to briefly explain intent.
-- For literal payloads, wrap code between lines containing only <<< and >>>.
+# Format at a glance
 
-# Operations
-1) op="new"  (Create file)
-   - Children: <put> <<< ... >>> </put>
+1) Create a new file (Empty SEARCH block):
+<<<<<<< SEARCH path/to/file.ext
+=======
+[file content]
+>>>>>>> REPLACE
 
-2) op="patch"  (Search-and-replace a region)
-   - Children: <find [occurrence="first|last|N"]> <<< ... >>> </find>
-               <put> <<< ... >>> </put>
+2) Patch a region of a file (Modify):
+<<<<<<< SEARCH path/to/file.ext
+[exact original code block to replace]
+=======
+[replacement code block]
+>>>>>>> REPLACE
 
-3) op="replace"  (Replace entire file)
-   - Children: <put> <<< ... >>> </put>
+3) Delete a file:
+<<<<<<< DELETE path/to/file.ext
+>>>>>>> DELETE
 
-4) op="remove"  (Delete file)
-   - Self-closing <edit .../> is allowed, or an empty body.
-
-5) op="move"  (Rename/move file)
-   - Children: <to file="new/path.ext" />
+4) Move/Rename a file:
+<<<<<<< RENAME path/to/old_file.ext
+=======
+path/to/new_file.ext
+>>>>>>> RENAME
 
 # Path rules
-- Prefer workspace-relative paths (e.g., src/lib/logger.ts).
+- Always specify the file path relative to the workspace root (e.g., src/utils/strings.ts).
 - file:// URIs and absolute paths are tolerated.
 - Do not reference paths outside the workspace.
 
 # Examples
 
-<!-- Create file -->
-<edit file="src/utils/strings.ts" op="new">
-  <why>Create a string utilities module</why>
-  <put>
-<<<
+<!-- Example 1: Create a new file -->
+<<<<<<< SEARCH src/utils/strings.ts
+=======
 export function titleCase(s: string): string {
-  return s.split(/\\s+/).map(w => (w ? w[0]!.toUpperCase() + w.slice(1) : w)).join(' ');
+  return s.split(/\s+/).map(w => (w ? w[0]!.toUpperCase() + w.slice(1) : w)).join(' ');
 }
->>>
-  </put>
-</edit>
+>>>>>>> REPLACE
 
-<!-- Patch a region -->
-<edit file="src/api/users.ts" op="patch">
-  <why>Add timeout and error logging</why>
-  <find occurrence="first">
-<<<
+<!-- Example 2: Patch a region of an existing file -->
+<<<<<<< SEARCH src/api/users.ts
 export async function fetchUser(id: string) {
   const res = await fetch(`/api/users/${id}`);
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.json();
 }
->>>
-  </find>
-  <put>
-<<<
+=======
 async function withTimeout<T>(p: Promise<T>, ms = 10000): Promise<T> {
   const t = new Promise<never>((_, r) => setTimeout(() => r(new Error('Request timed out')), ms));
   return Promise.race([p, t]);
@@ -92,77 +81,30 @@ export async function fetchUser(id: string) {
     throw err;
   }
 }
->>>
-  </put>
-</edit>
-
-<!-- Replace entire file -->
-<edit file="src/config/index.ts" op="replace">
-  <put>
-<<<
-export interface AppConfig {
-  apiBaseUrl: string;
-  enableTelemetry: boolean;
-  maxConcurrentJobs: number;
-}
-
-export const config: AppConfig = {
-  apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000',
-  enableTelemetry: process.env.TELEMETRY === '1',
-  maxConcurrentJobs: Number(process.env.MAX_JOBS || 4),
-};
->>>
-  </put>
-</edit>
-
-<!-- Remove file -->
-<edit file="tests/legacy/user-auth.spec.ts" op="remove" />
-
-<!-- Move / rename file -->
-<edit file="src/lib/flags.ts" op="move">
-  <to file="src/lib/feature-flags.ts" />
-</edit>
-
-# Guidance for reliable patches
-- Make <find> unique: include enough surrounding lines so it matches exactly once.
-- The entire <find> region is replaced by the entire <put> payload.
-- If a match may occur multiple times, set occurrence="first|last|N" on <find>.
-- Preserve indentation to fit the surrounding code.
-
-# Safety & Truncation
-- If you see `[NOTE: File content trimmed...]` or `[NOTE: Converted to Smart Context...]` or `[NOTE: File severely truncated...]` in a file's content, do NOT generate `op="patch"` or `op="replace"` edits for that file. 
-- You may still use `op="new"`, `op="remove"`, or `op="move"` for such files if the operation doesn't depend on knowing the full existing content.
-- If a patch is impossible due to truncation, explicitly mention this in your analysis/report and ask the user to provide the full content of the specific file using a tool or by copying it manually.
-
-# Multiple changes to the same file
-- Use separate <edit op="patch"> elements for each region — one per change.
-- Order patches top-to-bottom within the file to avoid offset drift.
-- When a patch adds or removes lines, subsequent patches must reference the code AS IT WILL LOOK after previous patches are applied (not the original file).
-
-# Validity
-- Emit syntactically correct code for each file type.
-- Avoid CDATA; write raw XML as shown.
-- Do not mix move with other operations for the same file in one edit.
-- Every <edit> MUST have both file and op attributes.
-- op="patch" MUST have both <find> and <put> children.
-- op="new" and op="replace" MUST have <put>.
-- op="move" MUST have <to file="..." />.
-
-# Output format
-- Emit OPX inside a fenced ```xml ... ``` block for reliable copy-paste.
-
-# Alternative: Search/Replace format (Aider-style)
-For patch or create operations, you may optionally use the simpler Search/Replace format:
-
-<<<<<<< SEARCH path/to/file.py
-[exact code to find]
-=======
-[replacement code]
 >>>>>>> REPLACE
 
-- Filename required on the SEARCH line.
-- Empty SEARCH block = create new file.
-- Multiple blocks per response OK.
-- For delete/move/rename operations, you should still use OPX.
+<!-- Example 3: Delete a file -->
+<<<<<<< DELETE tests/legacy/user-auth.spec.ts
+>>>>>>> DELETE
 
-</opx_instructions>"""
+<!-- Example 4: Move/Rename a file -->
+<<<<<<< RENAME src/lib/flags.ts
+=======
+src/lib/feature-flags.ts
+>>>>>>> RENAME
+
+# Guidance for reliable patches
+- Make the SEARCH block unique: include enough surrounding lines so it matches exactly once in the file.
+- The entire SEARCH region is replaced by the entire REPLACE block.
+- Preserve indentation to fit the surrounding code.
+- If you need to make multiple edits to the same file, output multiple blocks. Order them top-to-bottom to avoid offset drift.
+
+# Safety & Truncation
+- If you see `[NOTE: File content trimmed...]` or `[NOTE: Converted to Smart Context...]` or `[NOTE: File severely truncated...]` in a file's content, do NOT generate SEARCH/REPLACE blocks for that file if you don't know the exact content.
+- If a patch is impossible due to truncation, explicitly mention this in your response and ask the user to provide the full content of the specific file.
+
+# Output format
+- Emit all Search/Replace blocks inside a fenced ```text ... ``` or ``` ... ``` block for reliable parsing.
+- You can optionally include a continuous context memory block at the very end of your response to keep track of important context across conversational turns:
+
+</search_replace_instructions>"""

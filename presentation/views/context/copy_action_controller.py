@@ -700,13 +700,13 @@ class CopyActionController(QObject):
         file_paths = [Path(p) for p in selected_files if Path(p).is_file()]
         instructions = self._view.get_instructions_text()
 
-        # Add OPX directive if requested
+        # Thêm chỉ dẫn định dạng Search/Replace nếu được yêu cầu
         if include_xml:
             opx_directive = (
-                "\n\n[DIRECTIVE: USE OPX PATCHES]\n"
+                "\n\n[DIRECTIVE: USE SEARCH/REPLACE BLOCKS]\n"
                 "You are provided with a full/partial code context and instructions. "
-                "For any code changes, YOU MUST respond using OPX (Overwrite Patch XML) format "
-                "as specified in the <opx_instructions> block at the end of this prompt."
+                "For any code changes, YOU MUST respond using Search/Replace (Aider-style) blocks "
+                "as specified in the <search_replace_instructions> block at the end of this prompt."
             )
             instructions += opx_directive
 

@@ -475,13 +475,29 @@ _SR_BLOCK_RE = re.compile(
     re.MULTILINE | re.DOTALL,
 )
 
+# SR delete regex: <<<<<<< DELETE filename\n=======\n>>>>>>> DELETE
+# Group 1: File path
+_SR_DELETE_RE = re.compile(
+    r"^<{7}\s+DELETE\s+(\S+)[^\n]*(?:\n={7}\s*)?\n>{7}\s+DELETE[^\n]*$",
+    re.MULTILINE,
+)
+
+# SR rename regex: <<<<<<< RENAME old_filename\n=======\nnew_filename\n>>>>>>> RENAME
+# Group 1: Old file path
+# Group 2: Content between RENAME and ======= (usually empty/description)
+# Group 3: New file path
+_SR_RENAME_RE = re.compile(
+    r"^<{7}\s+RENAME\s+(\S+)[^\n]*\n(.*?)^={7}\s*\n(.*?)^>{7}\s+RENAME[^\n]*$",
+    re.MULTILINE | re.DOTALL,
+)
+
 
 def parse_search_replace_response(text: str) -> ParseResult:
     """
     Phân tích phản hồi chứa các khối Search/Replace (Aider-style).
 
     Hàm này duyệt qua văn bản, trích xuất tất cả các khối được phân cách bởi
-    <<<<<<< SEARCH và >>>>>>> REPLACE, gom nhóm chúng theo đường dẫn file
+    <<<<<<< SEARCH, <<<<<<< DELETE, hoặc <<<<<<< RENAME, gom nhóm chúng theo đường dẫn file
     và tạo ra danh sách FileAction tương thích với hệ thống.
     """
     result = ParseResult()
@@ -490,12 +506,18 @@ def parse_search_replace_response(text: str) -> ParseResult:
         if text is None:
             return ParseResult(errors=["Input is None"])
 
+        # Trích xuất memory block từ phản hồi thô (trước khi clean)
+        memory_match = MEMORY_TAG_REGEX.search(text)
+        if memory_match:
+            result.memory_block = memory_match.group(1).strip()
+
         # Chuẩn hóa dòng xuống để tránh lỗi do carriage return (\r\n) trên Windows
         cleaned = text.replace("\r\n", "\n")
 
         actions_by_path: dict[str, FileAction] = {}
         found_any = False
 
+        # 1. Parse SEARCH/REPLACE blocks (create hoặc modify)
         for match in _SR_BLOCK_RE.finditer(cleaned):
             found_any = True
             path = match.group(1).strip()
@@ -523,6 +545,32 @@ def parse_search_replace_response(text: str) -> ParseResult:
             )
             actions_by_path[path].changes.append(block)
 
+        # 2. Parse DELETE blocks
+        for match in _SR_DELETE_RE.finditer(cleaned):
+            found_any = True
+            path = match.group(1).strip()
+
+            if path.startswith("file://"):
+                path = path[7:]
+
+            actions_by_path[path] = FileAction(path=path, action="delete", changes=[])
+
+        # 3. Parse RENAME/MOVE blocks
+        for match in _SR_RENAME_RE.finditer(cleaned):
+            found_any = True
+            path = match.group(1).strip()
+
+            if path.startswith("file://"):
+                path = path[7:]
+
+            new_path = match.group(3).strip()
+            if new_path.startswith("file://"):
+                new_path = new_path[7:]
+
+            actions_by_path[path] = FileAction(
+                path=path, action="rename", new_path=new_path, changes=[]
+            )
+
         if not found_any:
             result.errors.append("Không tìm thấy khối Search/Replace hợp lệ nào.")
         else:
@@ -540,8 +588,8 @@ def _looks_like_opx(text: str) -> bool:
 
 
 def _looks_like_search_replace(text: str) -> bool:
-    """Kiểm tra nhanh xem văn bản có chứa cấu trúc SEARCH của Search/Replace hay không"""
-    return bool(re.search(r"^<{7}\s+SEARCH\b", text, re.MULTILINE))
+    """Kiểm tra nhanh xem văn bản có chứa cấu trúc SEARCH, DELETE hoặc RENAME của Search/Replace hay không"""
+    return bool(re.search(r"^<{7}\s+(?:SEARCH|DELETE|RENAME)\b", text, re.MULTILINE))
 
 
 def parse_any_response(text: str) -> ParseResult:

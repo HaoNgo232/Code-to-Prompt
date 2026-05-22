@@ -143,8 +143,8 @@ class TestGeneratePrompt:
         # Phải có OPX instructions
         assert "OPX" in result or "<edit" in result or "operation" in result.lower()
 
-    def test_opx_instructions_before_user_when_both_present(self):
-        """opx_instructions xuất hiện trước user_instructions."""
+    def test_search_replace_instructions_before_user_when_both_present(self):
+        """search_replace_instructions xuất hiện trước user_instructions."""
         result = generate_prompt(
             file_map="src/main.py",
             file_contents="<files><file>code</file></files>",
@@ -153,10 +153,12 @@ class TestGeneratePrompt:
             output_style=OutputStyle.XML,
         )
         ui_pos = result.find("<user_instructions>")
-        opx_pos = result.find("<opx_instructions>")
+        opx_pos = result.find("<search_replace_instructions>")
         assert ui_pos >= 0, "user_instructions phải có trong prompt"
-        assert opx_pos >= 0, "opx_instructions phải có trong prompt"
-        assert opx_pos < ui_pos, "opx_instructions phải đứng trước user_instructions"
+        assert opx_pos >= 0, "search_replace_instructions phải có trong prompt"
+        assert opx_pos < ui_pos, (
+            "search_replace_instructions phải đứng trước user_instructions"
+        )
 
     def test_with_git_diffs(self):
         """Prompt with Git diffs included."""
