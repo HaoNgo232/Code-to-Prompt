@@ -12,7 +12,6 @@ import inspect
 import re
 import pytest
 from pathlib import Path
-from unittest.mock import MagicMock
 
 from shared.utils.file_lock import LockableFile
 from presentation.views.settings.settings_view_qt import SettingsViewQt
@@ -39,7 +38,9 @@ class TestStabilityBug1SeekSignature:
             "whence phải là positional-only parameter"
         )
 
-        print("\n✅ BUG STABILITY #1 FIXED: LockableFile.seek sử dụng positional-only parameters chính xác.")
+        print(
+            "\n✅ BUG STABILITY #1 FIXED: LockableFile.seek sử dụng positional-only parameters chính xác."
+        )
 
 
 class TestStabilityBug2ObsoleteImport:
@@ -49,16 +50,18 @@ class TestStabilityBug2ObsoleteImport:
         """SettingsView phải được import và khởi tạo mà không gặp ImportError hoặc NameError."""
         # Nếu import thành công tức là skill_installer không còn bị import nhầm
         assert SettingsViewQt is not None
-        
+
         # Đọc file settings_view_qt.py để xác nhận không còn chuỗi "skill_installer"
         view_path = Path("presentation/views/settings/settings_view_qt.py")
         content = view_path.read_text(encoding="utf-8")
-        
+
         # skill_installer không nên xuất hiện trong import
         assert "import skill_installer" not in content, (
             "Vẫn còn import skill_installer lỗi thời trong settings_view_qt.py"
         )
-        print("\n✅ BUG STABILITY #2 FIXED: Không còn import lỗi thời của skill_installer.")
+        print(
+            "\n✅ BUG STABILITY #2 FIXED: Không còn import lỗi thời của skill_installer."
+        )
 
 
 class TestStabilityBug3QTimerLifetime:
@@ -71,7 +74,7 @@ class TestStabilityBug3QTimerLifetime:
         """
         presentation_dir = Path("presentation")
         py_files = list(presentation_dir.glob("**/*.py"))
-        
+
         unsafe_pattern = re.compile(r"QTimer\.singleShot\(\s*\d+\s*,\s*lambda")
         unsafe_calls = []
 
@@ -83,13 +86,17 @@ class TestStabilityBug3QTimerLifetime:
                     unsafe_calls.append((py_file.name, i, line.strip()))
 
         if unsafe_calls:
-            print("\n⚠️  CẢNH BÁO: Phát hiện các lệnh gọi QTimer.singleShot không an toàn (dễ gây lỗi C++ Object Deleted):")
+            print(
+                "\n⚠️  CẢNH BÁO: Phát hiện các lệnh gọi QTimer.singleShot không an toàn (dễ gây lỗi C++ Object Deleted):"
+            )
             for filename, line_num, code in unsafe_calls:
                 print(f"  {filename}:{line_num} -> {code}")
             # Fail test nếu phát hiện bất kỳ lệnh gọi không an toàn nào
             pytest.fail(f"Phát hiện {len(unsafe_calls)} lệnh gọi QTimer không an toàn.")
         else:
-            print("\n✅ BUG STABILITY #3 FIXED: Toàn bộ lệnh gọi QTimer.singleShot đều truyền context an toàn.")
+            print(
+                "\n✅ BUG STABILITY #3 FIXED: Toàn bộ lệnh gọi QTimer.singleShot đều truyền context an toàn."
+            )
 
 
 class TestStabilityBug4GitUtilsDecode:
@@ -100,8 +107,10 @@ class TestStabilityBug4GitUtilsDecode:
         # Đọc mã nguồn git_utils.py để chắc chắn có kiểm tra isinstance(..., bytes)
         git_utils_path = Path("infrastructure/git/git_utils.py")
         content = git_utils_path.read_text(encoding="utf-8")
-        
+
         assert "isinstance" in content and "decode" in content, (
             "Chưa cấu hình kiểm tra kiểu dữ liệu bytes trước khi decode trong git_utils.py"
         )
-        print("\n✅ BUG STABILITY #4 FIXED: git_utils.py kiểm tra kiểu dữ liệu trước khi decode an toàn.")
+        print(
+            "\n✅ BUG STABILITY #4 FIXED: git_utils.py kiểm tra kiểu dữ liệu trước khi decode an toàn."
+        )

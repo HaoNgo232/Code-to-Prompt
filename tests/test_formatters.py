@@ -7,7 +7,6 @@ Kiểm tra các module:
 - prompt_assembler.py: assemble_prompt(), assemble_smart_prompt()
 """
 
-import pytest
 from pathlib import Path
 from typing import Optional
 
@@ -19,11 +18,11 @@ from domain.prompt.formatters.xml import (
 )
 from domain.prompt.formatters.plain import format_files_plain
 from domain.prompt.assembler import assemble_prompt, assemble_smart_prompt
-from infrastructure.git.git_utils import GitDiffResult
 from presentation.config.output_format import OutputStyle
 
 
 # === Helpers ===
+
 
 def _make_entry(
     path: str = "test.py",
@@ -47,6 +46,7 @@ def _make_entry(
 # ===========================================================================
 # XML Formatter Tests
 # ===========================================================================
+
 
 class TestFormatFilesXml:
     """Kiểm tra format_files_xml()."""
@@ -103,6 +103,7 @@ class TestGenerateSmartSummaryXml:
 # Plain Formatter Tests
 # ===========================================================================
 
+
 class TestFormatFilesPlain:
     """Kiểm tra format_files_plain()."""
 
@@ -138,6 +139,7 @@ class TestFormatFilesPlain:
 # ===========================================================================
 # Prompt Assembler Tests
 # ===========================================================================
+
 
 class TestAssemblePromptXml:
     """Kiểm tra assemble_prompt() với XML output style."""

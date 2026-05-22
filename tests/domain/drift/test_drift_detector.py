@@ -8,9 +8,8 @@ Các test cases kiểm tra khả năng phát hiện drift (lệch thiết kế) 
 - Xử lý các đầu vào trống/None
 """
 
-import pytest
 from pathlib import Path
-from domain.drift.drift_detector import detect_drift, DriftReport
+from domain.drift.drift_detector import detect_drift
 
 
 def test_detect_drift_low_drift() -> None:
@@ -29,7 +28,13 @@ def test_detect_drift_low_drift() -> None:
 def test_detect_drift_medium_drift() -> None:
     """Kiểm tra trường hợp sửa đổi ngoài scope nhưng ở mức độ vừa phải (MEDIUM drift)."""
     workspace = Path("/workspace")
-    planned = ["src/main.py", "src/utils.py", "src/core.py", "src/network.py", "src/db.py"]
+    planned = [
+        "src/main.py",
+        "src/utils.py",
+        "src/core.py",
+        "src/network.py",
+        "src/db.py",
+    ]
     # 2 files ngoài scope / 5 files planned = 0.4 (lớn hơn MEDIUM_SCOPE_RATIO là 0.2)
     actual = ["src/main.py", "src/extra.py", "src/helper.py"]
 
@@ -62,7 +67,9 @@ def test_detect_drift_coupling_and_api_changes() -> None:
     post_syms = {"src/main.py": ["foo", "baz"]}  # removed bar, added baz
 
     pre_deps = {"src/main.py": ["os"]}
-    post_deps = {"src/main.py": ["os", "sys", "json", "math"]}  # tăng 3 imports (> threshold 2)
+    post_deps = {
+        "src/main.py": ["os", "sys", "json", "math"]
+    }  # tăng 3 imports (> threshold 2)
 
     report = detect_drift(
         workspace_root=workspace,

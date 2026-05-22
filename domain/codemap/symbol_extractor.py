@@ -90,8 +90,14 @@ def extract_symbols(
                         symbol_kind = kind
                         if symbol_kind == SymbolKind.FUNCTION and parent is not None:
                             # Nếu parent là class/interface/struct, chuyển FUNCTION thành METHOD
-                            parent_symbol = next((s for s in symbols if s.name == parent), None)
-                            if parent_symbol and parent_symbol.kind in (SymbolKind.CLASS, SymbolKind.INTERFACE, SymbolKind.STRUCT):
+                            parent_symbol = next(
+                                (s for s in symbols if s.name == parent), None
+                            )
+                            if parent_symbol and parent_symbol.kind in (
+                                SymbolKind.CLASS,
+                                SymbolKind.INTERFACE,
+                                SymbolKind.STRUCT,
+                            ):
                                 symbol_kind = SymbolKind.METHOD
 
                         symbol = Symbol(

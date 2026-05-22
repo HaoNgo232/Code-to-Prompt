@@ -39,9 +39,9 @@ from PySide6.QtCore import (
     QPoint,
     QTimer,
 )
-from PySide6.QtGui import QIcon
 
 from presentation.config.theme import ThemeColors
+from presentation.components.qt_utils import create_colored_icon
 from infrastructure.adapters.qt_utils import DebouncedTimer
 from infrastructure.filesystem.ignore_engine import IgnoreEngine
 from presentation.components.file_tree.file_tree_model import (
@@ -167,7 +167,11 @@ class FileTreeWidget(QWidget):
 
         # Select All
         self._select_all_btn = QPushButton()
-        self._select_all_btn.setIcon(QIcon(os.path.join(assets_dir, "select-all.svg")))
+        self._select_all_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "select-all.svg"), ThemeColors.TEXT_SECONDARY
+            )
+        )
         self._select_all_btn.setIconSize(QSize(20, 20))
         self._select_all_btn.setProperty("class", "flat")
         self._select_all_btn.setFixedSize(30, 30)
@@ -180,7 +184,11 @@ class FileTreeWidget(QWidget):
 
         # Deselect
         self._deselect_all_btn = QPushButton()
-        self._deselect_all_btn.setIcon(QIcon(os.path.join(assets_dir, "uncheck.svg")))
+        self._deselect_all_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "uncheck.svg"), ThemeColors.TEXT_SECONDARY
+            )
+        )
         self._deselect_all_btn.setIconSize(QSize(20, 20))
         self._deselect_all_btn.setProperty("class", "flat")
         self._deselect_all_btn.setFixedSize(30, 30)
@@ -193,7 +201,11 @@ class FileTreeWidget(QWidget):
 
         # Collapse
         self._collapse_btn = QPushButton()
-        self._collapse_btn.setIcon(QIcon(os.path.join(assets_dir, "colapse.svg")))
+        self._collapse_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "colapse.svg"), ThemeColors.TEXT_SECONDARY
+            )
+        )
         self._collapse_btn.setIconSize(QSize(20, 20))
         self._collapse_btn.setProperty("class", "flat")
         self._collapse_btn.setFixedSize(30, 30)
@@ -206,7 +218,11 @@ class FileTreeWidget(QWidget):
 
         # Expand
         self._expand_btn = QPushButton()
-        self._expand_btn.setIcon(QIcon(os.path.join(assets_dir, "expand.svg")))
+        self._expand_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "expand.svg"), ThemeColors.TEXT_SECONDARY
+            )
+        )
         self._expand_btn.setIconSize(QSize(20, 20))
         self._expand_btn.setProperty("class", "flat")
         self._expand_btn.setFixedSize(30, 30)

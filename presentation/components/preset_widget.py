@@ -16,6 +16,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QCursor
 
 from presentation.config.theme import ThemeColors
+from presentation.components.qt_utils import create_colored_icon
 import os
 import sys
 import logging
@@ -81,17 +82,17 @@ class PresetWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
 
-        # Lay duong dan den thu muc assets
+        # Lấy đường dẫn đến thư mục assets (hỗ trợ cả môi trường phát triển và đóng gói)
         if hasattr(sys, "_MEIPASS"):
-            assets_dir = os.path.join(sys._MEIPASS, "assets")
+            self._assets_dir = os.path.join(sys._MEIPASS, "assets")
         else:
-            assets_dir = os.path.join(
+            self._assets_dir = os.path.join(
                 os.path.dirname(
                     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 ),
                 "assets",
             )
-        arrow_icon = os.path.join(assets_dir, "arrow-down.svg")
+        arrow_icon = os.path.join(self._assets_dir, "arrow-down.svg")
 
         # --- Nut chinh (QToolButton + QMenu) ---
         self._main_btn = QToolButton()
@@ -182,20 +183,42 @@ class PresetWidget(QWidget):
         """Rebuild menu items tu PresetController."""
         self._menu.clear()
 
-        # --- Nhom hanh dong toan cuc ---
-        save_action = self._menu.addAction("✨ Create New Preset...")
+        # --- Nhóm hành động toàn cục (loại bỏ emoji và dùng SVG icon từ assets) ---
+        save_action = self._menu.addAction("Create New Preset...")
         save_action.setData("__NEW__")
+        save_action.setIcon(
+            create_colored_icon(
+                os.path.join(self._assets_dir, "add.svg"), ThemeColors.PRIMARY
+            )
+        )
 
         active_id = self._controller.get_active_preset_id()
         if active_id:
-            update_action = self._menu.addAction("💾 Update Active Preset")
+            update_action = self._menu.addAction("Update Active Preset")
             update_action.setData("__UPDATE__")
+            update_action.setIcon(
+                create_colored_icon(
+                    os.path.join(self._assets_dir, "refresh.svg"),
+                    ThemeColors.TEXT_SECONDARY,
+                )
+            )
 
-            rename_action = self._menu.addAction("✏️ Rename Preset...")
+            rename_action = self._menu.addAction("Rename Preset...")
             rename_action.setData("__RENAME__")
+            rename_action.setIcon(
+                create_colored_icon(
+                    os.path.join(self._assets_dir, "settings.svg"),
+                    ThemeColors.TEXT_SECONDARY,
+                )
+            )
 
-            delete_action = self._menu.addAction("🗑️ Delete Preset")
+            delete_action = self._menu.addAction("Delete Preset")
             delete_action.setData("__DELETE__")
+            delete_action.setIcon(
+                create_colored_icon(
+                    os.path.join(self._assets_dir, "trash.svg"), ThemeColors.ERROR
+                )
+            )
 
         self._menu.addSeparator()
 

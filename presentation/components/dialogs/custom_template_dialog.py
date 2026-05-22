@@ -29,7 +29,10 @@ class CustomTemplateDialog(QDialog):
     """Dialog tao moi Custom Template."""
 
     def __init__(
-        self, parent=None, template_id: Optional[str] = None, initial_content: Optional[str] = None
+        self,
+        parent=None,
+        template_id: Optional[str] = None,
+        initial_content: Optional[str] = None,
     ):
         super().__init__(parent)
         self.template_id = template_id

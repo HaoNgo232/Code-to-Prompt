@@ -47,6 +47,7 @@ from PySide6.QtCore import Qt, Slot, QTimer, QSize
 from PySide6.QtGui import QIcon
 
 from presentation.config.theme import ThemeColors, ThemeFonts, apply_theme
+from presentation.components.qt_utils import create_colored_icon
 from infrastructure.adapters.qt_utils import (
     get_signal_bridge,
 )
@@ -68,12 +69,12 @@ from infrastructure.adapters.memory_monitor import (
 )
 
 
-# ── Tab configuration: icon (emoji) + label ───────────────────────
+# ── Tab configuration: icon (SVG filename) + label ────────────────
 _TAB_CONFIG = [
-    ("📁", "Context"),
-    ("⚡", "Apply"),
-    ("🕐", "History"),
-    ("⚙️", "Settings"),
+    ("folder.svg", "Context"),
+    ("zap.svg", "Apply"),
+    ("clock-arrow-down.svg", "History"),
+    ("settings.svg", "Settings"),
 ]
 
 
@@ -84,6 +85,12 @@ class SynapseMainWindow(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
+
+        # Xác định đường dẫn thư mục assets (hỗ trợ cả chạy dev và chạy bundle)
+        if hasattr(sys, "_MEIPASS"):
+            self.assets_dir = Path(sys._MEIPASS) / "assets"
+        else:
+            self.assets_dir = Path(__file__).parent.parent / "assets"
 
         # Load custom fonts FIRST
         ThemeFonts.load_fonts()
@@ -132,25 +139,18 @@ class SynapseMainWindow(QMainWindow):
 
     # ── Window icon ───────────────────────────────────────────────
     def _set_window_icon(self) -> None:
-        """Set window icon tu assets/icon.ico hoac icon.png."""
-        # Tim icon file: uu tien .ico, sau do .png
-        # Xu ly ca truong hop chay tu source code va tu EXE (PyInstaller bundle)
-        base_path = Path(__file__).parent
+        """Thiết lập window icon từ assets/icon.ico hoặc icon.png.
 
-        # Neu la PyInstaller bundle, icon co the o trong _MEIPASS
-        if hasattr(sys, "_MEIPASS"):
-            assets_dir = Path(sys._MEIPASS) / "assets"
-        else:
-            assets_dir = base_path / "assets"
-
-        # Tim icon file
+        Hỗ trợ cả môi trường chạy từ mã nguồn (development) và đóng gói (PyInstaller bundle).
+        """
+        # Tìm icon file: ưu tiên .ico, sau đó .png
         icon_path = None
-        if (assets_dir / "icon.ico").exists():
-            icon_path = assets_dir / "icon.ico"
-        elif (assets_dir / "icon.png").exists():
-            icon_path = assets_dir / "icon.png"
+        if (self.assets_dir / "icon.ico").exists():
+            icon_path = self.assets_dir / "icon.ico"
+        elif (self.assets_dir / "icon.png").exists():
+            icon_path = self.assets_dir / "icon.png"
 
-        # Set icon neu tim thay
+        # Set icon nếu tìm thấy
         if icon_path:
             icon = QIcon(str(icon_path))
             self.setWindowIcon(icon)
@@ -216,8 +216,11 @@ class SynapseMainWindow(QMainWindow):
             self.history_view,
             self.settings_view,
         ]
-        for (icon, label), view in zip(_TAB_CONFIG, views):
-            self.tab_widget.addTab(view, f"{icon}  {label}")
+        for (icon_name, label), view in zip(_TAB_CONFIG, views):
+            icon_path = self.assets_dir / icon_name
+            # Render icon SVG và đổi màu primary để hiển thị đẹp mắt và đồng bộ trên UI
+            tab_icon = create_colored_icon(str(icon_path), ThemeColors.PRIMARY)
+            self.tab_widget.addTab(view, tab_icon, f" {label}")
 
         main_layout.addWidget(self.tab_widget, stretch=1)
 
@@ -226,9 +229,9 @@ class SynapseMainWindow(QMainWindow):
 
     # ── Top Bar ───────────────────────────────────────────────────
     def _build_top_bar(self) -> QFrame:
-        """
-        Build the unified top bar (48px height):
-        [App Icon + "Synapse"] — [Breadcrumb path] — [RAM] — [Recent ▾] [Open Folder]
+        """Xây dựng thanh công cụ phía trên (top bar 48px height).
+
+        Bao gồm: [App Icon + "Code to Prompt"] — [Đường dẫn thư mục] — [Thông số RAM] — [Recent ▾] [Open Folder].
         """
         bar = QFrame()
         bar.setFixedHeight(48)
@@ -242,8 +245,11 @@ class SynapseMainWindow(QMainWindow):
         layout.setSpacing(12)
 
         # ── App branding ──
-        app_icon = QLabel("💎")
-        app_icon.setStyleSheet("font-size: 18px;")
+        app_icon = QLabel()
+        icon_gem = create_colored_icon(
+            str(self.assets_dir / "gem.svg"), ThemeColors.PRIMARY
+        )
+        app_icon.setPixmap(icon_gem.pixmap(QSize(18, 18)))
         app_icon.setToolTip("Code to Prompt")
         layout.addWidget(app_icon)
 
@@ -264,8 +270,11 @@ class SynapseMainWindow(QMainWindow):
         layout.addWidget(sep)
 
         # ── Folder breadcrumb (mono font) ──
-        folder_icon = QLabel("📁")
-        folder_icon.setStyleSheet("font-size: 14px;")
+        folder_icon = QLabel()
+        icon_folder = create_colored_icon(
+            str(self.assets_dir / "folder.svg"), ThemeColors.TEXT_SECONDARY
+        )
+        folder_icon.setPixmap(icon_folder.pixmap(QSize(14, 14)))
         layout.addWidget(folder_icon)
 
         self._folder_path_label = QLabel("No folder selected")
@@ -281,7 +290,15 @@ class SynapseMainWindow(QMainWindow):
         layout.addWidget(self._folder_path_label, stretch=1)
 
         # ── Memory indicator (compact) ──
-        self._memory_label = QLabel("🧠 --")
+        self._memory_icon_label = QLabel()
+        icon_brain = create_colored_icon(
+            str(self.assets_dir / "brain.svg"), ThemeColors.TEXT_MUTED
+        )
+        self._memory_icon_label.setPixmap(icon_brain.pixmap(QSize(14, 14)))
+        self._memory_icon_label.setToolTip("Memory usage | Token cache | Files loaded")
+        layout.addWidget(self._memory_icon_label)
+
+        self._memory_label = QLabel("--")
         self._memory_label.setStyleSheet(
             f"font-size: {ThemeFonts.SIZE_CAPTION}px; "
             f"font-family: {ThemeFonts.FAMILY_MONO}; "
@@ -292,10 +309,15 @@ class SynapseMainWindow(QMainWindow):
 
         # ── Clear memory button ──
         clear_btn = QToolButton()
-        clear_btn.setText("🧹")
+        clear_btn.setIcon(
+            create_colored_icon(
+                str(self.assets_dir / "broom.svg"), ThemeColors.TEXT_SECONDARY
+            )
+        )
+        clear_btn.setIconSize(QSize(14, 14))
         clear_btn.setToolTip("Clear cache & free memory")
         clear_btn.setStyleSheet(
-            f"QToolButton {{ font-size: 14px; padding: 4px 6px; border-radius: 4px; }}"
+            f"QToolButton {{ padding: 4px 6px; border-radius: 4px; }}"
             f"QToolButton:hover {{ background-color: {ThemeColors.BG_ELEVATED}; }}"
         )
         clear_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -303,12 +325,13 @@ class SynapseMainWindow(QMainWindow):
         layout.addWidget(clear_btn)
 
         # ── Recent folders button (outline style with dropdown) ──
-        if hasattr(sys, "_MEIPASS"):
-            assets_dir = Path(sys._MEIPASS) / "assets"
-        else:
-            assets_dir = Path(__file__).parent / "assets"
         self._recent_btn = QToolButton()
-        self._recent_btn.setIcon(QIcon(str(assets_dir / "clock-arrow-down.svg")))
+        self._recent_btn.setIcon(
+            create_colored_icon(
+                str(self.assets_dir / "clock-arrow-down.svg"),
+                ThemeColors.TEXT_SECONDARY,
+            )
+        )
         self._recent_btn.setIconSize(QSize(18, 18))
         self._recent_btn.setToolTip("Recent folders (Ctrl+R)")
         self._recent_btn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
@@ -338,7 +361,11 @@ class SynapseMainWindow(QMainWindow):
         layout.addWidget(self._recent_btn)
 
         # ── Open Folder button (primary accent) ──
-        open_btn = QPushButton("📁 Open Folder")
+        open_btn = QPushButton(" Open Folder")
+        open_btn.setIcon(
+            create_colored_icon(str(self.assets_dir / "folder.svg"), "#FFFFFF")
+        )
+        open_btn.setIconSize(QSize(14, 14))
         open_btn.setToolTip("Open workspace folder (Ctrl+O)")
         open_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         open_btn.setProperty("class", "primary")
@@ -376,6 +403,10 @@ class SynapseMainWindow(QMainWindow):
         self.setStatusBar(status_bar)
 
         # Workspace path
+        self._status_workspace_icon = QLabel()
+        self._status_workspace_icon.setVisible(False)
+        status_bar.addWidget(self._status_workspace_icon)
+
         self._status_workspace = QLabel("No workspace")
         self._status_workspace.setStyleSheet(
             f"color: {ThemeColors.TEXT_MUTED}; "
@@ -385,6 +416,10 @@ class SynapseMainWindow(QMainWindow):
         status_bar.addWidget(self._status_workspace, stretch=1)
 
         # Git branch
+        self._status_git_icon = QLabel()
+        self._status_git_icon.setVisible(False)
+        status_bar.addWidget(self._status_git_icon)
+
         self._status_git = QLabel("")
         self._status_git.setStyleSheet(
             f"color: {ThemeColors.TEXT_SECONDARY}; "
@@ -415,13 +450,18 @@ class SynapseMainWindow(QMainWindow):
         self._update_status_bar()
 
     def _update_status_bar(self) -> None:
-        """Update status bar with current workspace + git info.
+        """Cập nhật thông tin thanh trạng thái (workspace, git branch, tokens).
 
-        Git branch is read from cache (non-blocking) and refreshed
-        asynchronously in a background thread to avoid UI freezes.
+        Git branch được đọc từ cache (không gây nghẽn UI) và làm mới bất đồng bộ.
         """
         if self.workspace_path:
-            self._status_workspace.setText(f"📁 {self.workspace_path}")
+            self._status_workspace.setText(str(self.workspace_path))
+            if not self._status_workspace_icon.pixmap():
+                icon_folder = create_colored_icon(
+                    str(self.assets_dir / "folder.svg"), ThemeColors.TEXT_MUTED
+                )
+                self._status_workspace_icon.setPixmap(icon_folder.pixmap(QSize(12, 12)))
+            self._status_workspace_icon.setVisible(True)
 
             # Trigger async refresh (result available on next cycle)
             self._refresh_git_branch_async()
@@ -429,12 +469,22 @@ class SynapseMainWindow(QMainWindow):
             # Read cached value (may be from previous cycle — acceptable for status bar)
             branch = self._detect_git_branch()
             if branch:
-                self._status_git.setText(f"⎇ {branch}")
+                self._status_git.setText(branch)
+                if not self._status_git_icon.pixmap():
+                    icon_git = create_colored_icon(
+                        str(self.assets_dir / "git-branch.svg"),
+                        ThemeColors.TEXT_SECONDARY,
+                    )
+                    self._status_git_icon.setPixmap(icon_git.pixmap(QSize(12, 12)))
+                self._status_git_icon.setVisible(True)
                 self._status_git.setVisible(True)
             else:
+                self._status_git_icon.setVisible(False)
                 self._status_git.setVisible(False)
         else:
             self._status_workspace.setText("No workspace")
+            self._status_workspace_icon.setVisible(False)
+            self._status_git_icon.setVisible(False)
             self._status_git.setVisible(False)
 
         self._status_tokens.setText(self._build_token_status_text())
@@ -520,7 +570,7 @@ class SynapseMainWindow(QMainWindow):
 
     # ── Recent folders ────────────────────────────────────────────
     def _refresh_recent_folders_menu(self) -> None:
-        """Refresh the recent folders dropdown menu."""
+        """Làm mới danh sách thư mục mở gần đây (recent folders)."""
         self._recent_menu.clear()
         recent = load_recent_folders()
 
@@ -531,7 +581,11 @@ class SynapseMainWindow(QMainWindow):
 
         for folder_path in recent:
             display_name = get_folder_display_name(folder_path)
-            action = self._recent_menu.addAction(f"📁 {display_name}")
+            action = self._recent_menu.addAction(display_name)
+            icon_folder = create_colored_icon(
+                str(self.assets_dir / "folder.svg"), ThemeColors.TEXT_SECONDARY
+            )
+            action.setIcon(icon_folder)
             action.triggered.connect(
                 lambda checked=False, p=folder_path: self._open_recent_folder(p)
             )
@@ -615,7 +669,7 @@ class SynapseMainWindow(QMainWindow):
         Called on main thread (QTimer-based MemoryMonitor) — safe to
         update UI widgets directly without marshalling.
         """
-        display_text = f"🧠 {format_memory_display(stats)}"
+        display_text = format_memory_display(stats)
         self._memory_label.setText(display_text)
 
         if stats.warning and "Critical" in stats.warning:
@@ -644,7 +698,7 @@ class SynapseMainWindow(QMainWindow):
             gc.collect()
 
             stats = self._memory_monitor.get_current_stats()
-            display_text = f"🧠 {format_memory_display(stats)}"
+            display_text = format_memory_display(stats)
             self._memory_label.setText(display_text)
             self._memory_label.setStyleSheet(
                 f"font-size: {ThemeFonts.SIZE_CAPTION}px; "
@@ -872,7 +926,7 @@ def main() -> None:
     if hasattr(sys, "_MEIPASS"):
         assets_dir = Path(sys._MEIPASS) / "assets"
     else:
-        assets_dir = base_path / "assets"
+        assets_dir = base_path.parent / "assets"
 
     icon_path = None
     if (assets_dir / "icon.ico").exists():

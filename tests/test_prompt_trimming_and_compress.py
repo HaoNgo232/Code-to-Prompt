@@ -7,13 +7,11 @@ File này kiểm thử:
 """
 
 from pathlib import Path
-from typing import Set, Dict, List, Tuple
-from unittest.mock import patch, MagicMock
+from typing import List
 import pytest
 
 from application.services.prompt_build_service import PromptBuildService
 from infrastructure.adapters.encoder_registry import get_tokenization_service
-from infrastructure.filesystem.file_utils import TreeItem
 
 
 class TestPromptTrimmingAndCompress:
@@ -22,8 +20,12 @@ class TestPromptTrimmingAndCompress:
     @pytest.fixture
     def workspace(self, tmp_path: Path) -> Path:
         """Tạo workspace giả lập cho test."""
-        (tmp_path / "main.py").write_text("def run():\n    print('Hello World')\n" * 10, encoding="utf-8")
-        (tmp_path / "utils.py").write_text("def format_msg(msg):\n    return f'[{msg}]'\n" * 10, encoding="utf-8")
+        (tmp_path / "main.py").write_text(
+            "def run():\n    print('Hello World')\n" * 10, encoding="utf-8"
+        )
+        (tmp_path / "utils.py").write_text(
+            "def format_msg(msg):\n    return f'[{msg}]'\n" * 10, encoding="utf-8"
+        )
         return tmp_path
 
     def test_prompt_context_trimming(self, workspace: Path) -> None:

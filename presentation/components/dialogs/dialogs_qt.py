@@ -993,7 +993,7 @@ class CacheManagementDialogQt(BaseDialogQt):
         time_str = (
             repo.last_modified.strftime("%Y-%m-%d %H:%M") if repo.last_modified else ""
         )
-        meta = QLabel(f"📁 {size_str}  🕐 {time_str}")
+        meta = QLabel(f"Size: {size_str} | Modified: {time_str}")
         meta.setStyleSheet(
             f"font-size: 12px; font-weight: 500; color: {ThemeColors.TEXT_PRIMARY};"
         )
@@ -1004,9 +1004,14 @@ class CacheManagementDialogQt(BaseDialogQt):
         open_btn.clicked.connect(lambda _checked=False, p=repo.path: self._open_repo(p))
         card_layout.addWidget(open_btn)
 
-        del_btn = QPushButton("🗑")
+        del_btn = QPushButton()
         del_btn.setFixedWidth(32)
-        del_btn.setStyleSheet(f"color: {ThemeColors.ERROR}; border: none;")
+        from presentation.components.qt_utils import create_colored_icon
+
+        assets_dir = Path(__file__).parent.parent.parent.parent / "assets"
+        del_icon = create_colored_icon(str(assets_dir / "trash.svg"), ThemeColors.ERROR)
+        del_btn.setIcon(del_icon)
+        del_btn.setStyleSheet("border: none; background-color: transparent;")
         del_btn.clicked.connect(
             lambda _checked=False, n=repo.name: self._delete_repo(n)
         )

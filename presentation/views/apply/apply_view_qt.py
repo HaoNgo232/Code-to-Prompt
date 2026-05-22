@@ -90,6 +90,14 @@ class ApplyViewQt(QWidget):
         super().__init__(parent)
         self.get_workspace = get_workspace
 
+        # Xác định thư mục assets (hỗ trợ cả môi trường chạy mã nguồn và đóng gói)
+        import sys
+
+        if hasattr(sys, "_MEIPASS"):
+            self.assets_dir = Path(sys._MEIPASS) / "assets"
+        else:
+            self.assets_dir = Path(__file__).parent.parent.parent.parent / "assets"
+
         # State
         self.last_preview_data: Optional[PreviewData] = None
         self.last_apply_results: List[ApplyRowResult] = []
@@ -149,7 +157,7 @@ class ApplyViewQt(QWidget):
         header = QHBoxLayout()
         header.setSpacing(8)
 
-        title_label = QLabel("OPX Input")
+        title_label = QLabel("Search/Replace Input")
         title_label.setStyleSheet(
             f"font-weight: 700; font-size: 13px; color: {ThemeColors.TEXT_PRIMARY};"
         )
@@ -164,11 +172,16 @@ class ApplyViewQt(QWidget):
         header.addWidget(self._workspace_label)
         layout.addLayout(header)
 
-        # OPX input textarea
+        # Search/Replace input textarea
         self._opx_input = QPlainTextEdit()
         self._opx_input.setPlaceholderText(
-            "Paste OPX XML response from AI chat...\n\n"
-            'Example:\n<edit file="path/to/file" op="patch">\n  ...\n</edit>'
+            "Paste Search/Replace response (Aider-style) from AI chat...\n\n"
+            "Example:\n"
+            "<<<<<<< SEARCH path/to/file.ext\n"
+            "original code block to replace\n"
+            "=======\n"
+            "replacement code block\n"
+            ">>>>>>> REPLACE"
         )
         self._opx_input.setStyleSheet(
             f"""
@@ -539,9 +552,15 @@ class ApplyViewQt(QWidget):
         empty_layout.setSpacing(16)
         empty_layout.setContentsMargins(40, 80, 40, 80)
 
-        # Biểu tượng tia sét đặc trưng của Synapse
-        empty_icon = QLabel("⚡")
-        empty_icon.setStyleSheet("font-size: 52px; background: transparent;")
+        # Biểu tượng tia sét đặc trưng của Synapse (loại bỏ emoji và dùng SVG icon được tô màu)
+        empty_icon = QLabel()
+        from presentation.components.qt_utils import create_colored_icon
+        from PySide6.QtCore import QSize
+
+        icon_zap = create_colored_icon(
+            str(self.assets_dir / "zap.svg"), ThemeColors.PRIMARY
+        )
+        empty_icon.setPixmap(icon_zap.pixmap(QSize(52, 52)))
         empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(empty_icon)
 

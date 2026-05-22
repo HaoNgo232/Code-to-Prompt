@@ -8,7 +8,7 @@ File này kiểm thử:
 """
 
 from pathlib import Path
-from typing import Set, Dict, List, Optional
+from typing import Set, Optional
 import pytest
 import json
 
@@ -29,7 +29,9 @@ class TestDependencyResolverLogic:
         """Khởi tạo instance DependencyResolver với workspace tạm thời."""
         return DependencyResolver(workspace)
 
-    def test_extract_python_imports(self, resolver: DependencyResolver, workspace: Path) -> None:
+    def test_extract_python_imports(
+        self, resolver: DependencyResolver, workspace: Path
+    ) -> None:
         """Kiểm tra việc trích xuất các import Python từ code nguồn."""
         code_content: str = (
             "import os\n"
@@ -46,7 +48,9 @@ class TestDependencyResolverLogic:
         language = get_language(ext)
         assert language is not None
 
-        imports: Set[str] = resolver._extract_imports(language, code_content, lang_name, file_path)
+        imports: Set[str] = resolver._extract_imports(
+            language, code_content, lang_name, file_path
+        )
 
         # Kiểm tra xem có trích xuất đúng các module name hay không
         assert "os" in imports
@@ -55,7 +59,9 @@ class TestDependencyResolverLogic:
         assert ".relative_mod" in imports
         assert "..parent_mod" in imports
 
-    def test_resolve_python_relative_imports(self, resolver: DependencyResolver, workspace: Path) -> None:
+    def test_resolve_python_relative_imports(
+        self, resolver: DependencyResolver, workspace: Path
+    ) -> None:
         """Kiểm tra việc resolve relative Python imports thành file path thực tế."""
         # Tạo cấu trúc thư mục:
         # workspace/
@@ -79,14 +85,20 @@ class TestDependencyResolverLogic:
         resolver.build_file_index_from_disk(workspace)
 
         # 1. Test relative import cùng thư mục: `.utils` từ `subpkg/main.py`
-        resolved_utils: Optional[Path] = resolver._resolve_python_relative(".utils", subpkg)
+        resolved_utils: Optional[Path] = resolver._resolve_python_relative(
+            ".utils", subpkg
+        )
         assert resolved_utils == utils_file
 
         # 2. Test relative import thư mục cha: `..models` từ `subpkg/main.py`
-        resolved_models: Optional[Path] = resolver._resolve_python_relative("..models", subpkg)
+        resolved_models: Optional[Path] = resolver._resolve_python_relative(
+            "..models", subpkg
+        )
         assert resolved_models == models_file
 
-    def test_resolve_js_relative_imports(self, resolver: DependencyResolver, workspace: Path) -> None:
+    def test_resolve_js_relative_imports(
+        self, resolver: DependencyResolver, workspace: Path
+    ) -> None:
         """Kiểm tra việc resolve relative imports trong JavaScript/TypeScript."""
         src_dir = workspace / "src"
         src_dir.mkdir()
@@ -102,26 +114,31 @@ class TestDependencyResolverLogic:
         button_file.write_text("export default Button", encoding="utf-8")
 
         # Test import helper từ index.ts: `./helper`
-        resolved_helper: Optional[Path] = resolver.resolve_js_import("./helper", src_dir)
+        resolved_helper: Optional[Path] = resolver.resolve_js_import(
+            "./helper", src_dir
+        )
         assert resolved_helper == helper_file
 
         # Test import Button từ index.ts: `./components/Button`
-        resolved_button: Optional[Path] = resolver.resolve_js_import("./components/Button", src_dir)
+        resolved_button: Optional[Path] = resolver.resolve_js_import(
+            "./components/Button", src_dir
+        )
         assert resolved_button == button_file
 
-    def test_resolve_js_tsconfig_aliases(self, resolver: DependencyResolver, workspace: Path) -> None:
+    def test_resolve_js_tsconfig_aliases(
+        self, resolver: DependencyResolver, workspace: Path
+    ) -> None:
         """Kiểm tra việc resolve import thông qua path aliases cấu hình trong tsconfig.json."""
         # Setup tsconfig.json
         tsconfig_content = {
             "compilerOptions": {
                 "baseUrl": ".",
-                "paths": {
-                    "@/*": ["src/*"],
-                    "@components/*": ["src/components/*"]
-                }
+                "paths": {"@/*": ["src/*"], "@components/*": ["src/components/*"]},
             }
         }
-        (workspace / "tsconfig.json").write_text(json.dumps(tsconfig_content), encoding="utf-8")
+        (workspace / "tsconfig.json").write_text(
+            json.dumps(tsconfig_content), encoding="utf-8"
+        )
 
         # Cấu trúc thư mục
         src_dir = workspace / "src"
@@ -141,9 +158,13 @@ class TestDependencyResolverLogic:
         resolver.build_file_index_from_disk(workspace)
 
         # Test resolve alias `@/utils/format`
-        resolved_format: Optional[Path] = resolver.resolve_js_import("@/utils/format", src_dir)
+        resolved_format: Optional[Path] = resolver.resolve_js_import(
+            "@/utils/format", src_dir
+        )
         assert resolved_format == format_file
 
         # Test resolve alias `@components/Button`
-        resolved_button: Optional[Path] = resolver.resolve_js_import("@components/Button", src_dir)
+        resolved_button: Optional[Path] = resolver.resolve_js_import(
+            "@components/Button", src_dir
+        )
         assert resolved_button == button_file

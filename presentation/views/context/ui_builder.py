@@ -134,7 +134,11 @@ class UIBuilderMixin:
 
         # Refresh button (Labeled)
         refresh_btn = QToolButton()
-        refresh_btn.setIcon(QIcon(os.path.join(assets_dir, "refresh.svg")))
+        refresh_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "refresh.svg"), ThemeColors.TEXT_PRIMARY
+            )
+        )
         refresh_btn.setIconSize(QSize(14, 14))
         refresh_btn.setText(" Reload")
         refresh_btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
@@ -197,7 +201,11 @@ class UIBuilderMixin:
 
         # Related files dropdown menu with presets
         self._related_menu_btn = QToolButton()
-        self._related_menu_btn.setIcon(QIcon(os.path.join(assets_dir, "layers.svg")))
+        self._related_menu_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "layers.svg"), ThemeColors.TEXT_PRIMARY
+            )
+        )
         self._related_menu_btn.setText("Related: Off")
         self._related_menu_btn.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup

@@ -75,15 +75,11 @@ class TestPromptStructorPlain:
         result = format_files_plain(entries)
 
         # 1. Kiểm tra delimiter của file
-        assert (
-            "FILE: application/services/prompt_build_service.py" in result
-        )
+        assert "FILE: application/services/prompt_build_service.py" in result
 
         # 2. Metadata xuất hiện trước code
         lines = result.splitlines()
-        assert (
-            lines[0] == "FILE: application/services/prompt_build_service.py"
-        )
+        assert lines[0] == "FILE: application/services/prompt_build_service.py"
         assert "DEPENDS ON: domain.test" in result
         assert "print('hello')" in result
 

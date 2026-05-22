@@ -51,6 +51,7 @@ from infrastructure.persistence.settings_manager import (
     update_app_setting,
 )
 from presentation.components.toast.toast_qt import toast_success, toast_error
+from presentation.components.qt_utils import create_colored_icon
 
 
 # ============================================================
@@ -281,6 +282,13 @@ class SettingsViewQt(QWidget):
         _excluded_notifier.connect(self._reload_excluded_from_settings)
 
     def _build_ui(self) -> None:
+        import sys
+
+        if hasattr(sys, "_MEIPASS"):
+            self.assets_dir = Path(sys._MEIPASS) / "assets"
+        else:
+            self.assets_dir = Path(__file__).parent.parent.parent.parent / "assets"
+
         settings = load_settings()
 
         # Root layout
@@ -812,20 +820,38 @@ class SettingsViewQt(QWidget):
             # Neu target chi ho tro workspace-only, chi hien option workspace
             target_config = MCP_TARGETS[target_name]
             if target_config.get("workspace_only"):
-                act_workspace = menu.addAction("📁 Install for Project / Workspace...")
+                # Loại bỏ emoji 📁 và sử dụng SVG icon folder.svg được tô màu ThemeColors.TEXT_SECONDARY
+                act_workspace = menu.addAction("Install for Project / Workspace...")
+                act_workspace.setIcon(
+                    create_colored_icon(
+                        str(self.assets_dir / "folder.svg"), ThemeColors.TEXT_SECONDARY
+                    )
+                )
                 act_workspace.triggered.connect(
                     lambda checked=False, t=target_name: (
                         self._ask_workspace_and_install(t)
                     )
                 )
             else:
-                act_global = menu.addAction("📌 Install Global (Default)")
+                # Loại bỏ emoji 📌 và sử dụng SVG icon pin.svg được tô màu ThemeColors.TEXT_SECONDARY
+                act_global = menu.addAction("Install Global (Default)")
+                act_global.setIcon(
+                    create_colored_icon(
+                        str(self.assets_dir / "pin.svg"), ThemeColors.TEXT_SECONDARY
+                    )
+                )
                 act_global.triggered.connect(
                     lambda checked=False, t=target_name: self._install_mcp_for(t)
                 )
 
+                # Loại bỏ emoji 📁 và sử dụng SVG icon folder.svg được tô màu ThemeColors.TEXT_SECONDARY
                 act_workspace = menu.addAction(
-                    "📁 Install for specific Project / Workspace..."
+                    "Install for specific Project / Workspace..."
+                )
+                act_workspace.setIcon(
+                    create_colored_icon(
+                        str(self.assets_dir / "folder.svg"), ThemeColors.TEXT_SECONDARY
+                    )
                 )
                 act_workspace.triggered.connect(
                     lambda checked=False, t=target_name: (
@@ -1369,7 +1395,6 @@ class SettingsViewQt(QWidget):
         success, msg = install_config(target_name, workspace_path)
 
         if success:
-
             # Cap nhat trang thai label ngay lap tuc, khong can restart app
             try:
                 if check_installed(target_name):
