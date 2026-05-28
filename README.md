@@ -1,5 +1,3 @@
-# Synapse Desktop
-
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%20%7C%20Windows%20%7C%20macOS-orange)
@@ -7,7 +5,7 @@
 
 > ⚠️ Tested on **Linux**. Windows, macOS has not been tested.
 
-## What problem does Synapse Desktop solve?
+## What problem does Code to Prompt solve?
 
 When using AI (ChatGPT, Claude, Gemini) for coding assistance, you often encounter 3 repetitive problems:
 
@@ -17,7 +15,7 @@ When using AI (ChatGPT, Claude, Gemini) for coding assistance, you often encount
 
 **3. High-risk code application.** AI returns code as text. You must manually copy each snippet and paste it into the correct position in the right file. One wrong line can break everything.
 
-Synapse Desktop solves all three problems in a single app:
+Code to Prompt solves all three problems in a single app:
 - Select files from a tree → bundle them into a structured prompt → 1-click copy.
 - Accurate token counting per model, with warnings when limits are exceeded.
 - AI returns patches in Search/Replace (Aider-style) format → visual diff preview → automatic application to the codebase.
