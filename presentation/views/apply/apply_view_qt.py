@@ -506,6 +506,156 @@ class ApplyViewQt(QWidget):
         except Exception as e:
             self._show_status(f"Apply error: {e}", is_error=True)
 
+    @Slot(int, object, object)
+    def _apply_single_change(
+        self, action_idx: int, btn: QPushButton, card: QFrame
+    ) -> None:
+        """Apply single patch/file action."""
+        workspace = self.get_workspace()
+        if not workspace:
+            self._show_status("No workspace selected", is_error=True)
+            return
+
+        if not self._cached_file_actions or action_idx >= len(
+            self._cached_file_actions
+        ):
+            self._show_status("Action not found", is_error=True)
+            return
+
+        file_action = self._cached_file_actions[action_idx]
+
+        # Confirm
+        reply = QMessageBox.question(
+            self,
+            "Confirm Apply",
+            f"Apply this change to {file_action.path}? A backup will be created.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            results = apply_file_actions([file_action], [workspace])
+            if not results:
+                self._show_status("No results returned", is_error=True)
+                return
+            result = results[0]
+
+            # Convert to row results to keep error context updated
+            row_results = convert_to_row_results(results, [file_action])
+
+            if not self.last_apply_results and self.last_preview_data:
+                # Initialize placeholder list
+                self.last_apply_results = [
+                    ApplyRowResult(
+                        row_index=idx,
+                        path=row.path,
+                        action=row.action,
+                        success=True,
+                        message="",
+                    )
+                    for idx, row in enumerate(self.last_preview_data.rows)
+                ]
+
+            if self.last_apply_results and action_idx < len(self.last_apply_results):
+                row_results[0].row_index = action_idx
+                self.last_apply_results[action_idx] = row_results[0]
+
+            if result.success:
+                # Update UI to success state
+                card.setStyleSheet(
+                    f"QFrame {{"
+                    f"  background-color: #052E16;"
+                    f"  border: 1px solid #166534;"
+                    f"  border-left: 4px solid {ApplyViewColors.SUCCESS_TEXT};"
+                    f"  border-radius: 8px;"
+                    f"  padding: 14px 16px;"
+                    f"}}"
+                    f"QFrame:hover {{"
+                    f"  background-color: #052E16;"
+                    f"  border-color: #166534;"
+                    f"}}"
+                )
+                btn.setVisible(False)
+
+                # Show success label
+                success_label = QLabel("OK")
+                success_label.setStyleSheet(
+                    f"color: {ApplyViewColors.SUCCESS_TEXT}; font-size: 11px; font-weight: 700; border: none;"
+                )
+                btn.parentWidget().layout().addWidget(success_label)
+
+                # Hide error label if previously shown
+                error_label = card.findChild(QLabel, "single_error_label")
+                if error_label and isinstance(error_label, QLabel):
+                    error_label.setVisible(False)
+
+                self._show_status(f"Applied change to {file_action.path} successfully")
+            else:
+                # Update UI to failure state
+                card.setStyleSheet(
+                    f"QFrame {{"
+                    f"  background-color: #450A0A;"
+                    f"  border: 1px solid #991B1B;"
+                    f"  border-left: 4px solid {ApplyViewColors.ERROR_TEXT};"
+                    f"  border-radius: 8px;"
+                    f"  padding: 14px 16px;"
+                    f"}}"
+                    f"QFrame:hover {{"
+                    f"  background-color: #450A0A;"
+                    f"  border-color: #991B1B;"
+                    f"}}"
+                )
+
+                # Show error message label
+                error_label = card.findChild(QLabel, "single_error_label")
+                if not isinstance(error_label, QLabel):
+                    error_label = QLabel()
+                    error_label.setObjectName("single_error_label")
+                    error_label.setWordWrap(True)
+                    card.layout().addWidget(error_label)
+
+                error_label.setText(f"Error: {result.message}")
+                error_label.setStyleSheet(
+                    f"color: {ApplyViewColors.ERROR_TEXT}; font-size: 12px; padding-left: 4px; border: none;"
+                )
+                error_label.setVisible(True)
+
+                self._show_status(
+                    f"Failed to apply change to {file_action.path}", is_error=True
+                )
+                self._copy_error_btn.show()
+
+            # Save to history
+            action_results_dicts = [
+                {
+                    "action": result.action,
+                    "path": result.path,
+                    "success": result.success,
+                    "message": result.message,
+                }
+            ]
+            add_history_entry(
+                workspace_path=str(workspace),
+                opx_content=self.last_opx_text,
+                action_results=action_results_dicts,
+            )
+
+            # Save continuous memory if apply was successful
+            if result.success and self._cached_memory_block:
+                try:
+                    from infrastructure.adapters.qt_utils import schedule_background
+
+                    schedule_background(
+                        lambda: save_memory_block(workspace, self._cached_memory_block)
+                    )
+                except ImportError:
+                    save_memory_block(workspace, self._cached_memory_block)
+
+        except Exception as e:
+            self._show_status(f"Apply error: {e}", is_error=True)
+
     @Slot()
     def _copy_error_context(self) -> None:
         """
@@ -599,8 +749,8 @@ class ApplyViewQt(QWidget):
         # Khi có kết quả, chuyển layout về AlignTop để danh sách bắt đầu từ trên xuống
         self._results_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        for row in preview_data.rows:
-            card = self._create_preview_card(row)
+        for i, row in enumerate(preview_data.rows):
+            card = self._create_preview_card(row, i)
             self._results_layout.addWidget(card)
 
         self._results_layout.addStretch()
@@ -623,7 +773,7 @@ class ApplyViewQt(QWidget):
 
         self._results_layout.addStretch()
 
-    def _create_preview_card(self, row: PreviewRow) -> QFrame:
+    def _create_preview_card(self, row: PreviewRow, action_idx: int = 0) -> QFrame:
         """Tao preview card voi left accent border theo action type va expandable diff viewer."""
         card = QFrame()
 
@@ -706,6 +856,7 @@ class ApplyViewQt(QWidget):
         # Diff viewer (hidden by default, toggled by button)
         has_diff = hasattr(row, "diff_lines") and row.diff_lines
 
+        diff_container = None
         if has_diff:
             # Container cho diff viewer - ban dau an
             diff_container = QFrame()
@@ -719,6 +870,20 @@ class ApplyViewQt(QWidget):
             diff_viewer.setMaximumHeight(400)
             diff_layout.addWidget(diff_viewer)
 
+        # Hien thi hint neu khong co diff (va khong phai rename)
+        if not has_diff and action != "rename":
+            no_diff = QLabel("No diff available (file may not exist yet)")
+            no_diff.setStyleSheet(
+                f"color: {ThemeColors.TEXT_SECONDARY}; font-size: 11px; "
+                f"font-style: italic; padding-left: 4px; border: none;"
+            )
+            layout.addWidget(no_diff)
+
+        # Button row
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(8)
+
+        if has_diff:
             # Toggle button
             diff_btn = QPushButton("View Diff")
             diff_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -741,27 +906,47 @@ class ApplyViewQt(QWidget):
             diff_btn.setFixedHeight(24)
 
             def _toggle_diff(checked=False, container=diff_container, btn=diff_btn):
-                is_visible = container.isVisible()
-                container.setVisible(not is_visible)
-                btn.setText("Hide Diff" if not is_visible else "View Diff")
+                if container:
+                    is_visible = container.isVisible()
+                    container.setVisible(not is_visible)
+                    btn.setText("Hide Diff" if not is_visible else "View Diff")
 
             diff_btn.clicked.connect(_toggle_diff)
-
-            # Button row
-            btn_row = QHBoxLayout()
             btn_row.addWidget(diff_btn)
-            btn_row.addStretch()
-            layout.addLayout(btn_row)
 
-            layout.addWidget(diff_container)
-        elif action != "rename":
-            # Khong co diff data - hien thi hint
-            no_diff = QLabel("No diff available (file may not exist yet)")
-            no_diff.setStyleSheet(
-                f"color: {ThemeColors.TEXT_SECONDARY}; font-size: 11px; "
-                f"font-style: italic; padding-left: 4px; border: none;"
+        # Apply button cho tung card
+        apply_this_btn = QPushButton("Apply")
+        apply_this_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        apply_this_btn.setStyleSheet(
+            f"QPushButton {{"
+            f"  color: white;"
+            f"  background-color: {ThemeColors.PRIMARY};"
+            f"  border: none;"
+            f"  border-radius: 4px;"
+            f"  padding: 3px 12px;"
+            f"  font-size: 11px;"
+            f"  font-weight: 600;"
+            f"}}"
+            f"QPushButton:hover {{"
+            f"  background-color: {ThemeColors.PRIMARY_HOVER};"
+            f"}}"
+            f"QPushButton:pressed {{"
+            f"  background-color: {ThemeColors.PRIMARY_PRESSED};"
+            f"}}"
+        )
+        apply_this_btn.setFixedHeight(24)
+        apply_this_btn.clicked.connect(
+            lambda checked=False, idx=action_idx, btn=apply_this_btn, c=card: (
+                self._apply_single_change(idx, btn, c)
             )
-            layout.addWidget(no_diff)
+        )
+        btn_row.addWidget(apply_this_btn)
+
+        btn_row.addStretch()
+        layout.addLayout(btn_row)
+
+        if has_diff and diff_container:
+            layout.addWidget(diff_container)
 
         return card
 

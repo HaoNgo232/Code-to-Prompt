@@ -220,10 +220,10 @@ def test_flow_c_copy_context(app_e2e, qtbot, workspace_dir):
     )
 
 
-def test_flow_d_apply_opx(app_e2e, qtbot, workspace_dir, monkeypatch):
+def test_flow_d_apply_search_replace(app_e2e, qtbot, workspace_dir, monkeypatch):
     """
-    Flow D: Apply OPX (HIGH RISK)
-    Kiem tra viec paste XML response, preview va thuc hien thay doi file system.
+    Flow D: Apply Search/Replace (HIGH RISK)
+    Kiem tra viec paste Search/Replace response, preview va thuc hien thay doi file system.
     """
     window = app_e2e
     window._set_workspace(workspace_dir)
@@ -232,19 +232,15 @@ def test_flow_d_apply_opx(app_e2e, qtbot, workspace_dir, monkeypatch):
     window.tab_widget.setCurrentIndex(1)
     apply_view = window.apply_view
 
-    # 2. Chuan bi OPX XML
+    # 2. Chuan bi Search/Replace content
     # Chung ta se modify main.py
     file_to_modify = workspace_dir / "main.py"
-    opx_content = """
-<edit file="main.py" op="replace">
-  <put>
-    <<<
-    print('hello from E2E test')
-    >>>
-  </put>
-</edit>
-"""
-    apply_view.set_opx_content(opx_content)
+    sr_content = """<<<<<<< SEARCH main.py
+print('hello world')
+=======
+print('hello from E2E test')
+>>>>>>> REPLACE"""
+    apply_view.set_opx_content(sr_content)
 
     # 3. Click Preview
     preview_btn = None
@@ -280,6 +276,66 @@ def test_flow_d_apply_opx(app_e2e, qtbot, workspace_dir, monkeypatch):
 
     qtbot.waitUntil(check_file_changed, timeout=5000)
     assert "print('hello from E2E test')" in file_to_modify.read_text(encoding="utf-8")
+
+
+def test_flow_d_apply_single_patch(app_e2e, qtbot, workspace_dir, monkeypatch):
+    """
+    Kiem tra viec paste Search/Replace response, preview va click nut Apply cua rieng mot card.
+    """
+    window = app_e2e
+    window._set_workspace(workspace_dir)
+
+    # 1. Chuyen sang tab Apply
+    window.tab_widget.setCurrentIndex(1)
+    apply_view = window.apply_view
+
+    # 2. Chuan bi Search/Replace content
+    # Chung ta se modify main.py
+    file_to_modify = workspace_dir / "main.py"
+    sr_content = """<<<<<<< SEARCH main.py
+print('hello world')
+=======
+print('hello from single patch E2E test')
+>>>>>>> REPLACE"""
+    apply_view.set_opx_content(sr_content)
+
+    # 3. Click Preview
+    preview_btn = None
+    for btn in apply_view.findChildren(QPushButton):
+        if "Preview" in btn.text():
+            preview_btn = btn
+            break
+    assert preview_btn is not None
+    qtbot.mouseClick(preview_btn, Qt.MouseButton.LeftButton)
+
+    # Verify records are shown in preview
+    qtbot.waitUntil(lambda: apply_view.last_preview_data is not None, timeout=3000)
+    assert len(apply_view.last_preview_data.rows) == 1
+
+    # Mock auto-confirm dialog
+    monkeypatch.setattr(
+        QMessageBox, "question", lambda *args: QMessageBox.StandardButton.Yes
+    )
+
+    # 4. Tim va click nut Apply rieng le tren card
+    apply_single_btn = None
+    for btn in apply_view._results_container.findChildren(QPushButton):
+        if btn.text() == "Apply":
+            apply_single_btn = btn
+            break
+
+    assert apply_single_btn is not None
+    qtbot.mouseClick(apply_single_btn, Qt.MouseButton.LeftButton)
+
+    # 5. Verify file system changes
+    def check_file_changed():
+        content = file_to_modify.read_text(encoding="utf-8")
+        return "hello from single patch E2E test" in content
+
+    qtbot.waitUntil(check_file_changed, timeout=5000)
+    assert "print('hello from single patch E2E test')" in file_to_modify.read_text(
+        encoding="utf-8"
+    )
 
 
 def test_flow_e_settings_persistence(app_e2e, qtbot, workspace_dir):
