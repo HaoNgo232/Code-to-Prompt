@@ -899,7 +899,7 @@ class UIBuilderMixin:
 
         # ── PHẦN 1: PRIMARY CTA ──
         # Nút OPX được bo góc lớn (12px) và gradient mượt mà
-        self._opx_btn = QPushButton("Copy + OPX")
+        self._opx_btn = QPushButton("Copy + Search/Replace")
         self._opx_btn.setStyleSheet(f"""
             QPushButton {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,

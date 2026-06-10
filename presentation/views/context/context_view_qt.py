@@ -375,7 +375,7 @@ class ContextViewQt(
         if hasattr(self, "_copy_loading_bar"):
             self._copy_loading_bar.setVisible(not enabled)
         if hasattr(self, "_opx_btn"):
-            self._opx_btn.setText("Copy + OPX" if enabled else "Processing...")
+            self._opx_btn.setText("Copy + Search/Replace" if enabled else "Processing...")
         for btn in (
             self._diff_btn,
             self._tree_map_btn,

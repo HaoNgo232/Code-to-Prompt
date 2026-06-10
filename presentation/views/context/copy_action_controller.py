@@ -733,7 +733,7 @@ class CopyActionController(QObject):
                     prompt
                 )
             if success:
-                mode_text = "Copy + OPX" if include_xml else "Copy Context"
+                mode_text = "Copy + Search/Replace" if include_xml else "Copy Context"
                 breakdown["copy_mode"] = (
                     f"{mode_text} (File)" if copy_destination == "file" else mode_text
                 )
@@ -1061,7 +1061,7 @@ class CopyActionController(QObject):
                     full_tree=self._view.get_full_tree(),
                 )
 
-            snapshot = {"copy_mode": "Copy + OPX" if include_xml else "Copy Context"}
+            snapshot = {"copy_mode": "Copy + Search/Replace" if include_xml else "Copy Context"}
             if copy_destination == "file":
                 snapshot["copy_mode"] = f"{snapshot['copy_mode']} (File)"
 

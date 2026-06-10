@@ -28,7 +28,7 @@ def test_copy_button_click_triggers_logic(qtbot, context_view):
 
 def test_copy_plus_opx_click_triggers_logic(qtbot, context_view):
     """
-    Xác nhận việc nhấn nút 'Copy + OPX' kích hoạt đúng logic tương ứng.
+    Xác nhận việc nhấn nút 'Copy + Search/Replace' kích hoạt đúng logic tương ứng.
     """
     view = context_view
     view.file_tree_widget.get_selected_paths = MagicMock(return_value=["/project/a.py"])

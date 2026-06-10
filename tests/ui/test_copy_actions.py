@@ -486,7 +486,7 @@ def test_show_copy_breakdown_with_opx(context_view):
         "file_tokens": 400,
         "instruction_tokens": 50,
         "include_opx": True,
-        "copy_mode": "Copy + OPX",
+        "copy_mode": "Copy + Search/Replace",
     }
     with (
         patch("presentation.components.toast.toast_qt.toast_success") as mock_toast,
