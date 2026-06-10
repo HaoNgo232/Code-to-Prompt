@@ -462,10 +462,10 @@ def _handle_modify(
                 continue
 
             # Normalize EOL in search string
-            normalized_search = _normalize_eol(change.search, eol)
+            normalized_search = normalize_eol(change.search, eol)
 
             # Tim va thay the with fuzzy fallback
-            result, new_content, match_method = _apply_search_replace(
+            result, new_content, match_method = apply_search_replace_to_content(
                 modified_content, normalized_search, change.content, change.occurrence
             )
 
@@ -538,7 +538,7 @@ def _handle_modify(
         )
 
 
-def _apply_search_replace(
+def apply_search_replace_to_content(
     content: str,
     search: str,
     replace: str,
@@ -911,7 +911,7 @@ def _handle_rename(
         )
 
 
-def _normalize_eol(text: str, eol: str) -> str:
+def normalize_eol(text: str, eol: str) -> str:
     """Normalize EOL characters trong text"""
     # Chuyen tat ca ve LF truoc
     lf = text.replace("\r\n", "\n")

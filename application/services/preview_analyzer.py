@@ -15,6 +15,10 @@ from domain.diff.generator import (
     generate_create_diff_lines,
     generate_delete_diff_lines,
 )
+from infrastructure.filesystem.file_actions import (
+    apply_search_replace_to_content,
+    normalize_eol,
+)
 
 
 @dataclass
@@ -336,22 +340,26 @@ def generate_preview_diff_lines(
         return generate_delete_diff_lines(old_content, file_action.path)
 
     elif action == "rewrite":
-        # Rewrite - diff giua old va new
+        # Rewrite - so sánh sự khác biệt giữa nội dung cũ và mới
         return generate_diff_lines(old_content, new_content, file_action.path)
 
     elif action == "modify":
-        # Modify (patch) - can simulate file sau khi apply
-        # Thay search patterns bang new content
+        # Modify (patch) - giả lập file sau khi áp dụng thay đổi
+        # Thay thế search patterns bằng nội dung mới sử dụng cùng thuật toán so khớp như file_actions
         modified_content = old_content
         if file_action.changes:
             for change in file_action.changes:
                 if change.search and change.content:
-                    # Tim va thay the
-                    modified_content = modified_content.replace(
-                        change.search,
+                    eol = "\r\n" if "\r\n" in modified_content else "\n"
+                    normalized_search = normalize_eol(change.search, eol)
+                    success, new_content, _ = apply_search_replace_to_content(
+                        modified_content,
+                        normalized_search,
                         change.content,
-                        1,  # Chi thay the lan dau tien (tuong tu occurrence=first)
+                        change.occurrence,
                     )
+                    if success:
+                        modified_content = new_content
         return generate_diff_lines(old_content, modified_content, file_action.path)
 
     elif action == "rename":
