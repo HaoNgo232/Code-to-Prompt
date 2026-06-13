@@ -1,149 +1,346 @@
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Platform](https://img.shields.io/badge/platform-Linux%20%20%7C%20Windows%20%7C%20macOS-orange)
-![Qt](https://img.shields.io/badge/GUI-PySide6%20(Qt6)-41cd52)
+# Code to Prompt
 
-> ⚠️ Tested on **Linux**. Windows, macOS has not been tested.
+> **Manually select the right code context, use AI web chat to analyze or plan, then give your IDE agent a clearer task with less exploration cost.**
 
-## What problem does Code to Prompt solve?
+_Note: This is a personal tool built to reduce AI costs by using web chat for planning instead of expensive IDE agent scans._
 
-When using AI (ChatGPT, Claude, Gemini) for coding assistance, you often encounter 3 repetitive problems:
+**Code to Prompt** is a local desktop app that helps you manually select project files, package them into AI-ready prompts, and use web chat models such as ChatGPT, Claude, or Gemini to understand code, create plans, or prepare specs before using an IDE agent.
 
-**1. Time-consuming context packaging.** You have to open each file, copy the content, and paste it into the chat. Every time a file changes or you switch tasks, you have to start over.
+The main goal is simple:
 
-**2. Constantly exceeding token limits.** AI models have context limits. Sending the entire codebase causes overflow, while sending too little information leads to incorrect AI responses.
+```text
+Use cheaper / free AI web chat for context understanding and planning
+→ reduce how much your paid IDE agent needs to spend exploring the codebase
+```
 
-**3. High-risk code application.** AI returns code as text. You must manually copy each snippet and paste it into the correct position in the right file. One wrong line can break everything.
+IDE agents can already explore and understand codebases by themselves.  
+But that exploration often costs time, tool calls, and tokens.
 
-Code to Prompt solves all three problems in a single app:
-- Select files from a tree → bundle them into a structured prompt → 1-click copy.
-- Accurate token counting per model, with warnings when limits are exceeded.
-- AI returns patches in Search/Replace (Aider-style) format → visual diff preview → automatic application to the codebase.
+Code to Prompt helps you front-load part of that work manually:
 
----
+```text
+You choose relevant files
+→ Code to Prompt packages them
+→ Web chat analyzes / plans
+→ IDE agent receives a clearer task
+→ IDE agent spends less context discovering what you already prepared
+```
 
-## Key Features
-
-### File Selection and Context Packaging
-
-Open a project folder → the file tree displays the entire structure → tick to select files to send to the AI. The token count updates in real-time as you select/deselect.
-
-**4 Copy Modes:**
-
-| Mode | Copied Content | When to Use |
-|--------|-------------------|--------------|
-| **Copy Context** | Full content of selected files | When the AI needs to read and edit specific code |
-| **Copy + OPX** | Like Copy Context, plus instructions for the AI to return patches in Search/Replace format | When you want the AI to return code that can be applied automatically |
-| **Compress** | Only signatures (function names, classes, parameters) — no body | When the AI needs to understand project structure while saving 70-80% of tokens |
-| **Git Diff** | Only changed lines in git | Code review, debugging, checking recent changes |
-
-Additionally, there is **Copy Tree Map**, which only copies the directory structure without file content. Helpful for asking about overall architecture.
-
-### Intelligent File Selection Support
-
-- **Related Files**: Enable this mode, and when you select file A, Synapse automatically finds and adds files that A import or depend on. Select depth 1-5 as needed.
-- **AI Suggest Select**: Write a task description in the Instructions box → click "AI Suggest Select" → AI reads the project structure and automatically selects relevant files. Requires API key configuration in Settings.
-- **Context Presets**: Save your selection + instructions as a preset. Next time, just select the preset. Useful for repetitive work on the same group of files. [Details](docs/PRESETS.md)
-
-### Applying Code from AI
-
-When using Copy + OPX mode, the AI will return code in Search/Replace (Aider-style) format. How to use:
-
-1. Copy the response from the AI.
-2. Switch to the **Apply** tab in Synapse.
-3. Paste it in → click **Preview** → view visual diffs for each file.
-4. Confirm → Synapse applies the changes and automatically backs up the original files.
-
-If the AI returns a faulty patch (pattern mismatch), click **Copy Error Context** to send the error information back to the AI for self-correction.
-
-**Continuous Memory**: When enabled in Settings, the AI will include a summary block of what has been done. Synapse saves this to `.synapse/memory.xml` and automatically injects it into the next prompt, helping the AI remember context across sessions.
-
-### Prompt Templates
-
-Pre-built template system for common tasks: bug hunting, code review, security audit, performance optimization, refactoring, etc. Select a template → content is filled into the Instructions box. You can create your own custom templates.
-
-### Accurate Token Counting
-
-- Counts tokens according to the tokenizer of the selected model (GPT-4, Claude, Gemini, etc.).
-- Displays breakdown: how many tokens for file content, instructions, tree map, git diff, overhead.
-- Warns when exceeding the model's context limit.
-
-### Security
-
-- **Secret scanning**: Scans for API keys and passwords in files before copying. If detected, displays a warning with a masked preview.
-- **Relative paths**: Enable in Settings to hide absolute paths on your personal machine.
-- All data is processed locally; no telemetry is sent.
-
-### MCP Server (for AI IDEs)
-
-Synapse can run headless as an MCP server for AI IDEs (Cursor, Claude Code, etc.) to interact directly with the workspace.
-
-**Currently, the MCP server provides 1 tool: `manage_selection`** — allowing the AI agent to select/deselect files in the workspace. Other tasks (reading files, searching, git) should use the IDE's built-in tools or LSP, as they are well-optimized and have lower overhead.
-
-Configuration: Settings → MCP Server Integration → Install to [IDE].
-
----
-
-## Interface
-
-**Context tab** — Select files, write instructions, copy context:
 ![Context tab](assets/image.png)
-
-**Apply tab** — Paste Search/Replace blocks from AI, view diff, apply changes:
-![Apply tab](assets/image-1.png)
-
-**History tab** — History of copy/apply actions:
-![History tab](assets/image-2.png)
-
-**Settings tab** — Configure app, MCP, security:
-![Settings tab](assets/image-3.png)
 
 ---
 
 ## Installation
 
-### Requirements
-- Python 3.10+
-- Git (not required, but needed for Git Diff or branch detection)
+> Code to Prompt is currently tested mainly on Linux.  
+> Windows support is beta.  
+> macOS has not been fully tested yet.
 
-### Linux (Stable)
+**Requirements:** Python 3.10+ · Git (optional, for Git Diff and branch detection)
+
+Pick your usecase and copy the entire block:
+
+---
+
+### 🚀 Quick Start — Linux
+
 ```bash
-git clone https://github.com/HaoNgo232/Synapse-Desktop.git
-cd Synapse-Desktop
-chmod +x start.sh
-./start.sh
+git clone https://github.com/HaoNgo232/Code-to-Prompt.git
+cd Code-to-Prompt
+chmod +x start.sh && ./start.sh
 ```
 
-### Windows (Beta)
-Double-click `start.bat`, or use `build-windows.ps1` to build as `.exe`.
+### 🚀 Quick Start — Windows
 
-### Build AppImage (Linux)
-```bash
-chmod +x build-appimage.sh
-./build-appimage.sh
+```powershell
+git clone https://github.com/HaoNgo232/Code-to-Prompt.git
+cd Code-to-Prompt
+.\start.bat
 ```
 
-### Manual Installation
+### 📦 Build AppImage — Linux
+
 ```bash
-git clone https://github.com/HaoNgo232/Synapse-Desktop.git
-cd Synapse-Desktop
-python -m venv .venv
-source .venv/bin/activate  # Windows: .\.venv\Scripts\Activate.ps1
+git clone https://github.com/HaoNgo232/Code-to-Prompt.git
+cd Code-to-Prompt
+chmod +x build-appimage.sh && ./build-appimage.sh
+```
+
+### 📦 Build Windows .exe
+
+```powershell
+git clone https://github.com/HaoNgo232/Code-to-Prompt.git
+cd Code-to-Prompt
+.\build-windows.ps1
+```
+
+### 🔧 Manual Install — Linux / macOS
+
+```bash
+git clone https://github.com/HaoNgo232/Code-to-Prompt.git
+cd Code-to-Prompt
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python main_window.py
 ```
 
-### Data Storage
-All data is stored at `~/.config/synapse-desktop/` (Linux) or `~/.synapse-desktop/` (Windows). Includes: `settings.json`, `session.json`, `history.json`, `recent_folders.json`, `logs/`, `backups/`.
+### 🔧 Manual Install — Windows PowerShell
 
-### Environment Variables
-- `SYNAPSE_DEBUG=1`: Enables detailed debug logging.
+```powershell
+git clone https://github.com/HaoNgo232/Code-to-Prompt.git
+cd Code-to-Prompt
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main_window.py
+```
 
 ---
 
-## Search/Replace (Aider-style) Format
+## What problem does Code to Prompt solve?
 
-Synapse uses Search/Replace blocks (Aider-style) as the format for AI code changes. Example:
+AI coding agents inside IDEs are powerful. They can read files, search code, inspect dependencies, and understand the project by themselves.
+
+But that process is not free.
+
+When an IDE agent explores a codebase, it may spend:
+
+- tokens reading files
+- tool calls searching the repository
+- time building context
+- paid usage quota
+- multiple back-and-forth turns before implementation even starts
+
+For many tasks, you already know which files are likely relevant.
+
+**Code to Prompt lets you manually select those files first, package them into a structured prompt, and use AI web chat to analyze or plan before involving your IDE agent.**
+
+This is useful when you want to:
+
+- save Cursor / Claude Code / Cline / Windsurf quota
+- reduce agent exploration cost
+- use free or cheaper ChatGPT / Claude / Gemini web chat for planning
+- control exactly which files are sent as context
+- avoid sending the whole repository
+- create a clearer task before asking the IDE agent to implement
+- keep the IDE agent focused on execution instead of discovery
+
+---
+
+## Core workflow
+
+```text
+1. Open your project folder
+2. Manually select relevant files
+3. Add task instructions
+4. Copy structured context
+5. Paste into AI web chat
+6. Ask the web chat to analyze, plan, or write a spec
+7. Paste the result into your IDE agent
+8. Let the agent implement with less exploration
+```
+
+This workflow does **not** replace IDE agents.
+
+It helps you use them more efficiently.
+
+```text
+Web chat = cheaper planning / analysis layer
+IDE agent = implementation layer
+```
+
+---
+
+## Why use web chat before an IDE agent?
+
+AI web chats are often cheaper or included in a subscription you already have.
+
+For example, you may want to use:
+
+- ChatGPT Web
+- Claude Web
+- Gemini Web
+- DeepSeek Web
+- other hosted chat models
+
+These tools are good at:
+
+- understanding selected code
+- explaining architecture
+- creating plans
+- identifying relevant risks
+- drafting implementation specs
+- reviewing design options
+
+Then your IDE agent can focus on:
+
+- editing files
+- running tests
+- applying changes
+- fixing errors
+- iterating on implementation
+
+This split can reduce paid IDE agent usage because the agent does not need to spend as much context discovering the same information.
+
+---
+
+## Important: manual selection is the main idea
+
+Code to Prompt is intentionally built around **manual file selection**.
+
+The user remains in control.
+
+You decide what files matter.  
+You decide what context to send.  
+You decide whether to include full code, compressed structure, git diff, or only the tree map.
+
+This is different from asking an agent to explore everything automatically.
+
+The value is not full automation.
+
+The value is:
+
+```text
+human-guided context selection
+→ cheaper AI planning
+→ more focused IDE agent execution
+```
+
+---
+
+## Workflows
+
+Code to Prompt supports multiple workflows — see [Example workflows](#example-workflows) below for step-by-step guides with copy-paste prompts.
+
+## Key features
+
+### Visual file selection
+
+Open a project folder and select files from a tree view.
+
+No need to manually open files one by one.
+
+The token count updates in real time as you select or deselect files.
+
+![Context tab](assets/image.png)
+
+---
+
+### Copy modes
+
+| Mode                      | What it copies                                                                            | Best for                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Copy Context**          | Full content of selected files                                                            | Web chat planning, debugging, code review, spec generation |
+| **Compress**              | Code structure such as classes, functions, signatures, and parameters without full bodies | Architecture analysis and lower token usage                |
+| **Git Diff**              | Current git changes only                                                                  | Reviewing recent edits                                     |
+| **Copy Tree Map**         | Directory structure only                                                                  | Asking AI which files may be relevant                      |
+| **Copy + Search/Replace** | Context plus patch-format instructions                                                    | Direct patch generation and Apply tab workflow             |
+
+---
+
+### Token counting
+
+Code to Prompt shows token usage while you select files.
+
+This helps you avoid sending too much context to AI web chat.
+
+It can break down token usage for:
+
+- selected file content
+- instructions
+- tree map
+- git diff
+- overhead
+
+---
+
+### Tree map copy
+
+Copy only the directory structure without file contents.
+
+This is useful when you want to ask AI:
+
+```text
+Which files should I include for this task?
+```
+
+Example prompt:
+
+```text
+Here is the project tree.
+
+Based on this task, suggest which files are most likely relevant.
+
+Task:
+[Describe task]
+
+Return:
+- prioritized file list
+- short reason for each file
+- what context I should provide next
+```
+
+---
+
+### Related Files
+
+Code to Prompt can help include files related by imports or dependencies.
+
+You can choose depth from 1 to 5.
+
+This is helpful after you manually choose a starting file and want nearby supporting files.
+
+Manual control still remains the main workflow.
+
+---
+
+### AI Suggest Select
+
+You can provide a task description and ask AI to suggest relevant files.
+
+This requires API key configuration in Settings.
+
+This is optional.  
+The main workflow does not require API keys.
+
+---
+
+### Context presets
+
+Save selected files and instructions as presets.
+
+Useful when repeatedly working on:
+
+- one feature area
+- one module
+- one bug category
+- one review workflow
+- one recurring prompt
+
+See: [docs/PRESETS.md](docs/PRESETS.md)
+
+---
+
+### Prompt templates
+
+Code to Prompt includes reusable prompt templates for common tasks:
+
+- planning
+- spec generation
+- code review
+- bug analysis
+- refactoring plan
+- test planning
+- security audit
+- Search/Replace patch generation
+
+You can also create your own templates.
+
+---
+
+## Search/Replace patch application
+
+When using **Copy + Search/Replace**, the AI can return patch blocks like this:
 
 ```text
 <<<<<<< SEARCH src/app.py
@@ -153,32 +350,409 @@ print("hello world")
 >>>>>>> REPLACE
 ```
 
-### Supported Operations:
+Then you can:
 
-- **Modify File (Patch):**
-  ```text
-  <<<<<<< SEARCH path/to/file.ext
-  [original code block to replace]
-  =======
-  [replacement code block]
-  >>>>>>> REPLACE
-  ```
-- **Create File (Empty SEARCH block):**
-  ```text
-  <<<<<<< SEARCH path/to/file.ext
-  =======
-  [file content]
-  >>>>>>> REPLACE
-  ```
-- **Delete File:**
-  ```text
-  <<<<<<< DELETE path/to/file.ext
-  >>>>>>> DELETE
-  ```
-- **Rename/Move File:**
-  ```text
-  <<<<<<< RENAME path/to/old_file.ext
-  =======
-  path/to/new_file.ext
-  >>>>>>> RENAME
-  ```
+1. Copy the AI response.
+2. Open the **Apply** tab.
+3. Paste the response.
+4. Click **Preview**.
+5. Review visual diffs.
+6. Apply changes safely.
+
+![Apply tab](assets/image-1.png)
+
+---
+
+## Supported patch operations
+
+### Modify a file
+
+```text
+<<<<<<< SEARCH path/to/file.ext
+original code here
+=======
+replacement code here
+>>>>>>> REPLACE
+```
+
+### Create a file
+
+```text
+<<<<<<< SEARCH path/to/new_file.ext
+=======
+new file content here
+>>>>>>> REPLACE
+```
+
+### Delete a file
+
+```text
+<<<<<<< DELETE path/to/file.ext
+>>>>>>> DELETE
+```
+
+### Rename or move a file
+
+```text
+<<<<<<< RENAME path/to/old_file.ext
+=======
+path/to/new_file.ext
+>>>>>>> RENAME
+```
+
+---
+
+## Visual diff preview
+
+Before applying AI-generated changes, Code to Prompt shows a diff preview.
+
+This helps you catch mistakes before modifying your project.
+
+Original files are backed up automatically before changes are applied.
+
+---
+
+## Copy Error Context
+
+If an AI-generated patch cannot be applied because the search block does not match the current file, Code to Prompt can generate error context.
+
+Send that error context back to the AI so it can correct the patch.
+
+---
+
+## Security
+
+### Local-first
+
+Code to Prompt processes your project locally.
+
+Your code is not uploaded by Code to Prompt.
+
+You decide what to copy and where to paste it.
+
+---
+
+### Secret scanning
+
+Before copying context, Code to Prompt can scan for possible secrets such as:
+
+- API keys
+- access tokens
+- passwords
+- private credentials
+
+If a secret-like value is found, the app shows a warning with a masked preview.
+
+---
+
+### Relative paths
+
+You can enable relative paths to avoid exposing absolute local machine paths.
+
+Example:
+
+```text
+/home/username/work/project/src/app.py
+```
+
+becomes:
+
+```text
+src/app.py
+```
+
+---
+
+### Safety recommendations
+
+Code to Prompt can read and modify files in folders you open.
+
+Before applying patches:
+
+- use git
+- commit your current work
+- review the diff preview
+- keep backups enabled
+- avoid sending secrets to external AI providers
+- prefer small patches over large patches
+
+---
+
+## MCP server for AI IDEs
+
+Code to Prompt can run as an MCP server for AI IDEs such as Cursor, Claude Code, and other MCP-compatible tools.
+
+Currently, the MCP server provides:
+
+```text
+manage_selection
+```
+
+This allows an AI agent to select or deselect files in the workspace.
+
+Other operations such as reading files, searching, git operations, and language intelligence are usually better handled by the IDE's built-in tools or LSP.
+
+Configuration:
+
+```text
+Settings → MCP Server Integration → Install to IDE
+```
+
+---
+
+## Interface
+
+### Context tab
+
+Select files, write instructions, choose copy mode, and prepare context.
+
+![Context tab](assets/image.png)
+
+---
+
+### Apply tab
+
+Paste Search/Replace blocks from AI, preview diffs, and apply changes.
+
+![Apply tab](assets/image-1.png)
+
+---
+
+### History tab
+
+Review copy and apply history.
+
+![History tab](assets/image-2.png)
+
+---
+
+### Settings tab
+
+Configure models, token counting, security options, MCP integration, and app behavior.
+
+![Settings tab](assets/image-3.png)
+
+---
+
+## Example workflows
+
+Each workflow includes steps and a copy-paste prompt.
+
+---
+
+### Workflow A: Web chat planning to save IDE agent cost
+
+1. Select relevant files → **Copy Context**
+2. Paste into ChatGPT / Claude / Gemini Web
+3. Get analysis and implementation plan
+4. Paste the plan into your IDE agent
+
+**Prompt for web chat:**
+
+```text
+Analyze the selected code context and create a practical implementation plan.
+
+Task:
+[Describe task]
+
+Do not write the full code.
+Do not return a patch.
+
+Focus on:
+- what the current code does
+- which files matter
+- what needs to change
+- implementation steps
+- risks
+- test plan
+- acceptance criteria
+```
+
+**Prompt for IDE agent:**
+
+```text
+Implement this plan.
+
+Use the provided plan as guidance.
+Avoid exploring unrelated files unless necessary.
+Keep the implementation focused.
+
+Plan:
+[Paste plan]
+```
+
+---
+
+### Workflow B: Ask web chat which files to select
+
+1. **Copy Tree Map**
+2. Paste into web chat
+3. Get file recommendations → select those files in Code to Prompt
+
+**Prompt:**
+
+```text
+Here is the project tree.
+
+Task:
+[Describe task]
+
+Which files are likely relevant?
+Return a prioritized list and explain briefly why.
+```
+
+---
+
+### Workflow C: Generate spec for IDE agent
+
+1. Select files → **Copy Context**
+2. Paste into web chat → get spec
+3. Paste spec into IDE agent
+
+**Prompt:**
+
+```text
+Create an implementation spec for this task.
+
+Task:
+[Describe task]
+
+Do not write the full code. Do not return a patch.
+The spec should be suitable for an IDE coding agent.
+
+Include:
+- target behavior
+- files likely to change
+- implementation steps
+- constraints
+- edge cases
+- test plan
+- acceptance criteria
+```
+
+---
+
+### Workflow D: Generate Search/Replace patch
+
+1. Select files → **Copy + Search/Replace**
+2. Paste into AI chat → get patch blocks
+3. Paste response into **Apply** tab → preview diff → apply
+
+**Prompt:**
+
+```text
+Implement this focused change.
+
+Return only Search/Replace blocks.
+Keep the patch small and minimal.
+
+Task:
+[Describe task]
+```
+
+---
+
+### Workflow E: Review git diff
+
+1. Choose **Git Diff** mode → copy diff
+2. Paste into AI web chat
+
+**Prompt:**
+
+```text
+Review this git diff.
+
+Focus on:
+- correctness
+- edge cases
+- security issues
+- performance risks
+- missing tests
+- maintainability
+
+Return findings by severity.
+```
+
+---
+
+### Workflow F: Code understanding and architecture analysis
+
+1. Select relevant files → **Copy Context**
+2. Paste into web chat
+
+**Prompt:**
+
+```text
+Analyze the selected code context.
+
+Explain:
+1. The main responsibility of this module
+2. How the important files relate to each other
+3. The main data flow
+4. The most important functions/classes
+5. Possible design issues
+6. What files I should inspect next if I want to modify this feature
+
+Do not write implementation code.
+```
+
+---
+
+### Workflow G: Code review
+
+1. Select files to review → **Copy Context**
+2. Paste into web chat
+
+**Prompt:**
+
+```text
+Review the selected code context.
+
+Focus on:
+- correctness
+- maintainability
+- architecture
+- edge cases
+- tests
+- security risks
+
+Do not rewrite the code.
+Return actionable findings.
+```
+
+---
+
+### Workflow H: Bug analysis
+
+1. Select suspected files → **Copy Context**
+2. Paste into web chat with bug description
+
+**Prompt:**
+
+```text
+Analyze the selected code for this bug:
+
+[Bug description]
+
+Do not write a patch yet.
+
+Return:
+1. Likely root cause
+2. Relevant files
+3. Reasoning
+4. Fix strategy
+5. Tests to confirm the fix
+6. Possible side effects
+```
+
+## Environment variables
+
+```bash
+SYNAPSE_DEBUG=1   # Enable detailed debug logging
+```
+
+## License
+
+MIT License.
+
+See [LICENSE](LICENSE).
