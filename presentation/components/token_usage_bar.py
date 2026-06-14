@@ -7,7 +7,9 @@ Thay vì chỉ hiển thị text đơn điệu, component này cung cấp:
 - Cảnh báo khi sắp vượt quá giới hạn.
 """
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
+from typing import Optional
+
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar, QSizePolicy
 from presentation.config.theme import ThemeColors
 
 
@@ -31,15 +33,27 @@ class TokenUsageBar(QWidget):
         self._files_label.setStyleSheet(
             f"font-size: 10px; color: {ThemeColors.TEXT_MUTED}; font-weight: 600;"
         )
+        self._files_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
 
-        self._token_label = QLabel("0 tokens / 200k")
+        self._token_label = QLabel("Full: 0")
+        self._token_label.setObjectName("tokenUsageFullLabel")
         self._token_label.setStyleSheet(
             f"font-size: 10px; color: {ThemeColors.TEXT_SECONDARY}; font-weight: 700;"
         )
+        self._token_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+
+        self._smart_label = QLabel("")
+        self._smart_label.setObjectName("tokenUsageSmartLabel")
+        self._smart_label.setStyleSheet(
+            f"font-size: 10px; color: {ThemeColors.TEXT_MUTED}; font-weight: 700;"
+        )
+        self._smart_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        self._smart_label.hide()
 
         stats_layout.addWidget(self._files_label)
         stats_layout.addStretch()
         stats_layout.addWidget(self._token_label)
+        stats_layout.addWidget(self._smart_label)
 
         layout.addLayout(stats_layout)
 
@@ -68,7 +82,15 @@ class TokenUsageBar(QWidget):
             }}
         """
 
-    def update_stats(self, tokens: int, limit: int, files: int):
+    def update_stats(
+        self,
+        tokens: int,
+        limit: int,
+        files: int,
+        smart_tokens: Optional[int] = None,
+        savings_pct: Optional[float] = None,
+    ) -> None:
+        """Cập nhật token counter hiện có với Full và Smart comparison."""
         self._tokens = tokens
         self._limit = max(1, limit)
         self._selected_files = files
@@ -76,7 +98,8 @@ class TokenUsageBar(QWidget):
         self._files_label.setText(
             f"{files} {'file' if files == 1 else 'files'} selected"
         )
-        self._token_label.setText(f"{tokens:,} / {limit // 1000}k tokens")
+        self._token_label.setText(f"Full: {tokens:,}")
+        self._update_smart_label(files, smart_tokens, savings_pct)
 
         self._progress.setRange(0, self._limit)
         self._progress.setValue(min(tokens, self._limit))
@@ -91,3 +114,23 @@ class TokenUsageBar(QWidget):
 
         # Luôn rebuild stylesheet từ template → đảm bảo đúng màu ở mọi trạng thái
         self._progress.setStyleSheet(self._get_progress_style(chunk_color))
+
+    def _update_smart_label(
+        self,
+        files: int,
+        smart_tokens: Optional[int],
+        savings_pct: Optional[float],
+    ) -> None:
+        """Hiển thị Smart token khi selection và mức tiết kiệm đủ meaningful."""
+        if files <= 0 or smart_tokens is None or savings_pct is None or savings_pct < 1:
+            self._smart_label.clear()
+            self._smart_label.hide()
+            return
+
+        color = ThemeColors.SUCCESS if savings_pct >= 30 else ThemeColors.TEXT_MUTED
+        savings_display = round(savings_pct)
+        self._smart_label.setStyleSheet(
+            f"font-size: 10px; color: {color}; font-weight: 700;"
+        )
+        self._smart_label.setText(f"  Smart: {smart_tokens:,} (↓{savings_display}%)")
+        self._smart_label.show()

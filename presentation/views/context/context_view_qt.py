@@ -8,11 +8,15 @@ logic khoi UI va tuan thu Single Responsibility Principle.
 import threading
 import logging
 from pathlib import Path
-from typing import Optional, Set, List, Callable, TYPE_CHECKING
+from typing import Any, Optional, Set, List, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from infrastructure.filesystem.ignore_engine import IgnoreEngine
     from application.interfaces.tokenization_port import ITokenizationService
+    from domain.tokenization.comparison_service import (
+        TokenComparison,
+        TokenComparisonService,
+    )
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Slot, QTimer
@@ -56,6 +60,7 @@ class ContextViewQt(
         clipboard_service=None,
         ignore_engine: Optional["IgnoreEngine"] = None,
         tokenization_service: Optional["ITokenizationService"] = None,
+        token_comparison_service: Optional["TokenComparisonService"] = None,
     ):
         super().__init__(parent)
         self.get_workspace = get_workspace
@@ -76,6 +81,14 @@ class ContextViewQt(
             tokenization_service = get_tokenization_service()
         self._tokenization_service: "ITokenizationService" = tokenization_service
 
+        if token_comparison_service is None:
+            from domain.tokenization.comparison_service import TokenComparisonService
+
+            token_comparison_service = TokenComparisonService()
+        self._token_comparison_service: "TokenComparisonService" = (
+            token_comparison_service
+        )
+
         # State
         self.tree: Optional[TreeItem] = None
         self._selected_output_style: OutputStyle = DEFAULT_OUTPUT_STYLE
@@ -83,6 +96,10 @@ class ContextViewQt(
         self._is_loading = False
         self._pending_refresh = False
         self._token_generation = 0
+        self._smart_comparison_generation = 0
+        self._smart_comparison_key: tuple[str, ...] | None = None
+        self._latest_token_comparison: Optional["TokenComparison"] = None
+        self._smart_comparison_worker: Any = None
         # AI Suggest Select state: worker reference + snapshot cho Undo
         self._ai_suggest_worker = None
         self._ai_suggest_previous_selection: Optional[List[str]] = None
@@ -986,10 +1003,27 @@ class ContextViewQt(
             model_cfg = get_model_by_id(model_id)
             limit = model_cfg.context_length if model_cfg else 128000
 
+            selected_paths = list(self.file_tree_widget.get_selected_paths())
+            selected_key = tuple(sorted(selected_paths))
+            current_comparison_key = getattr(self, "_smart_comparison_key", None)
+            comparison = (
+                getattr(self, "_latest_token_comparison", None)
+                if selected_key and selected_key == current_comparison_key
+                else None
+            )
+            if not selected_key:
+                self._latest_token_comparison = None
+                self._smart_comparison_key = None
+
             # Update Toolbar progress bar
             self._token_usage_bar.update_stats(
-                tokens=total, limit=limit, files=file_count
+                tokens=total,
+                limit=limit,
+                files=file_count,
+                smart_tokens=comparison.smart_tokens if comparison else None,
+                savings_pct=comparison.savings_pct if comparison else None,
             )
+            self._request_token_comparison(selected_paths, total, limit, file_count)
 
             # Tooltip chia ro nguon token: file vs instruction.
             # Dac biet quan trong khi file_count=0 ma instruction_tokens>0
@@ -1012,6 +1046,63 @@ class ContextViewQt(
                 f"Model: {model_cfg.name if model_cfg else 'Unknown'}\n"
                 f"{tooltip_note}"
             )
+
+    def _request_token_comparison(
+        self,
+        selected_paths: list[str],
+        total_tokens: int,
+        limit: int,
+        file_count: int,
+    ) -> None:
+        """Chạy Smart token comparison trên background thread theo update path hiện có."""
+        key = tuple(sorted(selected_paths))
+        if not key:
+            self._latest_token_comparison = None
+            self._smart_comparison_key = None
+            return
+
+        current_key = getattr(self, "_smart_comparison_key", None)
+        if (
+            key == current_key
+            and getattr(self, "_latest_token_comparison", None) is not None
+        ):
+            return
+
+        if key == current_key and getattr(self, "_smart_comparison_worker", None):
+            return
+
+        self._smart_comparison_generation = getattr(self, "_smart_comparison_generation", 0) + 1
+        generation = self._smart_comparison_generation
+        self._smart_comparison_key = key
+        paths_snapshot = list(key)
+
+        def _compare() -> "TokenComparison":
+            return self._token_comparison_service.compare_paths(paths_snapshot)
+
+        def _apply(result: "TokenComparison") -> None:
+            if generation != self._smart_comparison_generation:
+                return
+            self._latest_token_comparison = result
+            if hasattr(self, "_token_usage_bar"):
+                self._token_usage_bar.update_stats(
+                    tokens=total_tokens,
+                    limit=limit,
+                    files=file_count,
+                    smart_tokens=result.smart_tokens,
+                    savings_pct=result.savings_pct,
+                )
+
+        def _clear_worker() -> None:
+            if generation == self._smart_comparison_generation:
+                self._smart_comparison_worker = None
+
+        from infrastructure.adapters.qt_utils import schedule_background
+
+        self._smart_comparison_worker = schedule_background(
+            _compare,
+            on_result=_apply,
+            on_finished=_clear_worker,
+        )
 
     @Slot(str)
     def _on_model_changed(self, model_id: str) -> None:
