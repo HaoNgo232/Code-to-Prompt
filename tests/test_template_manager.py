@@ -46,10 +46,9 @@ class TestListTemplates:
             "security_auditor",
             "doc_generator",
             "performance_optimizer",
-            "ui_ux_reviewer",
             "test_writer",
             "architecture_reviewer",
-            "tech_debt_analyzer",
+            "code_explainer",
         }
         # Do file local có thể chứa custom template, assert is superset
         assert required.issubset(ids)
@@ -71,45 +70,28 @@ class TestLoadTemplate:
     def test_load_bug_hunter(self):
         """Load bug_hunter thanh cong."""
         content = load_template("bug_hunter")
-        assert "Senior QA" in content
+        assert "Software Quality Engineer" in content
         assert "<thinking>" in content
 
     def test_load_security_auditor(self):
         """Load security_auditor thanh cong."""
         content = load_template("security_auditor")
-        assert "Application Security Engineer" in content
+        assert "Security Engineer" in content
         assert "<thinking>" in content
 
     def test_load_doc_generator(self):
         """Load doc_generator thanh cong."""
         content = load_template("doc_generator")
-        assert "Technical Writer and Developer Advocate" in content
+        assert "Developer Advocate" in content
         assert "documentation" in content.lower()
 
     def test_load_performance_optimizer(self):
         """Load performance_optimizer thanh cong."""
         content = load_template("performance_optimizer")
-        assert "System Engineer" in content
+        assert "Performance Engineer" in content
         assert "memory" in content.lower()
 
-    def test_can_force_pro_tier(self, monkeypatch):
-        """Khi template_tier=pro thi provider load Pro template."""
-        monkeypatch.setattr(tm, "_get_template_tier", lambda: "pro")
-        content = load_template("security_auditor")
-        assert "OWASP" in content
 
-    def test_lite_fallback_to_pro_when_lite_missing(self, tmp_path, monkeypatch):
-        """Neu tier=lite nhung file lite khong ton tai thi fallback Pro."""
-        # Fake templates dir voi pro-only file
-        pro_file = tmp_path / "bug_hunter.md"
-        pro_file.write_text("PRO TEMPLATE CONTENT", encoding="utf-8")
-
-        monkeypatch.setattr(tm, "_TEMPLATES_DIR", tmp_path)
-        monkeypatch.setattr(tm, "_get_template_tier", lambda: "lite")
-
-        provider = BuiltInTemplateProvider()
-        content = provider.load_template("bug_hunter")
-        assert content == "PRO TEMPLATE CONTENT"
 
     def test_load_nonexistent_raises_key_error(self):
         """Load template khong ton tai raise KeyError."""

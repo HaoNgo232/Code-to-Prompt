@@ -279,13 +279,9 @@ class ContextViewQt(
                 debounce_seconds=0.5,
             )
 
-        # 9. Sync Templates Button Text (Tier)
-        from infrastructure.persistence.settings_manager import load_app_settings
-
-        new_tier = getattr(load_app_settings(), "template_tier", "lite")
+        # 9. Sync Templates Button Text
         if hasattr(self, "_template_btn"):
-            tier_label = "Lite" if new_tier == "lite" else "Pro"
-            self._template_btn.setText(f"Templates ({tier_label})")
+            self._template_btn.setText("Templates")
 
     def restore_tree_state(
         self, selected_files: List[str], expanded_folders: List[str]
@@ -779,31 +775,7 @@ class ContextViewQt(
         except ValueError:
             pass
 
-    @Slot(str)
-    def _on_tier_changed(self, tier: str) -> None:
-        """Xu ly khi nguoi dung thay doi template tier ngay tren toolbar."""
-        from infrastructure.persistence.settings_manager import update_app_setting
 
-        try:
-            # Luu setting moi vao persistent storage
-            update_app_setting(template_tier=tier)
-
-            # Invalidate cache de dam bao template moi duoc fetch khi copy
-            if self._copy_controller:
-                self._copy_controller._prompt_cache.invalidate_all()
-
-            # Cap nhat text trên button Templates de nguoi dung luon biet tier hien tai
-            if hasattr(self, "_template_btn"):
-                tier_label = "Lite" if tier == "lite" else "Pro"
-                self._template_btn.setText(f"Templates ({tier_label})")
-
-            # Thong bao cho nguoi dung via toast
-            tier_display = "Lite (Concise)" if tier == "lite" else "Pro (Detailed)"
-            self.show_status(f"Template Tier switched to {tier_display}")
-
-        except Exception as e:
-            logger.error(f"Failed to change template tier: {e}")
-            self.show_status("Failed to change tier.", is_error=True)
 
     @Slot(object)
     def _on_template_selected(self, action) -> None:
@@ -891,22 +863,7 @@ class ContextViewQt(
         menu = self._template_menu
         menu.clear()
 
-        # 1. Chèn Tier Selector (Lite/Pro) lên đầu menu dùng QWidgetAction (động)
-        from PySide6.QtWidgets import QWidgetAction
-        from infrastructure.persistence.settings_manager import load_app_settings
-        from presentation.components.tier_selector import TierSelector
 
-        # Luôn tạo mới menu item để tránh lỗi ownership của Qt
-        new_tier = getattr(load_app_settings(), "template_tier", "lite")
-        tier_selector = TierSelector(initial_tier=new_tier)
-        tier_selector.tier_changed.connect(self._on_tier_changed)
-        # Style gọn hơn khi nằm trong menu
-        tier_selector.setContentsMargins(8, 4, 8, 4)
-
-        action = QWidgetAction(menu)
-        action.setDefaultWidget(tier_selector)
-        menu.addAction(action)
-        menu.addSeparator()
 
         # 2. Đổ dữ liệu các templates
         for tmpl in list_templates():

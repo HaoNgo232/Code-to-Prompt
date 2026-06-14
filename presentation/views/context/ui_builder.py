@@ -657,10 +657,7 @@ class UIBuilderMixin:
         self._template_menu.triggered.connect(self._on_template_selected)
 
         # Cập nhật text mặc định cho button từ settings
-
-        current_tier = getattr(load_app_settings(), "template_tier", "lite")
-        tier_label = "Lite" if current_tier == "lite" else "Pro"
-        self._template_btn.setText(f"Templates ({tier_label})")
+        self._template_btn.setText("Templates")
 
         self._template_btn.setMenu(self._template_menu)
         header.addWidget(self._template_btn)

@@ -87,16 +87,4 @@ class TestTemplateUI:
                 assert dialog_edit.content_input.toPlainText() == "Content"
                 assert dialog_edit.btn_save.text() == "Update Template"
 
-    def test_tier_selector_in_menu(self, context_view):
-        """Kiem tra TierSelector (Lite/Pro) xuat hien dau menu template."""
-        view = context_view
-        view._populate_template_menu()
 
-        menu = view._template_menu
-        first_action = menu.actions()[0]
-
-        # No phai la QWidgetAction chua TierSelector
-        assert isinstance(first_action, QWidgetAction)
-        from presentation.components.tier_selector import TierSelector
-
-        assert isinstance(first_action.defaultWidget(), TierSelector)
