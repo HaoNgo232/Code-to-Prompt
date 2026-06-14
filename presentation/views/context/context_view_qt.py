@@ -17,6 +17,7 @@ if TYPE_CHECKING:
         TokenComparison,
         TokenComparisonService,
     )
+    from domain.prompt.copy_mode import CopyConfig
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Slot, QTimer
