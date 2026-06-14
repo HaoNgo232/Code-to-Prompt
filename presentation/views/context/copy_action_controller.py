@@ -1043,15 +1043,19 @@ class CopyActionController(QObject):
             def task() -> PromptResult:
                 """Heavy work - chay tren background thread."""
                 tree_item = self._view.scan_full_tree(workspace)
-                format_str = "xml"
-                if output_style == OutputStyle.PLAIN:
-                    format_str = "plain"
+                from domain.prompt.copy_mode import CopyConfig, CopyMode
+                config = CopyConfig(
+                    mode=CopyMode.APPLY if include_xml else CopyMode.FULL,
+                    include_git_diff=include_git,
+                    tree_map_only=False,
+                    output_style=output_style
+                )
 
                 return self._view.get_prompt_builder().build_prompt(
                     file_paths=[Path(p) for p in selected_path_strs],
                     workspace=workspace,
                     instructions=instructions,
-                    output_format=format_str,
+                    output_format=config,
                     include_git_changes=include_git,
                     use_relative_paths=use_rel,
                     tree_item=tree_item,
@@ -1135,16 +1139,18 @@ class CopyActionController(QObject):
             """Heavy work - chay tren background thread."""
             assert workspace is not None
             tree_item = self._view.scan_full_tree(workspace)
-            format_str = (
-                "compress_plain"
-                if self._view.get_output_style() == OutputStyle.PLAIN
-                else "compress"
+            from domain.prompt.copy_mode import CopyConfig, CopyMode
+            config = CopyConfig(
+                mode=CopyMode.SMART,
+                include_git_diff=include_git,
+                tree_map_only=False,
+                output_style=self._view.get_output_style()
             )
             return self._view.get_prompt_builder().build_prompt(
                 file_paths=[Path(p) for p in selected_path_strs],
                 workspace=workspace,
                 instructions=instructions,
-                output_format=format_str,
+                output_format=config,
                 include_git_changes=include_git,
                 use_relative_paths=use_rel,
                 tree_item=tree_item,
@@ -1308,15 +1314,19 @@ class CopyActionController(QObject):
 
         def task() -> PromptResult:
             tree_item = self._view.scan_full_tree(workspace_path)
-            format_str = "xml"
-            if output_style == OutputStyle.PLAIN:
-                format_str = "plain"
+            from domain.prompt.copy_mode import CopyConfig, CopyMode
+            config = CopyConfig(
+                mode=CopyMode.FULL,
+                include_git_diff=include_git,
+                tree_map_only=False,
+                output_style=output_style
+            )
 
             return self._view.get_prompt_builder().build_prompt(
                 file_paths=[Path(p) for p in selected_path_strs],
                 workspace=workspace_path,
                 instructions=instructions,
-                output_format=format_str,
+                output_format=config,
                 include_git_changes=include_git,
                 use_relative_paths=use_rel,
                 tree_item=tree_item,
