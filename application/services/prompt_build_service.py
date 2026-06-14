@@ -17,6 +17,7 @@ from domain.prompt.generator import (
     generate_file_contents_plain,
     OutputStyle,
 )
+from domain.prompt.copy_mode import CopyConfig, CopyMode
 from infrastructure.filesystem.file_utils import TreeItem
 from shared.types.prompt_types_extra import BuildResult
 from application.services.prompt_helpers import (
@@ -69,7 +70,7 @@ class PromptBuildService:
         file_paths: List[Path],
         workspace: Path,
         instructions: str,
-        output_format: str,
+        output_format: str | CopyConfig | dict,
         include_git_changes: bool,
         use_relative_paths: bool,
         tree_item: Optional[TreeItem] = None,
@@ -90,7 +91,7 @@ class PromptBuildService:
             file_paths: Danh sach file paths da resolve
             workspace: Workspace root path
             instructions: User instructions text
-            output_format: "xml", "json", "plain"
+            output_format: "xml", "json", "plain", or CopyConfig
             include_git_changes: Co include git diff khong
             use_relative_paths: Co dung relative paths khong
             tree_item: Root TreeItem cho file map (optional)
@@ -124,7 +125,7 @@ class PromptBuildService:
         file_paths: List[Path],
         workspace: Path,
         instructions: str,
-        output_format: str,
+        output_format: str | CopyConfig | dict,
         include_git_changes: bool,
         use_relative_paths: bool,
         tree_item: Optional[TreeItem] = None,
@@ -149,7 +150,7 @@ class PromptBuildService:
             file_paths: Danh sách primary file paths đã resolve
             workspace: Workspace root path
             instructions: User instructions text
-            output_format: "xml", "json", "plain"
+            output_format: "xml", "json", "plain" or CopyConfig
             include_git_changes: Có include git diff không
             use_relative_paths: Có dùng relative paths không
             tree_item: Root TreeItem cho file map (optional)
@@ -186,13 +187,47 @@ class PromptBuildService:
                     cp_path = (workspace / cp).resolve()
                 normalized_codemap.add(str(cp_path))
 
+        # Parse output_format to CopyConfig
+        config: CopyConfig
+        if isinstance(output_format, CopyConfig):
+            config = output_format
+        elif isinstance(output_format, dict):
+            config = CopyConfig.from_dict(output_format)
+        else:
+            # Legacy string
+            fmt_str = str(output_format).lower()
+            if fmt_str in ("compress", "compress_plain"):
+                mode = CopyMode.SMART
+            elif fmt_str == "search_replace" or include_xml_formatting:
+                mode = CopyMode.APPLY
+            else:
+                mode = CopyMode.FULL
+
+            style = OutputStyle.PLAIN if "plain" in fmt_str else OutputStyle.XML
+            config = CopyConfig(
+                mode=mode,
+                include_git_diff=include_git_changes,
+                tree_map_only=False,
+                output_style=style
+            )
+
+        # Overwrite parameter values with CopyConfig fields
+        include_git_changes = config.include_git_diff
+        output_style = config.output_style
+        include_xml_formatting = (config.mode == CopyMode.APPLY)
+
+        # Internal format string representation for legacy checkers/generators
+        if config.mode == CopyMode.SMART:
+            legacy_format = "compress_plain" if config.output_style == OutputStyle.PLAIN else "compress"
+        else:
+            legacy_format = "plain" if config.output_style == OutputStyle.PLAIN else "xml"
+
         # Initialize variables de tranh loi uninitialized
         file_map = ""
         project_rules = ""
         git_diffs = None
         git_logs = None
         file_contents = ""
-        output_style = _FORMAT_TO_STYLE.get(output_format, OutputStyle.XML)
 
         # 0. Fetch git data neu can
         if include_git_changes:
@@ -204,7 +239,7 @@ class PromptBuildService:
         # 1. Generate file map
         if tree_item:
             _sel = selected_paths if selected_paths is not None else set()
-            if output_format in ("xml", "json", "compress", "compress_plain"):
+            if legacy_format in ("xml", "json", "compress", "compress_plain"):
                 from domain.prompt.generator import generate_file_structure_xml
 
                 file_map = generate_file_structure_xml(
@@ -233,7 +268,9 @@ class PromptBuildService:
         # 3. Generate file contents
         all_path_strs = {str(p) for p in all_file_paths}
 
-        if output_format in ("compress", "compress_plain"):
+        if config.tree_map_only:
+            file_contents = ""
+        elif config.mode == CopyMode.SMART:
             from domain.prompt.generator import generate_smart_context
 
             file_contents = generate_smart_context(
@@ -245,7 +282,7 @@ class PromptBuildService:
             )
         else:
             content_gen = _FORMAT_TO_GENERATOR.get(
-                output_format, _FORMAT_TO_GENERATOR["xml"]
+                legacy_format, _FORMAT_TO_GENERATOR["xml"]
             )
             file_contents = content_gen(
                 selected_paths=all_path_strs,
@@ -256,7 +293,7 @@ class PromptBuildService:
 
         from domain.prompt.generator import generate_prompt, build_smart_prompt
 
-        if output_format in ("compress", "compress_plain"):
+        if config.mode == CopyMode.SMART:
             prompt = build_smart_prompt(
                 smart_contents=file_contents,
                 file_map=file_map,
@@ -297,7 +334,7 @@ class PromptBuildService:
             include_git_changes,
             include_xml_formatting,
             self._tokenization_service,
-            output_format,
+            legacy_format,
             token_count,
         )
 
@@ -329,7 +366,7 @@ class PromptBuildService:
                 git_logs,
                 breakdown,
                 self._tokenization_service,
-                output_format,
+                legacy_format,
                 include_xml_formatting,
                 instructions_at_top,
                 "",
