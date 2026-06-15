@@ -332,3 +332,14 @@ def collect_files_from_disk(
         pass
 
     return result
+
+
+from domain.ports.workspace_scanner import IWorkspaceScanner
+
+class WorkspaceScanner(IWorkspaceScanner):
+    """
+    Adapter class for IWorkspaceScanner using collect_files_from_disk.
+    """
+    def collect_files(self, folder: Path) -> List[str]:
+        return collect_files_from_disk(folder, workspace_path=folder)
+

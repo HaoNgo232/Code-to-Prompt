@@ -73,6 +73,11 @@ class ServiceContainer:
 
         self.cache_registry: CacheRegistry = _module_registry
 
+        from domain.ports.registry import DomainRegistry
+        from application.services.workspace_index import WorkspaceScanner
+        DomainRegistry.register_tokenization_service(self._tokenization_service)
+        DomainRegistry.register_workspace_scanner(WorkspaceScanner())
+
         logger.info("ServiceContainer initialized with owned services")
 
     @property
