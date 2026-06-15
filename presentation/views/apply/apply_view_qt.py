@@ -18,7 +18,8 @@ from PySide6.QtWidgets import (
     QFrame,
     QMessageBox,
 )
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QTimer
+from domain.prompt.patch_detection_service import PatchDetectionService
 
 from presentation.config.theme import ThemeColors
 from domain.prompt.opx_parser import parse_any_response
@@ -106,6 +107,15 @@ class ApplyViewQt(QWidget):
         self._cached_memory_block: Optional[str] = None
 
         self.expanded_diffs: set = set()
+
+        # Nâng cấp Auto-detection
+        self._apply_btn = None
+        self._summary_label = None
+        self._detection_result = None
+
+        self._debounce_timer = QTimer(self)
+        self._debounce_timer.setSingleShot(True)
+        self._debounce_timer.timeout.connect(self._on_debounce_timeout)
 
         self._build_ui()
 
@@ -201,6 +211,18 @@ class ApplyViewQt(QWidget):
         )
         layout.addWidget(self._opx_input, stretch=1)
 
+        # Summary label
+        self._summary_label = QLabel()
+        self._summary_label.setWordWrap(True)
+        self._summary_label.setStyleSheet(
+            f"font-size: 11px; color: {ThemeColors.TEXT_MUTED}; font-weight: 500; margin-top: 4px; padding-left: 2px;"
+        )
+        self._summary_label.hide()
+        layout.addWidget(self._summary_label)
+
+        # Kết nối sự kiện textChanged
+        self._opx_input.textChanged.connect(self._on_text_changed)
+
         # Button row voi styled buttons
         btn_row = QHBoxLayout()
         btn_row.setSpacing(8)
@@ -260,8 +282,9 @@ class ApplyViewQt(QWidget):
         btn_row.addWidget(preview_btn)
 
         # Primary CTA: Apply Changes
-        apply_btn = QPushButton("Apply Changes")
-        apply_btn.setStyleSheet(
+        # Primary CTA: Apply Changes
+        self._apply_btn = QPushButton("Apply Changes")
+        self._apply_btn.setStyleSheet(
             f"""
             QPushButton {{
                 background-color: {ThemeColors.PRIMARY};
@@ -278,11 +301,16 @@ class ApplyViewQt(QWidget):
             QPushButton:pressed {{
                 background-color: {ThemeColors.PRIMARY_PRESSED};
             }}
+            QPushButton:disabled {{
+                background-color: {ThemeColors.BORDER};
+                color: {ThemeColors.TEXT_MUTED};
+            }}
         """
         )
-        apply_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        apply_btn.clicked.connect(self._apply_changes)
-        btn_row.addWidget(apply_btn)
+        self._apply_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._apply_btn.setEnabled(False)  # Mặc định disabled
+        self._apply_btn.clicked.connect(self._apply_changes)
+        btn_row.addWidget(self._apply_btn)
 
         layout.addLayout(btn_row)
 
@@ -371,6 +399,11 @@ class ApplyViewQt(QWidget):
         self._render_empty_state()
         self._cached_file_actions.clear()
         self._cached_memory_block = None
+        self._detection_result = None
+        if self._summary_label:
+            self._summary_label.hide()
+        if self._apply_btn:
+            self._apply_btn.setEnabled(False)
 
     @Slot()
     def _preview_changes(self) -> None:
@@ -409,6 +442,8 @@ class ApplyViewQt(QWidget):
 
             self._render_preview(preview_data)
             self._show_status(f"Previewing {len(file_actions)} change(s)")
+            if self._apply_btn:
+                self._apply_btn.setEnabled(True)
         except Exception as e:
             self._show_status(f"Parse error: {e}", is_error=True)
 
@@ -491,6 +526,23 @@ class ApplyViewQt(QWidget):
                 f"Applied {success_count}/{len(results)} changes",
                 is_error=success_count < len(results),
             )
+
+            # Nếu apply thành công ít nhất một thay đổi, dọn dẹp textarea và hiện summary
+            if success_count > 0:
+                self._opx_input.blockSignals(True)
+                self._opx_input.clear()
+                self._opx_input.blockSignals(False)
+
+                if self._summary_label:
+                    self._summary_label.setText(
+                        f"Đã áp dụng {success_count} thay đổi thành công"
+                    )
+                    self._summary_label.setStyleSheet(
+                        "font-size: 11px; color: #4ADE80; font-weight: 600; padding: 2px;"
+                    )
+                    self._summary_label.show()
+                if self._apply_btn:
+                    self._apply_btn.setEnabled(False)
 
             # Save continuous memory if apply was at least partially successful
             if success_count > 0 and memory_block:
@@ -1051,3 +1103,61 @@ class ApplyViewQt(QWidget):
             toast_error(message)
         else:
             toast_success(message)
+
+    # ===== Auto-Detection Slots =====
+
+    @Slot()
+    def _on_text_changed(self) -> None:
+        """Kích hoạt timer debounce 800ms khi văn bản thay đổi."""
+        self._debounce_timer.start(800)
+
+    @Slot()
+    def _on_debounce_timeout(self) -> None:
+        """Hết thời gian debounce, tiến hành phân tích patch."""
+        text = self._opx_input.toPlainText()
+        workspace = self.get_workspace()
+        ws_root = str(workspace) if workspace else None
+
+        detector = PatchDetectionService(workspace_root=ws_root)
+        self._detection_result = detector.detect(text)
+
+        self._update_detection_ui()
+
+    def _update_detection_ui(self) -> None:
+        """Cập nhật trạng thái hiển thị của Summary Label và Apply Button."""
+        text = self._opx_input.toPlainText().strip()
+
+        if not text:
+            if self._summary_label:
+                self._summary_label.hide()
+            if self._apply_btn:
+                self._apply_btn.setEnabled(False)
+            return
+
+        if self._detection_result and self._detection_result.has_patches:
+            # Tính tổng số lượng changes
+            num_changes = sum(
+                max(1, len(a.changes)) for a in self._detection_result.file_actions
+            )
+            num_files = len(self._detection_result.affected_files)
+            files_str = ", ".join(self._detection_result.affected_files)
+
+            if self._summary_label:
+                self._summary_label.setText(
+                    f"Tìm thấy {num_changes} thay đổi trong {num_files} file: {files_str}"
+                )
+                self._summary_label.setStyleSheet(
+                    f"font-size: 11px; color: {ThemeColors.PRIMARY}; font-weight: 600; padding: 2px;"
+                )
+                self._summary_label.show()
+            if self._apply_btn:
+                self._apply_btn.setEnabled(True)
+        else:
+            if self._summary_label:
+                self._summary_label.setText("Không tìm thấy patch hợp lệ")
+                self._summary_label.setStyleSheet(
+                    f"font-size: 11px; color: {ThemeColors.ERROR}; font-weight: 600; padding: 2px;"
+                )
+                self._summary_label.show()
+            if self._apply_btn:
+                self._apply_btn.setEnabled(False)

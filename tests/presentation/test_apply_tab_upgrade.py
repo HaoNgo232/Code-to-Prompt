@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -28,9 +27,7 @@ def test_detection_triggers_after_800ms_debounce(qtbot) -> None:
     view = ApplyViewQt(get_workspace=lambda: Path("."))
     qtbot.addWidget(view)
 
-    view._opx_input.setPlainText(
-        "<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE"
-    )
+    view._opx_input.setPlainText("<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE")
 
     # Ngay lập tức kết quả detect chưa được thiết lập
     assert view._detection_result is None
@@ -59,9 +56,7 @@ def test_apply_button_enabled_with_valid_patches(qtbot) -> None:
     view = ApplyViewQt(get_workspace=lambda: Path("."))
     qtbot.addWidget(view)
 
-    view._opx_input.setPlainText(
-        "<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE"
-    )
+    view._opx_input.setPlainText("<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE")
     qtbot.wait(900)
 
     assert view._apply_btn is not None
@@ -81,7 +76,7 @@ def test_summary_label_shows_filenames(qtbot) -> None:
     qtbot.wait(900)
 
     assert view._summary_label is not None
-    assert view._summary_label.isVisible() is True
+    assert not view._summary_label.isHidden()
     summary_text = view._summary_label.text()
     assert "Tìm thấy 2 thay đổi trong 2 file" in summary_text
     assert "src/a.py" in summary_text
@@ -93,15 +88,13 @@ def test_summary_label_hidden_when_text_empty(qtbot) -> None:
     view = ApplyViewQt(get_workspace=lambda: Path("."))
     qtbot.addWidget(view)
 
-    view._opx_input.setPlainText(
-        "<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE"
-    )
+    view._opx_input.setPlainText("<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE")
     qtbot.wait(900)
-    assert view._summary_label.isVisible() is True
+    assert not view._summary_label.isHidden()
 
     view._opx_input.clear()
     qtbot.wait(900)
-    assert view._summary_label.isVisible() is False
+    assert view._summary_label.isHidden()
 
 
 def test_paste_clipboard_button_fills_textarea(qtbot) -> None:
@@ -152,9 +145,7 @@ def test_textarea_clears_after_successful_apply(qtbot, monkeypatch) -> None:
     view = ApplyViewQt(get_workspace=lambda: Path("."))
     qtbot.addWidget(view)
 
-    view._opx_input.setPlainText(
-        "<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE"
-    )
+    view._opx_input.setPlainText("<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE")
     qtbot.wait(900)
 
     qtbot.mouseClick(view._apply_btn, Qt.MouseButton.LeftButton)
@@ -189,9 +180,7 @@ def test_summary_shows_success_after_apply(qtbot, monkeypatch) -> None:
     view = ApplyViewQt(get_workspace=lambda: Path("."))
     qtbot.addWidget(view)
 
-    view._opx_input.setPlainText(
-        "<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE"
-    )
+    view._opx_input.setPlainText("<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE")
     qtbot.wait(900)
 
     qtbot.mouseClick(view._apply_btn, Qt.MouseButton.LeftButton)
@@ -200,4 +189,4 @@ def test_summary_shows_success_after_apply(qtbot, monkeypatch) -> None:
     qtbot.wait(900)
 
     assert "Đã áp dụng 1 thay đổi thành công" in view._summary_label.text()
-    assert view._summary_label.isVisible() is True
+    assert not view._summary_label.isHidden()
