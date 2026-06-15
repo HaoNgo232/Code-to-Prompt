@@ -214,7 +214,9 @@ class ApplyViewQt(QWidget):
         # Summary label
         self._summary_label = QLabel()
         self._summary_label.setWordWrap(True)
-        self._summary_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self._summary_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction
+        )
         self._summary_label.setOpenExternalLinks(False)
         self._summary_label.linkActivated.connect(self._show_affected_files_menu)
         self._summary_label.setStyleSheet(
@@ -1132,10 +1134,15 @@ class ApplyViewQt(QWidget):
     @Slot(str)
     def _show_affected_files_menu(self, link_text: str) -> None:
         """Hiển thị Popup Menu chứa các file bị ảnh hưởng."""
-        if not self._detection_result or not self._detection_result.affected_files:
+        if (
+            not self._summary_label
+            or not self._detection_result
+            or not self._detection_result.affected_files
+        ):
             return
 
         from PySide6.QtWidgets import QMenu
+
         menu = QMenu(self)
         menu.setStyleSheet(
             f"QMenu {{"
@@ -1162,7 +1169,7 @@ class ApplyViewQt(QWidget):
             action.triggered.connect(
                 lambda checked=False, p=file_path: (
                     copy_to_clipboard(p),
-                    self._show_status(f"Copied: {p}")
+                    self._show_status(f"Copied: {p}"),
                 )
             )
 

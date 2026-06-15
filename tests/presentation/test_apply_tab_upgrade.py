@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -90,10 +89,12 @@ def test_summary_label_hidden_when_text_empty(qtbot) -> None:
 
     view._opx_input.setPlainText("<<<<<<< SEARCH main.py\n=======\n>>>>>>> REPLACE")
     qtbot.wait(900)
+    assert view._summary_label is not None
     assert not view._summary_label.isHidden()
 
     view._opx_input.clear()
     qtbot.wait(900)
+    assert view._summary_label is not None
     assert view._summary_label.isHidden()
 
 
@@ -188,5 +189,6 @@ def test_summary_shows_success_after_apply(qtbot, monkeypatch) -> None:
     # Chờ để đảm bảo debounce không chạy đè
     qtbot.wait(900)
 
+    assert view._summary_label is not None
     assert "Successfully applied 1 changes" in view._summary_label.text()
     assert not view._summary_label.isHidden()
