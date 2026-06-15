@@ -537,8 +537,11 @@ class ApplyViewQt(QWidget):
                     self._summary_label.setText(
                         f"Successfully applied {success_count} changes"
                     )
+                    self._summary_label.setToolTip("")
                     self._summary_label.setStyleSheet(
-                        "font-size: 11px; color: #4ADE80; font-weight: 600; padding: 2px;"
+                        "font-size: 11px; color: #4ADE80; font-weight: 600; "
+                        "background-color: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.2); "
+                        "border-radius: 6px; padding: 6px 10px; margin-top: 4px;"
                     )
                     self._summary_label.show()
                 if self._apply_btn:
@@ -1140,14 +1143,26 @@ class ApplyViewQt(QWidget):
                 max(1, len(a.changes)) for a in self._detection_result.file_actions
             )
             num_files = len(self._detection_result.affected_files)
-            files_str = ", ".join(self._detection_result.affected_files)
+
+            # Rút gọn danh sách file hiển thị để tránh vỡ UI
+            files_list = self._detection_result.affected_files
+            if len(files_list) > 3:
+                displayed_files = (
+                    ", ".join(files_list[:3]) + f" and {len(files_list) - 3} more..."
+                )
+            else:
+                displayed_files = ", ".join(files_list)
 
             if self._summary_label:
                 self._summary_label.setText(
-                    f"Found {num_changes} changes in {num_files} files: {files_str}"
+                    f"Found {num_changes} changes in {num_files} files: {displayed_files}"
                 )
+                # Đưa danh sách file đầy đủ vào Tooltip
+                self._summary_label.setToolTip("\n".join(files_list))
                 self._summary_label.setStyleSheet(
-                    f"font-size: 11px; color: {ThemeColors.PRIMARY}; font-weight: 600; padding: 2px;"
+                    f"font-size: 11px; color: {ThemeColors.PRIMARY}; font-weight: 600; "
+                    f"background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); "
+                    f"border-radius: 6px; padding: 6px 10px; margin-top: 4px;"
                 )
                 self._summary_label.show()
             if self._apply_btn:
@@ -1155,8 +1170,11 @@ class ApplyViewQt(QWidget):
         else:
             if self._summary_label:
                 self._summary_label.setText("No valid patch found")
+                self._summary_label.setToolTip("")
                 self._summary_label.setStyleSheet(
-                    f"font-size: 11px; color: {ThemeColors.ERROR}; font-weight: 600; padding: 2px;"
+                    f"font-size: 11px; color: {ThemeColors.ERROR}; font-weight: 600; "
+                    f"background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); "
+                    f"border-radius: 6px; padding: 6px 10px; margin-top: 4px;"
                 )
                 self._summary_label.show()
             if self._apply_btn:
