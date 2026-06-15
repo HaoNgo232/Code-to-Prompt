@@ -30,8 +30,8 @@ PROF_NAME = 5  # resolved profile name
 class TestProfileResolverWithValidProfile:
     """Kiem tra resolve_profile_params khi truyen profile hop le."""
 
-    @patch("presentation.config.prompt_profiles.list_profiles", return_value=["review"])
-    @patch("presentation.config.prompt_profiles.get_profile")
+    @patch("domain.config.prompt_profiles.list_profiles", return_value=["review"])
+    @patch("domain.config.prompt_profiles.get_profile")
     def test_profile_overrides_defaults(self, mock_get, mock_list):
         """Profile hop le override cac gia tri mac dinh."""
         mock_profile = MagicMock()
@@ -53,8 +53,8 @@ class TestProfileResolverWithValidProfile:
         assert result[EXPAND] is True
         assert result[PROF_NAME] == "review"
 
-    @patch("presentation.config.prompt_profiles.list_profiles", return_value=["review"])
-    @patch("presentation.config.prompt_profiles.get_profile")
+    @patch("domain.config.prompt_profiles.list_profiles", return_value=["review"])
+    @patch("domain.config.prompt_profiles.get_profile")
     def test_explicit_params_override_profile(self, mock_get, mock_list):
         """Explicit params duoc uu tien hon profile defaults."""
         mock_profile = MagicMock()
@@ -87,10 +87,10 @@ class TestProfileResolverWithInvalidProfile:
     """Kiem tra resolve_profile_params khi profile khong ton tai."""
 
     @patch(
-        "presentation.config.prompt_profiles.list_profiles",
+        "domain.config.prompt_profiles.list_profiles",
         return_value=["review", "bugfix"],
     )
-    @patch("presentation.config.prompt_profiles.get_profile", return_value=None)
+    @patch("domain.config.prompt_profiles.get_profile", return_value=None)
     def test_invalid_profile_raises_error(self, mock_get, mock_list):
         """Profile khong ton tai -> ValueError."""
         with pytest.raises(ValueError, match="Unknown profile"):

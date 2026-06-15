@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 import warnings
 from typing import Dict, Any
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 
 class CopyMode(Enum):

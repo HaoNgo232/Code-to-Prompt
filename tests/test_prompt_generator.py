@@ -22,7 +22,7 @@ from domain.prompt.generator import (
 )
 from infrastructure.filesystem.file_utils import TreeItem
 from infrastructure.git.git_utils import GitDiffResult, GitLogResult, GitCommit
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 
 class TestGenerateFileMap:

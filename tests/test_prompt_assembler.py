@@ -2,7 +2,7 @@ import json
 import pytest
 
 from domain.prompt.assembler import assemble_prompt, assemble_smart_prompt
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 from domain.prompt.opx_instruction import XML_FORMATTING_INSTRUCTIONS
 from infrastructure.git.git_utils import (
     GitDiffResult,

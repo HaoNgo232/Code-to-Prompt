@@ -18,7 +18,7 @@ WORKSPACE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(WORKSPACE))
 
 # Lưu trữ lại đường dẫn gốc của app data để khôi phục sau khi test
-from presentation.config import paths
+from shared.config import paths
 
 # Thiết lập thư mục test tạm thời để không ảnh hưởng đến cấu hình thật của user
 TEST_APP_DIR = WORKSPACE / "scratch" / "test_persistence_data"
@@ -37,7 +37,7 @@ paths.RECENT_FOLDERS_FILE = TEST_APP_DIR / "recent_folders.json"
 from infrastructure.persistence import settings_manager
 from infrastructure.persistence import history_service
 from infrastructure.persistence import recent_folders
-from presentation.config.app_settings import AppSettings
+from domain.config.app_settings import AppSettings
 
 
 def test_settings_non_atomic_write():

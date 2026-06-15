@@ -21,7 +21,7 @@ from infrastructure.filesystem.file_utils import TreeItem, is_binary_file
 from shared.utils.path_utils import path_for_display
 
 from infrastructure.git.git_utils import GitDiffResult, GitLogResult
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 # === Pipeline imports ===
 from domain.prompt.file_collector import collect_files

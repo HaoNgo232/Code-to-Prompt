@@ -6,7 +6,7 @@ Covers: lines 43-382 cua context_view_qt.py
 
 from unittest.mock import patch, MagicMock
 from pathlib import Path
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 from PySide6.QtCore import QObject
 
@@ -249,7 +249,7 @@ def test_on_format_changed(context_view):
     view = context_view
     with (
         patch("presentation.views.context.context_view_qt.update_app_setting"),
-        patch("presentation.config.output_format.get_style_by_id") as mock_get_style,
+        patch("domain.config.output_format.get_style_by_id") as mock_get_style,
     ):
         mock_get_style.return_value = OutputStyle.XML
         # Trigger manually since format_btn uses menu actions

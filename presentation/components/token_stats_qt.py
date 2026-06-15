@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from application.interfaces.tokenization_port import ITokenizationService
 
 from presentation.config.theme import ThemeColors
-from presentation.config.model_config import (
+from domain.config.model_config import (
     MODEL_CONFIGS,
     DEFAULT_MODEL_ID,
     get_model_by_id,

@@ -45,7 +45,7 @@ from application.services.workspace_config import (
     get_use_gitignore,
     get_use_relative_paths,
 )
-from presentation.config.output_format import OutputStyle  # Re-touching for index
+from domain.config.output_format import OutputStyle  # Re-touching for index
 from presentation.config.theme import ThemeColors
 
 

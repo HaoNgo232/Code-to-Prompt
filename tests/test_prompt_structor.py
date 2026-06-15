@@ -11,7 +11,7 @@ from domain.prompt.formatters.xml import format_files_xml
 from domain.prompt.formatters.plain import format_files_plain
 from domain.prompt.assembler import assemble_prompt
 from shared.types.prompt_types import FileEntry
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 
 def _make_entry(

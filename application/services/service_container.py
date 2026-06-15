@@ -137,7 +137,7 @@ class ServiceContainer:
         """
         try:
             from infrastructure.persistence.settings_manager import load_app_settings
-            from presentation.config.model_config import get_model_by_id
+            from domain.config.model_config import get_model_by_id
 
             settings = load_app_settings()
             model_id = settings.model_id

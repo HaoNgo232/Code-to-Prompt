@@ -54,14 +54,13 @@ def app_e2e(qtbot, multi_level_workspace, monkeypatch, tmp_path):
     fake_config.mkdir()
     monkeypatch.setenv("XDG_CONFIG_HOME", str(fake_config))
 
-    # Reload paths module to pick up new XDG_CONFIG_HOME
     import importlib
     import shared.config.paths
+    import domain.config.app_settings
     import infrastructure.persistence.settings_manager
-    import presentation.config.app_settings
 
     importlib.reload(shared.config.paths)
-    importlib.reload(presentation.config.app_settings)
+    importlib.reload(domain.config.app_settings)
     importlib.reload(infrastructure.persistence.settings_manager)
 
     clear_recent_folders()

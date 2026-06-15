@@ -11,7 +11,7 @@ from domain.prompt.assembler import assemble_prompt
 from infrastructure.ai.openai_provider import OpenAICompatibleProvider
 from domain.prompt.context_trimmer import ContextTrimmer, PromptComponents
 from application.interfaces.tokenization_port import ITokenizationService
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 # Màu sắc để in terminal
 GREEN = "\033[92m"

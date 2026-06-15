@@ -26,7 +26,7 @@ from PySide6.QtCore import Slot, QTimer
 from infrastructure.filesystem.file_utils import TreeItem
 from infrastructure.filesystem.file_watcher_facade import FileWatcher, WatcherCallbacks
 from infrastructure.persistence.settings_manager import update_app_setting
-from presentation.config.output_format import (
+from domain.config.output_format import (
     OutputStyle,
     get_style_by_id,
     get_format_config,
@@ -1036,7 +1036,7 @@ class ContextViewQt(
 
         # Update Usage Bar (Toolbar) — single source of truth cho token stats
         if hasattr(self, "_token_usage_bar"):
-            from presentation.config.model_config import (
+            from domain.config.model_config import (
                 get_model_by_id,
                 DEFAULT_MODEL_ID,
             )

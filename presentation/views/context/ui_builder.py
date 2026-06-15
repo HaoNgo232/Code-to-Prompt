@@ -26,7 +26,7 @@ from PySide6.QtGui import QIcon
 from presentation.config.theme import ThemeColors
 from presentation.components.file_tree.file_tree_widget import FileTreeWidget
 from presentation.components.qt_utils import create_colored_icon
-from presentation.config.output_format import (
+from domain.config.output_format import (
     OUTPUT_FORMATS,
     get_style_by_id,
     DEFAULT_OUTPUT_STYLE,
@@ -436,7 +436,7 @@ class UIBuilderMixin:
         toolbar_layout.addSpacing(4)
 
         # Model Selector (QToolButton + QMenu style - matching Remote/Related)
-        from presentation.config.model_config import (
+        from domain.config.model_config import (
             MODEL_CONFIGS,
             _format_context_length,
         )
@@ -503,7 +503,7 @@ class UIBuilderMixin:
         toolbar_layout.addSpacing(8)
 
         # Cập nhật model hiện tại từ settings và đồng bộ view
-        from presentation.config.model_config import get_model_by_id, DEFAULT_MODEL_ID
+        from domain.config.model_config import get_model_by_id, DEFAULT_MODEL_ID
 
         app_settings = load_app_settings()
         saved_model_id = app_settings.model_id or DEFAULT_MODEL_ID

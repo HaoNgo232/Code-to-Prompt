@@ -18,7 +18,7 @@ from domain.prompt.formatters.xml import (
 )
 from domain.prompt.formatters.plain import format_files_plain
 from domain.prompt.assembler import assemble_prompt, assemble_smart_prompt
-from presentation.config.output_format import OutputStyle
+from domain.config.output_format import OutputStyle
 
 
 # === Helpers ===
