@@ -44,7 +44,7 @@ from PySide6.QtCore import Qt, Signal, Slot, QTimer, QEvent
 from PySide6.QtGui import QFont
 
 from presentation.config.theme import ThemeColors, ThemeFonts
-from infrastructure.adapters.qt_utils import run_on_main_thread
+from presentation.utils.qt_utils import run_on_main_thread
 from infrastructure.adapters.clipboard_utils import copy_to_clipboard
 from shared.utils.diff_filter_utils import should_auto_exclude as _should_auto_exclude
 
@@ -476,7 +476,7 @@ class DiffOnlyDialogQt(BaseDialogQt):
 
     @Slot()
     def _do_copy(self) -> None:
-        from infrastructure.adapters.qt_utils import schedule_background
+        from presentation.utils.qt_utils import schedule_background
 
         commits = self._get_num_commits()
         include_staged = self._include_staged.isChecked()
@@ -723,7 +723,7 @@ class DiffOnlyDialogQt(BaseDialogQt):
 
     def _do_refresh_changed_files(self) -> None:
         """Logic thực tế để thực hiện việc quét danh sách file thay đổi."""
-        from infrastructure.adapters.qt_utils import schedule_background
+        from presentation.utils.qt_utils import schedule_background
 
         self._refresh_generation += 1
         current_gen = self._refresh_generation

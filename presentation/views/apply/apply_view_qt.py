@@ -555,7 +555,7 @@ class ApplyViewQt(QWidget):
             # Save continuous memory if apply was at least partially successful
             if success_count > 0 and memory_block:
                 try:
-                    from infrastructure.adapters.qt_utils import schedule_background
+                    from presentation.utils.qt_utils import schedule_background
 
                     schedule_background(
                         lambda: save_memory_block(workspace, memory_block)
@@ -705,7 +705,7 @@ class ApplyViewQt(QWidget):
             # Save continuous memory if apply was successful
             if result.success and self._cached_memory_block:
                 try:
-                    from infrastructure.adapters.qt_utils import schedule_background
+                    from presentation.utils.qt_utils import schedule_background
 
                     schedule_background(
                         lambda: save_memory_block(workspace, self._cached_memory_block)

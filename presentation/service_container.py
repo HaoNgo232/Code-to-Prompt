@@ -75,15 +75,25 @@ class ServiceContainer:
 
         from domain.ports.registry import DomainRegistry
         from application.services.workspace_index import WorkspaceScanner
+        from infrastructure.filesystem.file_utils import ConcreteDirectoryScanner
+        from infrastructure.git.git_utils import GitService
+        from infrastructure.adapters.ast_parser import AstParser
+        from infrastructure.persistence.settings_manager import load_app_settings
 
         DomainRegistry.register_tokenization_service(self._tokenization_service)
         DomainRegistry.register_workspace_scanner(WorkspaceScanner())
+        DomainRegistry.register_directory_scanner(
+            ConcreteDirectoryScanner(self.ignore_engine)
+        )
+        DomainRegistry.register_git_service(GitService())
+        DomainRegistry.register_ast_parser(AstParser())
+        DomainRegistry.register_settings_provider(load_app_settings)
 
         # Backward compatibility for old encoder_registry wrapper
         try:
             from infrastructure.adapters import encoder_registry
 
-            encoder_registry._tokenization_service = self._tokenization_service
+            encoder_registry._service_instance = self._tokenization_service
         except ImportError:
             pass
 

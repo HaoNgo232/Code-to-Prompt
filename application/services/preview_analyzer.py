@@ -282,23 +282,6 @@ def format_change_summary(changes: ChangeSummary) -> str:
     return f"+{changes.added} / -{changes.removed}"
 
 
-def get_change_color(changes: ChangeSummary) -> str:
-    """
-    Tra ve color code dua tren net change.
-    - Them nhieu hon bo: Green
-    - Bo nhieu hon them: Red
-    - Bang nhau: Blue
-    """
-    from presentation.config.theme import ThemeColors
-
-    if changes.added > changes.removed:
-        return ThemeColors.SUCCESS  # Green - net add
-    elif changes.removed > changes.added:
-        return ThemeColors.ERROR  # Red - net remove
-    else:
-        return ThemeColors.PRIMARY  # Blue - neutral
-
-
 def generate_preview_diff_lines(
     file_action: FileAction, workspace_root: Optional[Path] = None
 ) -> List[DiffLine]:

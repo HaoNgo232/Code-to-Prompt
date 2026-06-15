@@ -13,7 +13,7 @@ Moi formatter goi collect_files() MOT LAN, roi format theo cach rieng.
 from pathlib import Path
 from typing import Optional
 
-from infrastructure.filesystem.file_utils import is_binary_file
+from shared.utils.file_utils import is_binary_file
 from shared.types.prompt_types import FileEntry
 from shared.utils.import_parser import extract_local_imports
 from shared.utils.language_utils import get_language_from_path

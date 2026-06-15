@@ -120,9 +120,9 @@ def run_code_review(
         if git_service is not None:
             diff_result = git_service.get_diffs(ws, base_ref=base_ref)
         else:
-            from infrastructure.git.git_utils import get_git_diffs
+            from domain.ports.registry import DomainRegistry
 
-            diff_result = get_git_diffs(ws, base_ref=base_ref)
+            diff_result = DomainRegistry.git_service().get_diffs(ws, base_ref=base_ref)
 
         if not diff_result:
             return ReviewResult(

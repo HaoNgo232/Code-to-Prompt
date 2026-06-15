@@ -20,7 +20,6 @@ from application.services.error_context.formatters import (
     read_current_file_content,
     extract_file_paths_from_opx,
 )
-from infrastructure.adapters.clipboard_utils import copy_to_clipboard
 
 
 def build_error_context_for_ai(
@@ -220,14 +219,3 @@ def build_general_error_context(
     )
 
     return "\n".join(sections)
-
-
-def copy_error_to_clipboard(context: str) -> bool:
-    """
-    Copy error context to clipboard.
-
-    Returns:
-        True neu thanh cong, False neu that bai
-    """
-    success, _ = copy_to_clipboard(context)
-    return success

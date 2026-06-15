@@ -35,7 +35,6 @@ from domain.workflow.shared.handoff_formatter import (
     format_relationships_section,
 )
 from domain.prompt.generator import generate_file_map
-from infrastructure.filesystem.file_utils import scan_directory
 from domain.codemap.dependency_resolver import DependencyResolver
 from domain.codemap.graph_builder import CodeMapBuilder
 from domain.ports.tokenization_port import ITokenizationService
@@ -258,10 +257,9 @@ def run_design_planner(
         all_scope_files = [f for f in all_scope_files if not _is_test_file(f)]
 
     # Step 2: Build file map
-    from infrastructure.filesystem.ignore_engine import IgnoreEngine
+    from domain.ports.registry import DomainRegistry
 
-    ignore_engine = IgnoreEngine()
-    tree = scan_directory(ws, ignore_engine)
+    tree = DomainRegistry.directory_scanner().scan_directory(ws)
     selected_paths = set(str(ws / p) for p in all_scope_files)
     file_map = generate_file_map(tree, selected_paths, workspace_root=ws)
 

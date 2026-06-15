@@ -1140,7 +1140,7 @@ class ContextViewQt(
             if generation == self._smart_comparison_generation:
                 self._smart_comparison_worker = None
 
-        from infrastructure.adapters.qt_utils import schedule_background
+        from presentation.utils.qt_utils import schedule_background
 
         self._smart_comparison_worker = schedule_background(
             _compare,

@@ -18,7 +18,7 @@ from typing import Protocol, List, Optional, Set, runtime_checkable
 
 from PySide6.QtCore import QObject
 
-from infrastructure.adapters.qt_utils import run_on_main_thread
+from presentation.utils.qt_utils import run_on_main_thread
 
 
 @runtime_checkable

@@ -180,7 +180,7 @@ def test_update_triggered_same_time_as_existing_counter(qtbot, monkeypatch):
         return MagicMock()
 
     monkeypatch.setattr(
-        "infrastructure.adapters.qt_utils.schedule_background",
+        "presentation.utils.qt_utils.schedule_background",
         run_immediately,
     )
 

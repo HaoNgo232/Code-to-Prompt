@@ -23,7 +23,6 @@ from domain.workflow.shared.handoff_formatter import (
 )
 from domain.prompt.generator import generate_file_map
 from domain.codemap.graph_builder import CodeMapBuilder
-from infrastructure.filesystem.file_utils import scan_directory
 from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 from domain.workflow.interfaces.git_port import IGitService
@@ -118,10 +117,9 @@ def run_context_builder(
         )
 
     # Step 2: Build file map
-    from infrastructure.filesystem.ignore_engine import IgnoreEngine
+    from domain.ports.registry import DomainRegistry
 
-    ignore_engine = IgnoreEngine()
-    tree = scan_directory(ws, ignore_engine)
+    tree = DomainRegistry.directory_scanner().scan_directory(ws)
     selected_paths = set(
         str(ws / p) for p in scope.primary_files + scope.dependency_files
     )
@@ -139,9 +137,9 @@ def run_context_builder(
         if git_service is not None:
             git_diff_result = git_service.get_diffs(ws)
         else:
-            from infrastructure.git.git_utils import get_git_diffs
+            from domain.ports.registry import DomainRegistry
 
-            git_diff_result = get_git_diffs(ws)
+            git_diff_result = DomainRegistry.git_service().get_diffs(ws)
 
         if git_diff_result and (
             git_diff_result.work_tree_diff or git_diff_result.staged_diff

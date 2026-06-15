@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from infrastructure.git.git_utils import GitDiffResult, GitLogResult
+from shared.types.git_types import GitDiffResult, GitLogResult
 
 from domain.prompt.opx_instruction import XML_FORMATTING_INSTRUCTIONS
 from domain.config.output_format import OutputStyle

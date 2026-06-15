@@ -117,9 +117,9 @@ def detect_scope_from_git_diff(
         if git_service is not None:
             diff_result = git_service.get_diffs(workspace_path)
         else:
-            from infrastructure.git.git_utils import get_git_diffs
+            from domain.ports.registry import DomainRegistry
 
-            diff_result = get_git_diffs(workspace_path)
+            diff_result = DomainRegistry.git_service().get_diffs(workspace_path)
 
         if not diff_result:
             return ScopeResult(confidence=0.0)

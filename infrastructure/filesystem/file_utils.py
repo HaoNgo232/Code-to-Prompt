@@ -81,6 +81,7 @@ _TEXT_EXTENSIONS = frozenset(
 
 
 from domain.smart_context.tree_item import TreeItem
+from domain.ports.directory_scanner import IDirectoryScanner
 
 
 from shared.utils.file_utils import is_binary_file, is_binary_by_extension  # noqa: F401
@@ -632,3 +633,15 @@ def load_folder_children(
 
     # Mark as loaded
     folder_item.is_loaded = True
+
+
+class ConcreteDirectoryScanner(IDirectoryScanner):
+    """
+    Concrete implementation of IDirectoryScanner that wraps scan_directory.
+    """
+
+    def __init__(self, ignore_engine: IgnoreEngine) -> None:
+        self._ignore_engine = ignore_engine
+
+    def scan_directory(self, root_path: Path) -> TreeItem:
+        return scan_directory(root_path, self._ignore_engine)

@@ -251,13 +251,8 @@ class TokenDisplayService(QObject):
             # Invalidate folder cache vi file token da thay doi
             self.invalidate_folder_cache(path)
 
-            # Emit signal de UI tu update (thread-safe qua Qt signal mechanism)
             if not self._is_disposed:
-                from infrastructure.adapters.qt_utils import run_on_main_thread
-
-                run_on_main_thread(
-                    lambda: self.cache_updated.emit() if not self._is_disposed else None
-                )
+                self.cache_updated.emit()
 
         except Exception as e:
             from shared.logging_config import log_debug
@@ -438,13 +433,8 @@ class TokenDisplayService(QObject):
                     with self._lock:
                         self._cache[path] = 0
 
-            # Emit signal sau khi batch hoan thanh
             if not self._is_disposed and is_counting_tokens():
-                from infrastructure.adapters.qt_utils import run_on_main_thread
-
-                run_on_main_thread(
-                    lambda: self.cache_updated.emit() if not self._is_disposed else None
-                )
+                self.cache_updated.emit()
 
         # Clear old deferred timers before scheduling new ones
         self._cancel_all_deferred_timers()

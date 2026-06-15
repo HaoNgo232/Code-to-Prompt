@@ -8,7 +8,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from PySide6.QtCore import QCoreApplication, QTimer
-from infrastructure.adapters.qt_utils import schedule_background
+from presentation.utils.qt_utils import schedule_background
 
 
 def heavy_task():

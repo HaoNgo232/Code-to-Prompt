@@ -333,6 +333,7 @@ def collect_files_from_disk(
 
     return result
 
+
 from domain.ports.workspace_scanner import IWorkspaceScanner
 
 

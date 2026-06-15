@@ -1014,7 +1014,7 @@ class FileTreeModel(QAbstractItemModel):
                     self._search_index_ready = True
                     # FIX: Khi index xong, can re-resolve selection de count tokens cac files o vung chua load
                     if self._selection_mgr.count() > 0:
-                        from infrastructure.adapters.qt_utils import run_on_main_thread
+                        from presentation.utils.qt_utils import run_on_main_thread
 
                         run_on_main_thread(
                             lambda: self.selection_changed.emit(

@@ -48,7 +48,7 @@ from PySide6.QtGui import QIcon
 
 from presentation.config.theme import ThemeColors, ThemeFonts, apply_theme
 from presentation.components.qt_utils import create_colored_icon
-from infrastructure.adapters.qt_utils import (
+from presentation.utils.qt_utils import (
     get_signal_bridge,
 )
 from infrastructure.adapters.threading_utils import shutdown_all, set_active_view
@@ -564,7 +564,7 @@ class SynapseMainWindow(QMainWindow):
             # branch is Optional[str] but signal emits object
             self._cached_git_branch = branch if isinstance(branch, str) else None
 
-        from infrastructure.adapters.qt_utils import schedule_background
+        from presentation.utils.qt_utils import schedule_background
 
         schedule_background(_detect, on_result=_on_result)
 

@@ -295,9 +295,9 @@ _OUTPUT_FORMAT_PATH = _TEMPLATES_DIR / "_output_format.md"
 def _get_output_language() -> str:
     """Doc output_language tu settings, fallback ve Vietnamese."""
     try:
-        from infrastructure.persistence.settings_manager import load_app_settings
+        from domain.ports.registry import DomainRegistry
 
-        return load_app_settings().output_language
+        return DomainRegistry.settings().output_language
     except Exception:
         return "Vietnamese"
 

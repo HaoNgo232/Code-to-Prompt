@@ -139,7 +139,7 @@ $hiddenImports = @(
     "infrastructure.adapters.safe_timer",
     "infrastructure.adapters.security_check",
     "infrastructure.adapters.token_display",
-    "infrastructure.adapters.qt_utils",
+    "presentation.utils.qt_utils",
     # --- Filesystem / Git ---
     "infrastructure.filesystem.file_watcher.service",
     "infrastructure.filesystem.file_actions",

@@ -24,7 +24,6 @@ from domain.workflow.shared.handoff_formatter import (
 )
 from domain.prompt.generator import generate_file_map
 from domain.codemap.graph_builder import CodeMapBuilder
-from infrastructure.filesystem.file_utils import scan_directory
 from domain.workflow.test_analyzer import (
     AnalysisResult,
     analyze_test_coverage,
@@ -172,10 +171,9 @@ def run_test_builder(
     framework = test_framework or detect_test_framework(ws)
 
     # Buoc 4: Build file map
-    from infrastructure.filesystem.ignore_engine import IgnoreEngine
+    from domain.ports.registry import DomainRegistry
 
-    ignore_engine = IgnoreEngine()
-    tree = scan_directory(ws, ignore_engine)
+    tree = DomainRegistry.directory_scanner().scan_directory(ws)
 
     # Tap hop tat ca files can hien thi trong map
     all_relevant_paths = set(

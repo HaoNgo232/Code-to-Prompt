@@ -42,7 +42,7 @@ from PySide6.QtCore import (
 
 from presentation.config.theme import ThemeColors
 from presentation.components.qt_utils import create_colored_icon
-from infrastructure.adapters.qt_utils import DebouncedTimer
+from presentation.utils.qt_utils import DebouncedTimer
 from infrastructure.filesystem.ignore_engine import IgnoreEngine
 from presentation.components.file_tree.file_tree_model import (
     FileTreeModel,

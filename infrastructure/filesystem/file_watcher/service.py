@@ -111,11 +111,12 @@ class FileWatcher(IFileWatcherService):
                 debouncer=self._debouncer,
             )
 
-            # Optimization: Move observer initialization to background thread
-            # inotify _add_dir_watch recursive can take SECONDS on Large Projects.
-            from infrastructure.adapters.qt_utils import schedule_background
+            import threading
 
-            schedule_background(self._start_observer_bg, None, None, None, str(path))
+            thread = threading.Thread(
+                target=self._start_observer_bg, args=(str(path),), daemon=True
+            )
+            thread.start()
 
             self._current_path = path
             log_info(f"[FileWatcher] Started watching: {path}")
@@ -148,18 +149,14 @@ class FileWatcher(IFileWatcherService):
         self._handler = None
 
         if self._observer is not None:
-            # Optimization: Move observer stop/join to background thread
-            # stopping 20k+ inotify watches is EXTREMELY slow (SECONDS).
-            from infrastructure.adapters.qt_utils import schedule_background
+            import threading
 
-            schedule_background(
-                self._stop_observer_bg,
-                None,
-                None,
-                None,
-                self._observer,
-                self._current_path,
+            thread = threading.Thread(
+                target=self._stop_observer_bg,
+                args=(self._observer, self._current_path),
+                daemon=True,
             )
+            thread.start()
             self._observer = None
 
         self._current_path = None

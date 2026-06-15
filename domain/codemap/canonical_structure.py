@@ -145,9 +145,10 @@ def build_canonical_summary(
                     max_files=max_repo_map_files,
                 )
             else:
-                from infrastructure.adapters.ast_parser import generate_repo_map
+                from domain.ports.registry import DomainRegistry
 
-                repo_map = generate_repo_map(
+                repo_map = _generate_repo_map_with_parser(
+                    DomainRegistry.ast_parser(),
                     source_files,
                     workspace_root=workspace_root,
                     max_files=max_repo_map_files,

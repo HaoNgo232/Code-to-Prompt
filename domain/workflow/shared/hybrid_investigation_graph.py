@@ -172,9 +172,9 @@ def build_hybrid_investigation_graph(
     # Depth 3: Recent git changes
     if max_depth >= 3:
         try:
-            from infrastructure.git.git_utils import get_git_logs
+            from domain.ports.registry import DomainRegistry
 
-            logs = get_git_logs(workspace_root, max_commits=10)
+            logs = DomainRegistry.git_service().get_logs(workspace_root, max_commits=10)
             if logs and logs.commits:
                 changed_files_set: Set[str] = set()
                 for commit in logs.commits[:10]:
