@@ -123,7 +123,7 @@ def _count_tokens_for_file_no_cache(
             if cached is not None:
                 return cached
 
-        from infrastructure.filesystem.file_utils import is_binary_file
+        from shared.utils.file_utils import is_binary_file
 
         if is_binary_file(file_path):
             return 0
@@ -177,7 +177,7 @@ def count_tokens_for_file(
             if cached is not None:
                 return cached
 
-        from infrastructure.filesystem.file_utils import is_binary_file
+        from shared.utils.file_utils import is_binary_file
 
         if is_binary_file(file_path):
             return 0
