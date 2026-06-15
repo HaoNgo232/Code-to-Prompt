@@ -115,7 +115,14 @@ def context_view(qtbot):
     mock_clipboard_service = MagicMock()
 
     mock_app_settings = MagicMock()
-    mock_app_settings.output_format = None
+    mock_app_settings.output_format = "xml"
+    mock_app_settings.copy_mode = "full"
+    mock_app_settings.tree_map_only = False
+    mock_app_settings.git_commit_depth = 0
+    mock_app_settings.include_git_changes = False
+    mock_app_settings.include_full_tree = False
+    mock_app_settings.excluded_folders = ""
+    mock_app_settings.rule_file_names = []
 
     with (
         patch(
