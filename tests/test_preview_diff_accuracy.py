@@ -39,6 +39,7 @@ def test_preview_diff_exact_match(tmp_path: Path) -> None:
 
     # 3. So sánh
     from domain.diff.generator import generate_diff_lines
+
     # Chuẩn hóa line endings của original_content giống như Python read_text()
     original_normalized = original_content.replace("\r\n", "\n")
     expected_diff = generate_diff_lines(original_normalized, applied_content, file_name)
@@ -81,6 +82,7 @@ def test_preview_diff_eol_normalization(tmp_path: Path) -> None:
 
     # 3. So sánh preview diff với diff thực tế
     from domain.diff.generator import generate_diff_lines
+
     # Chuẩn hóa line endings của original_content giống như Python read_text()
     original_normalized = original_content.replace("\r\n", "\n")
     expected_diff = generate_diff_lines(original_normalized, applied_content, file_name)
@@ -122,6 +124,7 @@ def test_preview_diff_normalized_whitespace(tmp_path: Path) -> None:
 
     # 3. So sánh
     from domain.diff.generator import generate_diff_lines
+
     original_normalized = original_content.replace("\r\n", "\n")
     expected_diff = generate_diff_lines(original_normalized, applied_content, file_name)
 
@@ -161,6 +164,7 @@ def test_preview_diff_fuzzy_match(tmp_path: Path) -> None:
 
     # 3. So sánh
     from domain.diff.generator import generate_diff_lines
+
     original_normalized = original_content.replace("\r\n", "\n")
     expected_diff = generate_diff_lines(original_normalized, applied_content, file_name)
 

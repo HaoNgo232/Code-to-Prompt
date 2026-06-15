@@ -208,19 +208,25 @@ class PromptBuildService:
                 mode=mode,
                 include_git_diff=include_git_changes,
                 tree_map_only=False,
-                output_style=style
+                output_style=style,
             )
 
         # Overwrite parameter values with CopyConfig fields
         include_git_changes = config.include_git_diff
         output_style = config.output_style
-        include_xml_formatting = (config.mode == CopyMode.APPLY)
+        include_xml_formatting = config.mode == CopyMode.APPLY
 
         # Internal format string representation for legacy checkers/generators
         if config.mode == CopyMode.SMART:
-            legacy_format = "compress_plain" if config.output_style == OutputStyle.PLAIN else "compress"
+            legacy_format = (
+                "compress_plain"
+                if config.output_style == OutputStyle.PLAIN
+                else "compress"
+            )
         else:
-            legacy_format = "plain" if config.output_style == OutputStyle.PLAIN else "xml"
+            legacy_format = (
+                "plain" if config.output_style == OutputStyle.PLAIN else "xml"
+            )
 
         # Initialize variables de tranh loi uninitialized
         file_map = ""

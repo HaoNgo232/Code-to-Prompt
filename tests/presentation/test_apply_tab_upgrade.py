@@ -78,7 +78,7 @@ def test_summary_label_shows_filenames(qtbot) -> None:
     assert view._summary_label is not None
     assert not view._summary_label.isHidden()
     summary_text = view._summary_label.text()
-    assert "Tìm thấy 2 thay đổi trong 2 file" in summary_text
+    assert "Found 2 changes in 2 files" in summary_text
     assert "src/a.py" in summary_text
     assert "src/b.py" in summary_text
 
@@ -188,5 +188,5 @@ def test_summary_shows_success_after_apply(qtbot, monkeypatch) -> None:
     # Chờ để đảm bảo debounce không chạy đè
     qtbot.wait(900)
 
-    assert "Đã áp dụng 1 thay đổi thành công" in view._summary_label.text()
+    assert "Successfully applied 1 changes" in view._summary_label.text()
     assert not view._summary_label.isHidden()

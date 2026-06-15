@@ -81,49 +81,49 @@ class BuiltInTemplateProvider(TemplateProvider):
             "bug_hunter": TemplateInfo(
                 template_id="bug_hunter",
                 display_name="Bug Hunter",
-                description="Tìm lỗi logic, race conditions, edge cases và exceptions chưa xử lý",
+                description="Find logic errors, race conditions, edge cases, and unhandled exceptions",
                 is_custom=False,
                 has_lite=True,
             ),
             "security_auditor": TemplateInfo(
                 template_id="security_auditor",
                 display_name="Security Auditor",
-                description="Kiểm tra lỗ hổng bảo mật theo OWASP Top 10, phát hiện secrets và hardcoded credentials",
+                description="Check security vulnerabilities according to OWASP Top 10, detect secrets and hardcoded credentials",
                 is_custom=False,
                 has_lite=True,
             ),
             "doc_generator": TemplateInfo(
                 template_id="doc_generator",
                 display_name="Documentation Generator",
-                description="Tạo hoặc cập nhật README, tài liệu kiến trúc từ codebase (chế độ cập nhật thông minh)",
+                description="Create or update README, architecture documentation from codebase (smart update mode)",
                 is_custom=False,
                 has_lite=True,
             ),
             "performance_optimizer": TemplateInfo(
                 template_id="performance_optimizer",
                 display_name="Performance Optimizer",
-                description="Phân tích Big O, memory leaks, blocking operations và đề xuất tối ưu hóa",
+                description="Analyze Big O, memory leaks, blocking operations, and propose optimizations",
                 is_custom=False,
                 has_lite=True,
             ),
             "test_writer": TemplateInfo(
                 template_id="test_writer",
                 display_name="Test Writer",
-                description="Tạo Unit Tests, Integration Tests theo AAA pattern và nguyên tắc TDD",
+                description="Create Unit Tests, Integration Tests following the AAA pattern and TDD principles",
                 is_custom=False,
                 has_lite=True,
             ),
             "architecture_reviewer": TemplateInfo(
                 template_id="architecture_reviewer",
                 display_name="Architecture Reviewer",
-                description="Review kiến trúc tổng thể, SOLID compliance, design patterns và long-term maintainability",
+                description="Review overall architecture, SOLID compliance, design patterns, and long-term maintainability",
                 is_custom=False,
                 has_lite=True,
             ),
             "code_explainer": TemplateInfo(
                 template_id="code_explainer",
                 display_name="Code Explainer",
-                description="Giải thích kiến trúc, components và execution flows để onboard nhanh vào codebase mới",
+                description="Explain architecture, components, and execution flows for fast onboarding into a new codebase",
                 is_custom=False,
                 has_lite=True,
             ),
@@ -299,7 +299,7 @@ def _get_output_language() -> str:
 
         return load_app_settings().output_language
     except Exception:
-        return "Vietnamese (tiếng Việt có dấu)"
+        return "Vietnamese"
 
 
 def _get_output_format_only() -> str:

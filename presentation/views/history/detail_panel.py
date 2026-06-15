@@ -574,7 +574,7 @@ class HistoryDetailPanel(QWidget):
         reply = QMessageBox.question(
             self,
             "Delete Entry?",
-            f"Xóa entry #{entry_id}?\n\nThao tác này không thể hoàn tác.",
+            f"Delete entry #{entry_id}?\n\nThis operation cannot be undone.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

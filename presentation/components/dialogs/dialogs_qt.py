@@ -519,7 +519,7 @@ class DiffOnlyDialogQt(BaseDialogQt):
 
         # Nếu không có thay đổi và cũng không chọn include commits thì báo lỗi
         if not has_diff and num_commits == 0:
-            self._status.setText("Chưa có thay đổi nào")
+            self._status.setText("No changes yet")
             self._status.setStyleSheet(f"color: {ThemeColors.WARNING};")
             return
 
@@ -528,7 +528,7 @@ class DiffOnlyDialogQt(BaseDialogQt):
             return
         result = filtered
 
-        self._status.setText("Đang tạo prompt và lấy related files...")
+        self._status.setText("Generating prompt and retrieving related files...")
         self._status.setStyleSheet(f"color: {ThemeColors.TEXT_SECONDARY};")
 
         # Force UI update trước khi chạy tác vụ nặng đồng bộ
@@ -584,10 +584,10 @@ class DiffOnlyDialogQt(BaseDialogQt):
             if self.on_success:
                 files_str = f"{result.files_changed} files"
                 if related_count > 0:
-                    files_str += f" + {related_count} liên quan"
+                    files_str += f" + {related_count} related"
 
                 success_msg = (
-                    f"Đã sao chép diff! ({token_count:,} tokens, "
+                    f"Diff copied! ({token_count:,} tokens, "
                     f"+{result.insertions}/-{result.deletions} lines, "
                     f"{files_str})"
                 )
@@ -596,7 +596,7 @@ class DiffOnlyDialogQt(BaseDialogQt):
                 self.on_success(success_msg)
                 self.accept()
         else:
-            self._status.setText(f"Sao chép thất bại: {message}")
+            self._status.setText(f"Copy failed: {message}")
             self._status.setStyleSheet(f"color: {ThemeColors.ERROR};")
 
     def _on_copy_error(self, msg: str) -> None:

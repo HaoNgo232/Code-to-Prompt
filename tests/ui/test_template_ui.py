@@ -30,7 +30,8 @@ class TestTemplateUI:
         menu = view._template_menu
         # Tim action co text "My Custom Template (Custom)" (no la mot menu)
         custom_menu_action = next(
-            (a for a in menu.actions() if a.text() == "My Custom Template (Custom)"), None
+            (a for a in menu.actions() if a.text() == "My Custom Template (Custom)"),
+            None,
         )
         assert custom_menu_action is not None
         assert custom_menu_action.menu() is not None
@@ -85,5 +86,3 @@ class TestTemplateUI:
                 assert dialog_edit.desc_input.text() == "Desc"
                 assert dialog_edit.content_input.toPlainText() == "Content"
                 assert dialog_edit.btn_save.text() == "Update Template"
-
-

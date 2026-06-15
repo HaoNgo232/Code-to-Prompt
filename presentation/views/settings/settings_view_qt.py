@@ -759,14 +759,14 @@ class SettingsViewQt(QWidget):
         self._output_language_combo.setFixedHeight(34)
         self._output_language_combo.setStyleSheet(self._preset_combo.styleSheet())
         for lang in [
-            "Vietnamese (tiếng Việt có dấu)",
+            "Vietnamese",
             "English",
             "Japanese (日本語)",
             "Korean (한국어)",
         ]:
             self._output_language_combo.addItem(lang)
         self._output_language_combo.setCurrentText(
-            app_settings.output_language or "Vietnamese (tiếng Việt có dấu)"
+            app_settings.output_language or "Vietnamese"
         )
         self._output_language_combo.currentTextChanged.connect(self._mark_changed)
         card4b_layout.addWidget(self._output_language_combo)
@@ -1011,7 +1011,7 @@ class SettingsViewQt(QWidget):
             or "https://api.openai.com/v1",
             ai_model_id=self._ai_model_combo.currentText().strip(),
             output_language=self._output_language_combo.currentText().strip()
-            or "Vietnamese (tiếng Việt có dấu)",
+            or "Vietnamese",
         )
 
         # Immediate visual feedback
@@ -1084,7 +1084,7 @@ class SettingsViewQt(QWidget):
         self._security_toggle.setChecked(True)
         self._git_toggle.setChecked(True)
         self._relative_toggle.setChecked(True)
-        self._output_language_combo.setCurrentText("Vietnamese (tiếng Việt có dấu)")
+        self._output_language_combo.setCurrentText("Vietnamese")
 
         # Reset AI Context Builder fields
         self._ai_api_key_input.clear()

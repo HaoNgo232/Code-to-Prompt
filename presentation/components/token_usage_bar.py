@@ -9,7 +9,14 @@ Thay vì chỉ hiển thị text đơn điệu, component này cung cấp:
 
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QProgressBar, QSizePolicy
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QSizePolicy,
+)
 from presentation.config.theme import ThemeColors
 
 
@@ -33,21 +40,27 @@ class TokenUsageBar(QWidget):
         self._files_label.setStyleSheet(
             f"font-size: 10px; color: {ThemeColors.TEXT_MUTED}; font-weight: 600;"
         )
-        self._files_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        self._files_label.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred
+        )
 
         self._token_label = QLabel("Full: 0")
         self._token_label.setObjectName("tokenUsageFullLabel")
         self._token_label.setStyleSheet(
             f"font-size: 10px; color: {ThemeColors.TEXT_SECONDARY}; font-weight: 700;"
         )
-        self._token_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        self._token_label.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred
+        )
 
         self._smart_label = QLabel("")
         self._smart_label.setObjectName("tokenUsageSmartLabel")
         self._smart_label.setStyleSheet(
             f"font-size: 10px; color: {ThemeColors.TEXT_MUTED}; font-weight: 700;"
         )
-        self._smart_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        self._smart_label.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred
+        )
         self._smart_label.hide()
 
         stats_layout.addWidget(self._files_label)

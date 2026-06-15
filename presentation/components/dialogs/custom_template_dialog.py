@@ -158,7 +158,7 @@ class CustomTemplateDialog(QDialog):
 
             self.btn_save.setText("Update Template")
         except Exception as e:
-            QMessageBox.warning(self, "Lỗi", f"Không thể load dữ liệu template: {e}")
+            QMessageBox.warning(self, "Error", f"Cannot load template data: {e}")
 
     def _generate_filename(self, name: str) -> str:
         """Sinh ten file tu ten template, tranh ki tu dac biet."""
@@ -175,7 +175,7 @@ class CustomTemplateDialog(QDialog):
 
         if not name or not content:
             QMessageBox.warning(
-                self, "Lỗi", "Vui lòng nhập đầy đủ Tên và Nội dung cho Template."
+                self, "Error", "Please enter both Name and Content for the Template."
             )
             return
 
@@ -189,8 +189,8 @@ class CustomTemplateDialog(QDialog):
         ):
             reply = QMessageBox.question(
                 self,
-                "Ghi đè",
-                f"Template '{filename}' đã tồn tại.\nBạn có muốn ghi đè lên template hiện có không?",
+                "Overwrite",
+                f"Template '{filename}' already exists.\nDo you want to overwrite the existing template?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if reply == QMessageBox.StandardButton.No:
@@ -221,5 +221,7 @@ class CustomTemplateDialog(QDialog):
             self.accept()
         except Exception as e:
             QMessageBox.critical(
-                self, "Lỗi lưu file", f"Đã xảy ra lỗi khi lưu Template: {str(e)}"
+                self,
+                "Error Saving File",
+                f"An error occurred while saving the Template: {str(e)}",
             )

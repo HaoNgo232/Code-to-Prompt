@@ -367,14 +367,14 @@ class UIBuilderMixin:
 
         # Đổ dữ liệu format options
         descriptions = {
-            "xml": "Phân cấp rõ ràng với tag <file>, <instructions>. Tốt nhất cho các mô hình AI thông minh.",
-            "json": "Định dạng JSON chuẩn, dễ dàng để các hệ thống khác parse dữ liệu.",
-            "markdown": "Thân thiện với con người, dễ đọc trực tiếp trong chatbot.",
-            "text": "Chỉ gồm text thuần túy, không có cấu trúc đặc biệt, tiết kiệm token nhất.",
+            "xml": "Clear hierarchy with <file> and <instructions> tags. Best for smart AI models.",
+            "json": "Standard JSON format, easy for other systems to parse data.",
+            "markdown": "Human-friendly, easy to read directly in a chatbot.",
+            "text": "Plain text only, no special structure, most token-efficient.",
         }
 
         for cfg in OUTPUT_FORMATS.values():
-            tooltip = descriptions.get(cfg.id, f"Sử dụng định dạng {cfg.name}")
+            tooltip = descriptions.get(cfg.id, f"Use format {cfg.name}")
             action = self._format_menu.addAction(cfg.name)
             action.setData(cfg.id)
             action.setToolTip(tooltip)
@@ -935,14 +935,20 @@ class UIBuilderMixin:
             }}
         """
 
-        self._mode_full_btn.setToolTip("Sao chép toàn bộ nội dung file đã chọn")
-        self._mode_smart_btn.setToolTip("Chỉ sao chép cấu trúc code (AST signatures & docstrings)")
-        self._mode_apply_btn.setToolTip("Sao chép kèm theo chỉ dẫn Search/Replace (Aider-style)")
+        self._mode_full_btn.setToolTip("Copy entire content of selected files")
+        self._mode_smart_btn.setToolTip(
+            "Copy code structure only (AST signatures & docstrings)"
+        )
+        self._mode_apply_btn.setToolTip(
+            "Copy with Search/Replace instructions (Aider-style)"
+        )
 
         self._mode_group = QButtonGroup(container)
         self._mode_group.setExclusive(True)
 
-        for i, btn in enumerate((self._mode_full_btn, self._mode_smart_btn, self._mode_apply_btn)):
+        for i, btn in enumerate(
+            (self._mode_full_btn, self._mode_smart_btn, self._mode_apply_btn)
+        ):
             btn.setCheckable(True)
             btn.setStyleSheet(tab_style)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -1006,22 +1012,31 @@ class UIBuilderMixin:
         self._git_diff_cb.setStyleSheet(cb_style)
         self._git_diff_cb.setCursor(Qt.CursorShape.PointingHandCursor)
         self._git_diff_cb.setChecked(saved_settings.include_git_changes)
-        self._git_diff_cb.setToolTip("Include git diff changes of recent commits into the context")
+        self._git_diff_cb.setToolTip(
+            "Include git diff changes of recent commits into the context"
+        )
         git_diff_row.addWidget(self._git_diff_cb)
 
         git_diff_row.addSpacing(2)
 
         commit_depth_label = QLabel("Commits:")
-        commit_depth_label.setStyleSheet(f"font-size: 11px; color: {ThemeColors.TEXT_MUTED};")
-        commit_depth_label.setToolTip("Number of recent commits to analyze for git diff")
+        commit_depth_label.setStyleSheet(
+            f"font-size: 11px; color: {ThemeColors.TEXT_MUTED};"
+        )
+        commit_depth_label.setToolTip(
+            "Number of recent commits to analyze for git diff"
+        )
         git_diff_row.addWidget(commit_depth_label)
 
         from PySide6.QtWidgets import QSpinBox
+
         self._commit_depth_spin = QSpinBox()
         self._commit_depth_spin.setRange(0, 100)
         self._commit_depth_spin.setValue(saved_settings.git_commit_depth)
         self._commit_depth_spin.setFixedWidth(50)
-        self._commit_depth_spin.setToolTip("Select number of recent commits (0 means working tree diff only)")
+        self._commit_depth_spin.setToolTip(
+            "Select number of recent commits (0 means working tree diff only)"
+        )
         self._commit_depth_spin.setStyleSheet(f"""
             QSpinBox {{
                 background-color: {ThemeColors.BG_ELEVATED};
@@ -1079,6 +1094,7 @@ class UIBuilderMixin:
             if self._copy_controller:
                 self._copy_controller._prompt_cache.invalidate_all()
             self._update_token_display()
+
         self._git_diff_cb.toggled.connect(on_git_diff_toggled)
 
         def on_commit_depth_changed(val):
@@ -1086,6 +1102,7 @@ class UIBuilderMixin:
             if self._copy_controller:
                 self._copy_controller._prompt_cache.invalidate_all()
             self._update_token_display()
+
         self._commit_depth_spin.valueChanged.connect(on_commit_depth_changed)
 
         self._tree_map_only_cb = QCheckBox("Tree Map only")
@@ -1106,6 +1123,7 @@ class UIBuilderMixin:
             if self._copy_controller:
                 self._copy_controller._prompt_cache.invalidate_all()
             self._update_token_display()
+
         self._tree_map_only_cb.toggled.connect(on_tree_map_only_toggled)
         cb_layout.addWidget(self._tree_map_only_cb)
 
@@ -1129,7 +1147,7 @@ class UIBuilderMixin:
             QPushButton:disabled {{ background: {ThemeColors.BG_ELEVATED}; color: {ThemeColors.TEXT_MUTED}; }}
         """)
         self._copy_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._copy_btn.setToolTip("Sao chép context theo cấu hình hiện tại.")
+        self._copy_btn.setToolTip("Copy context according to current configuration.")
         self._copy_btn.clicked.connect(self._on_copy_clicked)
         layout.addWidget(self._copy_btn)
 
@@ -1170,13 +1188,13 @@ class UIBuilderMixin:
 
         _file_row, self._copy_as_file_toggle = create_toggle_row(
             "Copy as file",
-            "Lưu context vào một file tạm thời thay vì copy vào clipboard (hữu ích cho context cực lớn).",
+            "Save context to a temporary file instead of copying to clipboard (useful for extremely large contexts).",
         )
         opt_wrap.addLayout(_file_row)
 
         _tree_row, self._full_tree_toggle = create_toggle_row(
             "Include full tree",
-            "Đính kèm toàn bộ cấu trúc thư mục project vào prompt để AI nắm bắt được rõ hơn bức tranh tổng thể.",
+            "Attach the entire project directory structure to the prompt for the AI to better understand the overall structure.",
         )
         self._full_tree_toggle.setChecked(saved_settings.include_full_tree)
         self._full_tree_toggle.toggled.connect(
@@ -1196,7 +1214,9 @@ class UIBuilderMixin:
 
         self._opx_btn = QPushButton()
         self._opx_btn.setVisible(False)
-        self._opx_btn.clicked.connect(lambda: self._copy_controller.on_copy_context_requested(include_xml=True))
+        self._opx_btn.clicked.connect(
+            lambda: self._copy_controller.on_copy_context_requested(include_xml=True)
+        )
 
         self._diff_btn = QPushButton()
         self._diff_btn.setVisible(False)
@@ -1204,7 +1224,9 @@ class UIBuilderMixin:
 
         self._tree_map_btn = QPushButton()
         self._tree_map_btn.setVisible(False)
-        self._tree_map_btn.clicked.connect(self._copy_controller.on_copy_tree_map_requested)
+        self._tree_map_btn.clicked.connect(
+            self._copy_controller.on_copy_tree_map_requested
+        )
 
         return container
 

@@ -4,6 +4,7 @@ import warnings
 from typing import Dict, Any
 from presentation.config.output_format import OutputStyle
 
+
 class CopyMode(Enum):
     FULL = "full"
     SMART = "smart"
@@ -22,12 +23,13 @@ class CopyMode(Enum):
     @property
     def description(self) -> str:
         if self == CopyMode.FULL:
-            return "Sao chép toàn bộ nội dung file đã chọn"
+            return "Copy entire content of selected files"
         elif self == CopyMode.SMART:
-            return "Chỉ sao chép cấu trúc code (AST signatures & docstrings)"
+            return "Copy code structure only (AST signatures & docstrings)"
         elif self == CopyMode.APPLY:
-            return "Sao chép kèm theo chỉ dẫn Search/Replace (Aider-style)"
+            return "Copy with Search/Replace instructions (Aider-style)"
         raise ValueError(f"Unknown mode: {self}")
+
 
 @dataclass
 class CopyConfig:
@@ -43,7 +45,7 @@ class CopyConfig:
             "include_git_diff": self.include_git_diff,
             "tree_map_only": self.tree_map_only,
             "output_style": self.output_style.value,
-            "git_commit_depth": self.git_commit_depth
+            "git_commit_depth": self.git_commit_depth,
         }
 
     @classmethod
@@ -59,7 +61,7 @@ class CopyConfig:
             warnings.warn(
                 "Legacy mode 'compress' is deprecated. Use 'smart' instead.",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
             mode = CopyMode.SMART
         elif raw_mode == "copy_context":
@@ -77,5 +79,5 @@ class CopyConfig:
             include_git_diff=data.get("include_git_diff", False),
             tree_map_only=data.get("tree_map_only", False),
             output_style=output_style,
-            git_commit_depth=data.get("git_commit_depth", 0)
+            git_commit_depth=data.get("git_commit_depth", 0),
         )

@@ -76,8 +76,8 @@ class AppSettings:
     enable_ai_memory: bool = True
 
     # --- Output Language Settings ---
-    # Ngon ngu dau ra cho cac template reports (VD: "Vietnamese (tiếng Việt có dấu)", "English")
-    output_language: str = "Vietnamese (tiếng Việt có dấu)"
+    # Ngon ngu dau ra cho cac template reports (VD: "Vietnamese", "English")
+    output_language: str = "Vietnamese"
 
     # --- Prompt Template Settings ---
     # Tier cua built-in prompt templates: "lite" (mac dinh) hoac "pro"

@@ -167,9 +167,7 @@ class ContextViewQt(
         refresh_shortcut = QShortcut(QKeySequence("F5"), self)
         refresh_shortcut.activated.connect(
             lambda: (
-                self._tree_controller.refresh_tree()
-                if self._tree_controller
-                else None
+                self._tree_controller.refresh_tree() if self._tree_controller else None
             )
         )
 
@@ -387,29 +385,44 @@ class ContextViewQt(
 
     def is_smart_mode_active(self) -> bool:
         """Kiểm tra xem Smart Mode có đang active không."""
-        return self._mode_smart_btn.isChecked() if hasattr(self, "_mode_smart_btn") else False
+        return (
+            self._mode_smart_btn.isChecked()
+            if hasattr(self, "_mode_smart_btn")
+            else False
+        )
 
     def parent_widget(self):
         return self
 
     def get_copy_config(self) -> "CopyConfig":
         from domain.prompt.copy_mode import CopyConfig, CopyMode
+
         mode = CopyMode.FULL
         if hasattr(self, "_mode_smart_btn") and self._mode_smart_btn.isChecked():
             mode = CopyMode.SMART
         elif hasattr(self, "_mode_apply_btn") and self._mode_apply_btn.isChecked():
             mode = CopyMode.APPLY
 
-        include_git = self._git_diff_cb.isChecked() if hasattr(self, "_git_diff_cb") else False
-        tree_map_only = self._tree_map_only_cb.isChecked() if hasattr(self, "_tree_map_only_cb") else False
-        commit_depth = self._commit_depth_spin.value() if hasattr(self, "_commit_depth_spin") else 0
+        include_git = (
+            self._git_diff_cb.isChecked() if hasattr(self, "_git_diff_cb") else False
+        )
+        tree_map_only = (
+            self._tree_map_only_cb.isChecked()
+            if hasattr(self, "_tree_map_only_cb")
+            else False
+        )
+        commit_depth = (
+            self._commit_depth_spin.value()
+            if hasattr(self, "_commit_depth_spin")
+            else 0
+        )
 
         return CopyConfig(
             mode=mode,
             include_git_diff=include_git,
             tree_map_only=tree_map_only,
             output_style=self.get_output_style(),
-            git_commit_depth=commit_depth
+            git_commit_depth=commit_depth,
         )
 
     def _on_copy_clicked(self) -> None:
@@ -429,7 +442,11 @@ class ContextViewQt(
             self._copy_btn.setEnabled(enabled)
 
         # Enable/disable 3 mode buttons
-        tree_map_only = self._tree_map_only_cb.isChecked() if hasattr(self, "_tree_map_only_cb") else False
+        tree_map_only = (
+            self._tree_map_only_cb.isChecked()
+            if hasattr(self, "_tree_map_only_cb")
+            else False
+        )
         for btn in (
             getattr(self, "_mode_full_btn", None),
             getattr(self, "_mode_smart_btn", None),
@@ -446,15 +463,22 @@ class ContextViewQt(
                 cb.setEnabled(enabled)
 
         # Enable/disable commit depth spinbox và advanced config button
-        include_git = self._git_diff_cb.isChecked() if hasattr(self, "_git_diff_cb") else False
+        include_git = (
+            self._git_diff_cb.isChecked() if hasattr(self, "_git_diff_cb") else False
+        )
         if hasattr(self, "_commit_depth_spin") and self._commit_depth_spin is not None:
             self._commit_depth_spin.setEnabled(enabled and include_git)
-        if hasattr(self, "_mode_diff_config_btn") and self._mode_diff_config_btn is not None:
+        if (
+            hasattr(self, "_mode_diff_config_btn")
+            and self._mode_diff_config_btn is not None
+        ):
             self._mode_diff_config_btn.setEnabled(enabled)
 
         # Cập nhật text của _opx_btn cũ cho test tương thích ngược
         if hasattr(self, "_opx_btn"):
-            self._opx_btn.setText("Copy + Search/Replace" if enabled else "Processing...")
+            self._opx_btn.setText(
+                "Copy + Search/Replace" if enabled else "Processing..."
+            )
 
         for btn in (
             self._diff_btn,
@@ -776,8 +800,6 @@ class ContextViewQt(
         except ValueError:
             pass
 
-
-
     @Slot(object)
     def _on_template_selected(self, action) -> None:
         """Xu ly khi chon mot prompt template hoac action xoa template."""
@@ -799,8 +821,8 @@ class ContextViewQt(
             if action_type == "delete" and template_id:
                 reply = QMessageBox.question(
                     self,
-                    "Xóa Custom Template",
-                    "Bạn có chắc chắn muốn xóa template này không?",
+                    "Delete Custom Template",
+                    "Are you sure you want to delete this template?",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 )
                 if reply == QMessageBox.StandardButton.Yes:
@@ -983,7 +1005,7 @@ class ContextViewQt(
         reply = QMessageBox.question(
             self,
             "Clear History",
-            "Bạn có chắc chắn muốn xóa toàn bộ lịch sử Prompt không?",
+            "Are you sure you want to delete the entire Prompt history?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
@@ -1091,7 +1113,9 @@ class ContextViewQt(
         if key == current_key and getattr(self, "_smart_comparison_worker", None):
             return
 
-        self._smart_comparison_generation = getattr(self, "_smart_comparison_generation", 0) + 1
+        self._smart_comparison_generation = (
+            getattr(self, "_smart_comparison_generation", 0) + 1
+        )
         generation = self._smart_comparison_generation
         self._smart_comparison_key = key
         paths_snapshot = list(key)

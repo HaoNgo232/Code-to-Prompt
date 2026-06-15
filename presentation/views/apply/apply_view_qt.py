@@ -351,8 +351,8 @@ class ApplyViewQt(QWidget):
             f"}}"
         )
         self._copy_error_btn.setToolTip(
-            "Copy full error context bao gồm file content, OPX instruction, "
-            "và error messages để AI có thể fix tự động."
+            "Copy full error context including file content, OPX instruction, "
+            "and error messages so the AI can automatically fix it."
         )
         self._copy_error_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._copy_error_btn.clicked.connect(self._copy_error_context)
@@ -535,7 +535,7 @@ class ApplyViewQt(QWidget):
 
                 if self._summary_label:
                     self._summary_label.setText(
-                        f"Đã áp dụng {success_count} thay đổi thành công"
+                        f"Successfully applied {success_count} changes"
                     )
                     self._summary_label.setStyleSheet(
                         "font-size: 11px; color: #4ADE80; font-weight: 600; padding: 2px;"
@@ -1144,7 +1144,7 @@ class ApplyViewQt(QWidget):
 
             if self._summary_label:
                 self._summary_label.setText(
-                    f"Tìm thấy {num_changes} thay đổi trong {num_files} file: {files_str}"
+                    f"Found {num_changes} changes in {num_files} files: {files_str}"
                 )
                 self._summary_label.setStyleSheet(
                     f"font-size: 11px; color: {ThemeColors.PRIMARY}; font-weight: 600; padding: 2px;"
@@ -1154,7 +1154,7 @@ class ApplyViewQt(QWidget):
                 self._apply_btn.setEnabled(True)
         else:
             if self._summary_label:
-                self._summary_label.setText("Không tìm thấy patch hợp lệ")
+                self._summary_label.setText("No valid patch found")
                 self._summary_label.setStyleSheet(
                     f"font-size: 11px; color: {ThemeColors.ERROR}; font-weight: 600; padding: 2px;"
                 )

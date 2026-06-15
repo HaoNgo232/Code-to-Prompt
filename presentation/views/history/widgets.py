@@ -348,7 +348,7 @@ def _primary_button_style() -> str:
         QPushButton {{
             background-color: {ThemeColors.PRIMARY};
             color: white;
-            border: 1px solid transparent; /* Giúp khớp kích thước với nút ghost */
+            border: 1px solid transparent; /* Helps match size with ghost button */
             border-radius: 15px;
             padding: 0px 18px;
             font-size: 11px;

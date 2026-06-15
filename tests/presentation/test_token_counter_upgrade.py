@@ -169,7 +169,9 @@ def test_update_triggered_same_time_as_existing_counter(qtbot, monkeypatch):
         )
     )
 
-    def run_immediately(fn, on_result=None, on_error=None, on_finished=None, *args, **kwargs):
+    def run_immediately(
+        fn, on_result=None, on_error=None, on_finished=None, *args, **kwargs
+    ):
         result = fn(*args, **kwargs)
         if on_result:
             on_result(result)

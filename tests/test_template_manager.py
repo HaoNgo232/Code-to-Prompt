@@ -90,8 +90,6 @@ class TestLoadTemplate:
         assert "Performance Engineer" in content
         assert "memory" in content.lower()
 
-
-
     def test_load_nonexistent_raises_key_error(self):
         """Load template khong ton tai raise KeyError."""
         with pytest.raises(KeyError, match="khong ton tai"):

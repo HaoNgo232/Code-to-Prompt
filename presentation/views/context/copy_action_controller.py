@@ -658,6 +658,7 @@ class CopyActionController(QObject):
     def on_copy_requested(self) -> None:
         """Sao chép context dựa trên CopyConfig từ view."""
         from domain.prompt.copy_mode import CopyMode
+
         config = self._view.get_copy_config()
         destination = "file" if self._view.get_copy_as_file() else "text"
 
@@ -1062,12 +1063,13 @@ class CopyActionController(QObject):
                 """Heavy work - chay tren background thread."""
                 tree_item = self._view.scan_full_tree(workspace)
                 from domain.prompt.copy_mode import CopyConfig, CopyMode
+
                 config = CopyConfig(
                     mode=CopyMode.APPLY if include_xml else CopyMode.FULL,
                     include_git_diff=ui_config.include_git_diff,
                     tree_map_only=False,
                     output_style=ui_config.output_style,
-                    git_commit_depth=ui_config.git_commit_depth
+                    git_commit_depth=ui_config.git_commit_depth,
                 )
 
                 return self._view.get_prompt_builder().build_prompt(
@@ -1084,7 +1086,9 @@ class CopyActionController(QObject):
                     full_tree=self._view.get_full_tree(),
                 )
 
-            snapshot = {"copy_mode": "Copy + Search/Replace" if include_xml else "Copy Context"}
+            snapshot = {
+                "copy_mode": "Copy + Search/Replace" if include_xml else "Copy Context"
+            }
             if copy_destination == "file":
                 snapshot["copy_mode"] = f"{snapshot['copy_mode']} (File)"
 
@@ -1161,12 +1165,13 @@ class CopyActionController(QObject):
             assert workspace is not None
             tree_item = self._view.scan_full_tree(workspace)
             from domain.prompt.copy_mode import CopyConfig, CopyMode
+
             config = CopyConfig(
                 mode=CopyMode.SMART,
                 include_git_diff=ui_config.include_git_diff,
                 tree_map_only=False,
                 output_style=ui_config.output_style,
-                git_commit_depth=ui_config.git_commit_depth
+                git_commit_depth=ui_config.git_commit_depth,
             )
             return self._view.get_prompt_builder().build_prompt(
                 file_paths=[Path(p) for p in selected_path_strs],
@@ -1339,12 +1344,13 @@ class CopyActionController(QObject):
         def task() -> PromptResult:
             tree_item = self._view.scan_full_tree(workspace_path)
             from domain.prompt.copy_mode import CopyConfig, CopyMode
+
             config = CopyConfig(
                 mode=CopyMode.FULL,
                 include_git_diff=ui_config.include_git_diff,
                 tree_map_only=False,
                 output_style=ui_config.output_style,
-                git_commit_depth=ui_config.git_commit_depth
+                git_commit_depth=ui_config.git_commit_depth,
             )
 
             return self._view.get_prompt_builder().build_prompt(
