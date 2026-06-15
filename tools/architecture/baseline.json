@@ -40,6 +40,8 @@
     "presentation/components/token_stats_qt.py imports forbidden root 'domain'",
     "presentation/components/token_stats_qt.py imports forbidden root 'infrastructure'",
     "presentation/main_window.py imports forbidden root 'infrastructure'",
+    "presentation/service_container.py imports forbidden root 'domain'",
+    "presentation/service_container.py imports forbidden root 'infrastructure'",
     "presentation/views/apply/apply_view_qt.py imports forbidden root 'domain'",
     "presentation/views/apply/apply_view_qt.py imports forbidden root 'infrastructure'",
     "presentation/views/context/context_view_qt.py imports forbidden root 'domain'",

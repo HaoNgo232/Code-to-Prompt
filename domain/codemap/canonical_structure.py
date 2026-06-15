@@ -146,6 +146,7 @@ def build_canonical_summary(
                 )
             else:
                 from infrastructure.adapters.ast_parser import generate_repo_map
+
                 repo_map = generate_repo_map(
                     source_files,
                     workspace_root=workspace_root,

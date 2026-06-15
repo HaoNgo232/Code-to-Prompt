@@ -1046,8 +1046,6 @@ class CopyActionController(QObject):
         try:
             selected_path_strs = {str(p) for p in file_paths}
             use_rel = get_use_relative_paths()
-            output_style = self._view.get_output_style()
-            include_git = load_app_settings().include_git_changes
             ui_config = self._view.get_copy_config()
 
             copy_mode_base = "copy_opx" if include_xml else "copy_context"
@@ -1337,8 +1335,6 @@ class CopyActionController(QObject):
 
         gen = self._begin_copy_operation()
         use_rel = get_use_relative_paths()
-        output_style = self._view.get_output_style()
-        include_git = load_app_settings().include_git_changes
         ui_config = self._view.get_copy_config()
 
         def task() -> PromptResult:

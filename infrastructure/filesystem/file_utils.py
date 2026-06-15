@@ -12,9 +12,6 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
 import pathspec
-from shared.constants import (
-    BINARY_EXTENSIONS,
-)
 
 from infrastructure.filesystem.ignore_engine import IgnoreEngine
 
@@ -101,7 +98,7 @@ class TreeItem:
     is_loaded: bool = True  # True = đã scan, False = chưa scan (lazy)
 
 
-from shared.utils.file_utils import is_binary_file, is_binary_by_extension
+from shared.utils.file_utils import is_binary_file, is_binary_by_extension  # noqa: F401
 
 
 def is_system_path_str(path_str: str) -> bool:

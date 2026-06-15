@@ -92,6 +92,7 @@ def detect_scope_from_file_paths(
 
 from domain.workflow.interfaces.git_port import IGitService
 
+
 def detect_scope_from_git_diff(
     workspace_path: Path,
     max_depth: int = 1,
@@ -118,6 +119,7 @@ def detect_scope_from_git_diff(
             diff_result = git_service.get_diffs(workspace_path)
         else:
             from infrastructure.git.git_utils import get_git_diffs
+
             diff_result = get_git_diffs(workspace_path)
 
         if not diff_result:

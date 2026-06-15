@@ -109,11 +109,16 @@ _DIFF_GIT_HEADER_RE = re.compile(
 from shared.types.git_types import GitDiffResult, GitCommit, GitLogResult
 from domain.workflow.interfaces.git_port import IGitService
 
+
 class GitService(IGitService):
-    def get_diffs(self, root_path: Path, base_ref: Optional[str] = None) -> Optional[GitDiffResult]:
+    def get_diffs(
+        self, root_path: Path, base_ref: Optional[str] = None
+    ) -> Optional[GitDiffResult]:
         return get_git_diffs(root_path, base_ref)
 
-    def get_logs(self, root_path: Path, max_commits: int = 10) -> Optional[GitLogResult]:
+    def get_logs(
+        self, root_path: Path, max_commits: int = 10
+    ) -> Optional[GitLogResult]:
         return get_git_logs(root_path, max_commits)
 
 

@@ -1,10 +1,12 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 
+
 @dataclass
 class GitDiffResult:
     work_tree_diff: str = ""
     staged_diff: str = ""
+
 
 @dataclass
 class GitCommit:
@@ -12,6 +14,7 @@ class GitCommit:
     date: str
     message: str
     files: List[str] = field(default_factory=list)
+
 
 @dataclass
 class GitLogResult:

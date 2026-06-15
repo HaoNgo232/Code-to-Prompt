@@ -125,6 +125,7 @@ class BuildContextUseCase:
         )
 
         from infrastructure.git.git_utils import GitService
+
         git_service = GitService()
 
         def _run(context: WorkflowContext) -> None:
@@ -178,6 +179,7 @@ class CodeReviewUseCase:
         )
 
         from infrastructure.git.git_utils import GitService
+
         git_service = GitService()
 
         def _run(context: WorkflowContext) -> None:

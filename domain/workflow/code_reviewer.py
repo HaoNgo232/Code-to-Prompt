@@ -117,6 +117,7 @@ def run_code_review(
             diff_result = git_service.get_diffs(ws, base_ref=base_ref)
         else:
             from infrastructure.git.git_utils import get_git_diffs
+
             diff_result = get_git_diffs(ws, base_ref=base_ref)
 
         if not diff_result:

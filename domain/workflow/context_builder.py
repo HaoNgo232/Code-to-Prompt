@@ -135,6 +135,7 @@ def run_context_builder(
             git_diff_result = git_service.get_diffs(ws)
         else:
             from infrastructure.git.git_utils import get_git_diffs
+
             git_diff_result = get_git_diffs(ws)
 
         if git_diff_result and (

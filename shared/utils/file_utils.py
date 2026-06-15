@@ -1,5 +1,4 @@
 import os
-import re
 import stat
 from pathlib import Path
 from shared.constants import BINARY_EXTENSIONS
@@ -48,6 +47,7 @@ _TEXT_EXTENSIONS = frozenset(
     }
 )
 
+
 def is_binary_file(path_or_str: Path | str) -> bool:
     """
     Check xem một file có phải là binary không.
@@ -88,6 +88,7 @@ def is_binary_file(path_or_str: Path | str) -> bool:
             return b"\x00" in chunk
     except (PermissionError, OSError):
         return False
+
 
 def is_binary_by_extension(file_path: Path) -> bool:
     """
