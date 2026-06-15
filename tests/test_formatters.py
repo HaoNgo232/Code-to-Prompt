@@ -71,6 +71,20 @@ class TestFormatFilesXml:
         assert 'skipped="true"' in result
         assert "Binary file" in result
 
+    def test_file_with_dependencies(self) -> None:
+        """Kiểm tra file có dependencies được render đúng XML tag."""
+        entries = [_make_entry(dependencies=["dep1.py", "dep2.py"])]
+        result = format_files_xml(entries)
+        assert "<dependencies>" in result
+        assert "<import>dep1.py</import>" in result
+        assert "<import>dep2.py</import>" in result
+
+    def test_content_cdata_escaping(self) -> None:
+        """Kiểm tra escape CDATA khi nội dung chứa ]]>."""
+        entries = [_make_entry(content="code ]]> end")]
+        result = format_files_xml(entries)
+        assert "]]]]><![CDATA[>" in result
+
 
 class TestGenerateFileSummaryXml:
     """Kiểm tra generate_file_summary_xml()."""
@@ -99,6 +113,19 @@ class TestGenerateSmartSummaryXml:
         assert "<notes>" in result
 
 
+class TestGenerateFileSummaryXmlMinimal:
+    """Kiểm tra generate_file_summary_xml_minimal()."""
+
+    def test_contains_required_sections(self) -> None:
+        """Minimal XML summary chứa các sections tối giản cho OPX."""
+        from domain.prompt.formatters.xml import generate_file_summary_xml_minimal
+        result = generate_file_summary_xml_minimal()
+        assert "<file_summary>" in result
+        assert "<purpose>" in result
+        assert "<usage_guidelines>" in result
+        assert "<agent_role>" not in result  # Minimal should NOT contain agent_role
+
+
 # ===========================================================================
 # Plain Formatter Tests
 # ===========================================================================
@@ -123,6 +150,33 @@ class TestFormatFilesPlain:
         entries = [_make_entry(content=None, error="Binary file")]
         result = format_files_plain(entries)
         assert "Binary file (skipped)" in result
+
+    def test_large_file_skip_message(self) -> None:
+        """Kiểm tra hiển thị bỏ qua file quá lớn."""
+        entries = [_make_entry(content=None, error="File too large (10MB)")]
+        result = format_files_plain(entries)
+        assert "File too large (10MB) (skipped)" in result
+
+    def test_other_error_message(self) -> None:
+        """Kiểm tra hiển thị lỗi khác."""
+        entries = [_make_entry(content=None, error="Permission denied")]
+        result = format_files_plain(entries)
+        assert "Permission denied" in result
+        assert "(skipped)" not in result
+
+    def test_entry_no_content_no_error(self) -> None:
+        """Kiểm tra khi content=None và error=None."""
+        entries = [_make_entry(content=None, error=None)]
+        result = format_files_plain(entries)
+        assert "FILE: test.py" in result
+        # Không có nội dung hiển thị
+        assert result.strip().endswith("---")
+
+    def test_file_with_dependencies(self) -> None:
+        """Kiểm tra render plain text khi file có dependencies."""
+        entries = [_make_entry(dependencies=["dep1.py", "dep2.py"])]
+        result = format_files_plain(entries)
+        assert "DEPENDS ON: dep1.py, dep2.py" in result
 
     def test_multiple_files_separated(self) -> None:
         """Kiểm tra nhiều file được phân tách bằng double newlines."""

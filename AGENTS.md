@@ -161,7 +161,7 @@ _(Note: There are no specific standalone `.cursorrules` or Copilot instruction f
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **Synapse-Desktop** (11656 symbols, 21544 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **Synapse-Desktop** (12049 symbols, 22478 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

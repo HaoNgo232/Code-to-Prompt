@@ -427,7 +427,7 @@ class HistoryDetailPanel(QWidget):
 
             def _toggle_files(btn=more_btn, container=hidden_container, rem=remaining):
                 """Toggle hien/an cac files con lai."""
-                is_visible = container.isVisible()
+                is_visible = not container.isHidden()
                 container.setVisible(not is_visible)
                 btn.setText(f"Show {rem} more files" if is_visible else "Collapse")
 
@@ -539,7 +539,7 @@ class HistoryDetailPanel(QWidget):
 
             def _toggle_errors(btn=more_btn, container=hidden_container, rem=remaining):
                 """Toggle hien/an cac errors con lai."""
-                is_visible = container.isVisible()
+                is_visible = not container.isHidden()
                 container.setVisible(not is_visible)
                 btn.setText(
                     f"Show {rem} more errors..." if is_visible else "Collapse errors"
