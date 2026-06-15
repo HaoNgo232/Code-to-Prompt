@@ -214,6 +214,9 @@ class ApplyViewQt(QWidget):
         # Summary label
         self._summary_label = QLabel()
         self._summary_label.setWordWrap(True)
+        self._summary_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        self._summary_label.setOpenExternalLinks(False)
+        self._summary_label.linkActivated.connect(self._show_affected_files_menu)
         self._summary_label.setStyleSheet(
             f"font-size: 11px; color: {ThemeColors.TEXT_MUTED}; font-weight: 500; margin-top: 4px; padding-left: 2px;"
         )
@@ -1126,6 +1129,47 @@ class ApplyViewQt(QWidget):
 
         self._update_detection_ui()
 
+    @Slot(str)
+    def _show_affected_files_menu(self, link_text: str) -> None:
+        """Hiển thị Popup Menu chứa các file bị ảnh hưởng."""
+        if not self._detection_result or not self._detection_result.affected_files:
+            return
+
+        from PySide6.QtWidgets import QMenu
+        menu = QMenu(self)
+        menu.setStyleSheet(
+            f"QMenu {{"
+            f"  background-color: {ThemeColors.BG_ELEVATED};"
+            f"  border: 1px solid {ThemeColors.BORDER};"
+            f"  border-radius: 6px;"
+            f"  padding: 4px 0px;"
+            f"}}"
+            f"QMenu::item {{"
+            f"  padding: 6px 16px;"
+            f"  color: {ThemeColors.TEXT_PRIMARY};"
+            f"  font-family: 'Cascadia Code', 'Fira Code', monospace;"
+            f"  font-size: 11px;"
+            f"}}"
+            f"QMenu::item:selected {{"
+            f"  background-color: {ThemeColors.PRIMARY};"
+            f"  color: white;"
+            f"}}"
+        )
+
+        for file_path in self._detection_result.affected_files:
+            action = menu.addAction(f"📄  {file_path}")
+            action.setToolTip("Click to copy file path")
+            action.triggered.connect(
+                lambda checked=False, p=file_path: (
+                    copy_to_clipboard(p),
+                    self._show_status(f"Copied: {p}")
+                )
+            )
+
+        pos = self._summary_label.mapToGlobal(self._summary_label.rect().bottomLeft())
+        pos.setY(pos.y() + 4)
+        menu.exec(pos)
+
     def _update_detection_ui(self) -> None:
         """Cập nhật trạng thái hiển thị của Summary Label và Apply Button."""
         text = self._opx_input.toPlainText().strip()
@@ -1144,21 +1188,12 @@ class ApplyViewQt(QWidget):
             )
             num_files = len(self._detection_result.affected_files)
 
-            # Rút gọn danh sách file hiển thị để tránh vỡ UI
-            files_list = self._detection_result.affected_files
-            if len(files_list) > 3:
-                displayed_files = (
-                    ", ".join(files_list[:3]) + f" and {len(files_list) - 3} more..."
-                )
-            else:
-                displayed_files = ", ".join(files_list)
-
             if self._summary_label:
                 self._summary_label.setText(
-                    f"Found {num_changes} changes in {num_files} files: {displayed_files}"
+                    f"Found {num_changes} changes in {num_files} affected files. "
+                    f"<a href='show_files' style='color: {ThemeColors.PRIMARY}; text-decoration: none; font-weight: bold;'>[Show Files]</a>"
                 )
-                # Đưa danh sách file đầy đủ vào Tooltip
-                self._summary_label.setToolTip("\n".join(files_list))
+                self._summary_label.setToolTip("")
                 self._summary_label.setStyleSheet(
                     f"font-size: 11px; color: {ThemeColors.PRIMARY}; font-weight: 600; "
                     f"background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); "
