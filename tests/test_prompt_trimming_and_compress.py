@@ -83,3 +83,28 @@ class TestPromptTrimmingAndCompress:
         # Định dạng compress phải sinh ra cấu trúc XML có tag <smart_context>
         assert "<smart_context>" in result.prompt_text
         assert "main.py" in result.prompt_text
+
+    def test_smart_context_empty_and_no_symbols_files(self, workspace: Path) -> None:
+        """Kiểm tra tạo prompt với Smart Context cho các file rỗng hoặc chỉ có expression."""
+        tokenization_service = get_tokenization_service()
+        service = PromptBuildService(tokenization_service=tokenization_service)
+
+        # Tạo file rỗng và file chỉ chứa print
+        (workspace / "empty.py").write_text("", encoding="utf-8")
+        (workspace / "script.py").write_text("print('hello world')", encoding="utf-8")
+
+        file_paths: List[Path] = [workspace / "empty.py", workspace / "script.py"]
+
+        result = service.build_prompt_full(
+            file_paths=file_paths,
+            workspace=workspace,
+            instructions="Phân tích",
+            output_format="compress",
+            include_git_changes=False,
+            use_relative_paths=True,
+        )
+
+        # Đảm bảo không chứa thông báo lỗi Skipped
+        assert "Smart Context parse failed" not in result.prompt_text
+        assert "empty.py" in result.prompt_text
+        assert "script.py" in result.prompt_text

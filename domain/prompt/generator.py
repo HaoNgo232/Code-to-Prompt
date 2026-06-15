@@ -328,7 +328,7 @@ def _generate_codemap_xml_elements(
                 smart_content = smart_parse(
                     path_str, raw_content, include_relationships=False
                 )
-                if smart_content:
+                if smart_content is not None:
                     elements.append(
                         f'  <file path="{_xml_attr_escape(display_path)}" context="codemap">\n'
                         f"    <content><![CDATA[\n{smart_content}\n]]></content>\n"
@@ -434,7 +434,7 @@ def generate_file_contents_plain(
                         smart_content = smart_parse(
                             path_str, raw_content, include_relationships=False
                         )
-                        if smart_content:
+                        if smart_content is not None:
                             # Standardize plaintext header to match format_files_plain (FILE: path)
                             parts.append(
                                 f"FILE: {display_path} [codemap]\n"
@@ -534,7 +534,7 @@ def generate_smart_context(
                 workspace_root=str(workspace_root) if workspace_root else None,
             )
 
-            if smart_content:
+            if smart_content is not None:
                 return (path, smart_content, None)
             else:
                 return (path, None, "Smart Context parse failed")
