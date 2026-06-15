@@ -78,7 +78,13 @@ class ServiceContainer:
         from infrastructure.filesystem.file_utils import ConcreteDirectoryScanner
         from infrastructure.git.git_utils import GitService
         from infrastructure.adapters.ast_parser import AstParser
-        from infrastructure.persistence.settings_manager import load_app_settings
+        from infrastructure.persistence.settings_manager import load_app_settings, SettingsService
+        from infrastructure.adapters.security_check import SecurityScannerAdapter
+        from infrastructure.git.repo_manager import RepoManager
+        from infrastructure.persistence.recent_folders import RecentFoldersService
+        from infrastructure.persistence.session_state import SessionStateService
+        from infrastructure.filesystem.file_actions import FileActionsService
+        from infrastructure.filesystem.file_watcher.service import FileWatcher
 
         DomainRegistry.register_tokenization_service(self._tokenization_service)
         DomainRegistry.register_workspace_scanner(WorkspaceScanner())
@@ -88,6 +94,18 @@ class ServiceContainer:
         DomainRegistry.register_git_service(GitService())
         DomainRegistry.register_ast_parser(AstParser())
         DomainRegistry.register_settings_provider(load_app_settings)
+
+        # Register Clean Architecture ports concrete adapters
+        DomainRegistry.register_security_scanner(SecurityScannerAdapter())
+        DomainRegistry.register_repo_manager(RepoManager())
+        DomainRegistry.register_settings_service(SettingsService())
+        DomainRegistry.register_recent_folders(RecentFoldersService())
+        DomainRegistry.register_session_state(SessionStateService())
+        DomainRegistry.register_cache_registry(self.cache_registry)
+        DomainRegistry.register_file_actions_service(FileActionsService())
+        DomainRegistry.register_file_watcher_service(FileWatcher())
+        DomainRegistry.register_clipboard_service(self.clipboard)
+        DomainRegistry.register_ignore_engine(self.ignore_engine)
 
         # Backward compatibility for old encoder_registry wrapper
         try:
