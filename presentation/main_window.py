@@ -192,7 +192,7 @@ class SynapseMainWindow(QMainWindow):
             self._services = app._service_container
         else:
             # Fallback if not set (shouldn't happen in normal flow)
-            from application.services.service_container import ServiceContainer
+            from presentation.service_container import ServiceContainer
 
             self._services = ServiceContainer()
 
@@ -904,7 +904,7 @@ def main() -> None:
     # NOTE: Sau khi Phase 2 hoan tat, cac adapters se dang ky vao container.cache_registry
     # Tao ServiceContainer truoc de co ignore_engine
     # (container se duoc dung lai khi tao views ben duoi)
-    from application.services.service_container import ServiceContainer as _SC
+    from presentation.service_container import ServiceContainer as _SC
     from infrastructure.adapters.cache_adapters import register_all_caches
 
     _boot_container = _SC()
