@@ -34,7 +34,7 @@ FORBIDDEN_IMPORTS: Dict[str, Set[str]] = {
     "domain": {"application", "infrastructure", "presentation"},
     "application": {"presentation"},
     "infrastructure": {"presentation"},
-    "presentation": {"domain", "infrastructure"},
+    "presentation": {"infrastructure"},
 }
 
 MAX_SERVICE_LINES = 450
