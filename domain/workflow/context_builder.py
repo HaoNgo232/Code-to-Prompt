@@ -24,7 +24,7 @@ from domain.workflow.shared.handoff_formatter import (
 from domain.prompt.generator import generate_file_map
 from domain.codemap.graph_builder import CodeMapBuilder
 from infrastructure.filesystem.file_utils import scan_directory
-from application.services.tokenization_service import TokenizationService
+from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 from domain.workflow.interfaces.git_port import IGitService
 
@@ -64,7 +64,7 @@ def run_context_builder(
     include_git_changes: bool = False,
     include_relationships: bool = True,
     output_file: Optional[str] = None,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
     git_service: Optional[IGitService] = None,
 ) -> BuildResult:
     """
@@ -79,7 +79,7 @@ def run_context_builder(
         include_git_changes: Có bao gồm git diffs không
         include_relationships: Có bao gồm dependency relationships không
         output_file: Optional path để ghi prompt ra file (cho cross-agent handoff)
-        tokenization_service: Optional TokenizationService (inject)
+        tokenization_service: Optional ITokenizationService (inject)
         git_service: Optional IGitService port
 
     Returns:
@@ -96,7 +96,12 @@ def run_context_builder(
             raise DomainValidationError("output_file path traversal detected")
 
     # Initialize tokenization service
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Step 1: Detect scope
     if not file_paths:

@@ -1,19 +1,13 @@
 """
-Error Context Builder - Tao context loi cho AI de fix
-
-Tao error context day du de AI co the hieu va fix ngay:
-- Thong tin loi chi tiet
-- Previous operations da thanh cong
-- Search patterns that failed
-- Instructions ro rang de fix
+Formatting helpers and dataclasses for Error Context Builder.
 """
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
 from application.services.preview_analyzer import PreviewRow, PreviewData
-from infrastructure.adapters.clipboard_utils import copy_to_clipboard
 
 
 @dataclass
@@ -28,102 +22,7 @@ class ApplyRowResult:
     is_cascade_failure: bool = False
 
 
-def build_error_context_for_ai(
-    preview_data: PreviewData,
-    row_results: List[ApplyRowResult],
-    original_opx: str = "",
-    include_opx: bool = True,
-    focused_mode: bool = True,
-    workspace_path: Optional[str] = None,
-    include_file_content: bool = True,
-) -> str:
-    """
-    Build context day du de AI hieu va fix loi.
-
-    FOCUSED MODE (default): Chỉ cung cấp thông tin cần thiết để fix,
-    giảm context không liên quan để AI tập trung hơn.
-
-    ENHANCED: Include current file content để AI có thể fix ngay mà không cần
-    hỏi thêm về nội dung file.
-
-    Args:
-        preview_data: Preview data tu analyzer
-        row_results: Ket qua apply cac rows
-        original_opx: OPX goc (optional)
-        include_opx: Co bao gom OPX instructions khong
-        focused_mode: Neu True, chi hien thi thong tin can thiet de fix
-        workspace_path: Path to workspace (for reading current file content)
-        include_file_content: Include current content of failed files
-
-    Returns:
-        String context cho AI
-    """
-    sections: List[str] = []
-
-    # Header summary
-    success_count = sum(1 for r in row_results if r.success)
-    failed_count = sum(1 for r in row_results if not r.success)
-
-    # FOCUSED MODE: Ngắn gọn, đi thẳng vào vấn đề
-    if focused_mode and failed_count > 0:
-        sections.extend(
-            _build_focused_error_context(
-                row_results,
-                preview_data,
-                original_opx,
-                include_opx,
-                workspace_path,
-                include_file_content,
-            )
-        )
-        return "\n".join(sections)
-
-    # FULL MODE: Chi tiết đầy đủ (legacy behavior)
-    sections.extend(
-        [
-            "## Apply Results Summary",
-            f"- Successful operations: {success_count}",
-            f"- Failed operations: {failed_count}",
-            f"- Total operations: {len(row_results)}",
-            "",
-            "---",
-            "",
-        ]
-    )
-
-    # Successful operations (important for context)
-    success_rows = [r for r in row_results if r.success]
-    if success_rows:
-        sections.extend(_build_success_section(success_rows, preview_data))
-
-    # Failed operations (need fixing)
-    failed_rows = [r for r in row_results if not r.success]
-    if failed_rows:
-        sections.extend(_build_failed_section(failed_rows, preview_data, row_results))
-
-    # Original OPX reference
-    if include_opx and original_opx:
-        sections.extend(
-            [
-                "",
-                "---",
-                "",
-                "## Original OPX (For Reference)",
-                "",
-                "```xml",
-                original_opx.strip(),
-                "```",
-                "",
-            ]
-        )
-
-    # Fix instructions
-    sections.extend(_build_fix_instructions(include_opx))
-
-    return "\n".join(sections)
-
-
-def _build_focused_error_context(
+def build_focused_error_context(
     row_results: List[ApplyRowResult],
     preview_data: PreviewData,
     _original_opx: str,
@@ -150,7 +49,7 @@ def _build_focused_error_context(
     sections.append("")
 
     for i, result in enumerate(failed_rows, 1):
-        row = _find_preview_row(preview_data, result.row_index)
+        row = find_preview_row(preview_data, result.row_index)
 
         sections.append(f"## Error {i}: {result.action.upper()} `{result.path}`")
         sections.append("")
@@ -171,7 +70,7 @@ def _build_focused_error_context(
 
         # NEW: Include current file content để AI có thể fix ngay
         if include_file_content and workspace_path:
-            current_content = _read_current_file_content(result.path, workspace_path)
+            current_content = read_current_file_content(result.path, workspace_path)
             if current_content:
                 sections.append(
                     "**CURRENT FILE CONTENT (after any successful operations):**"
@@ -268,7 +167,7 @@ def _build_focused_error_context(
     return sections
 
 
-def _build_success_section(
+def build_success_section(
     success_rows: List[ApplyRowResult], preview_data: PreviewData
 ) -> List[str]:
     """Build section cho cac operations thanh cong"""
@@ -281,7 +180,7 @@ def _build_success_section(
     ]
 
     for result in success_rows:
-        row = _find_preview_row(preview_data, result.row_index)
+        row = find_preview_row(preview_data, result.row_index)
 
         section.extend(
             [
@@ -300,7 +199,7 @@ def _build_success_section(
     return section
 
 
-def _build_failed_section(
+def build_failed_section(
     failed_rows: List[ApplyRowResult],
     preview_data: PreviewData,
     all_results: List[ApplyRowResult],
@@ -329,7 +228,7 @@ def _build_failed_section(
         )
 
         for result in errors:
-            row = _find_preview_row(preview_data, result.row_index)
+            row = find_preview_row(preview_data, result.row_index)
 
             section.extend(
                 [
@@ -357,14 +256,14 @@ def _build_failed_section(
                 section.append("")
                 section.append("**Attempted changes:**")
                 for i, block in enumerate(row.change_blocks):
-                    section.extend(_build_change_block_details(block, i + 1))
+                    section.extend(build_change_block_details(block, i + 1))
 
             section.extend(["", "---", ""])
 
     return section
 
 
-def _build_change_block_details(block: dict, index: int) -> List[str]:
+def build_change_block_details(block: dict, index: int) -> List[str]:
     """Build chi tiet cho mot change block"""
     details = [f"Change block {index}: {block.get('description', 'N/A')}"]
 
@@ -397,7 +296,7 @@ def _build_change_block_details(block: dict, index: int) -> List[str]:
     return details
 
 
-def _build_fix_instructions(include_opx: bool) -> List[str]:
+def build_fix_instructions(include_opx: bool) -> List[str]:
     """Build instructions cho IDE agent de fix truc tiep."""
     instructions = [
         "",
@@ -422,7 +321,7 @@ def _build_fix_instructions(include_opx: bool) -> List[str]:
     return instructions
 
 
-def _read_current_file_content(file_path: str, workspace_path: str) -> Optional[str]:
+def read_current_file_content(file_path: str, workspace_path: str) -> Optional[str]:
     """
     Đọc nội dung hiện tại của file để AI có thể thấy state thực.
 
@@ -451,126 +350,18 @@ def _read_current_file_content(file_path: str, workspace_path: str) -> Optional[
         return None
 
 
-def _find_preview_row(
-    preview_data: PreviewData, row_index: int
-) -> Optional[PreviewRow]:
+def find_preview_row(preview_data: PreviewData, row_index: int) -> Optional[PreviewRow]:
     """Tim preview row theo index"""
     if row_index < len(preview_data.rows):
         return preview_data.rows[row_index]
     return None
 
 
-def build_general_error_context(
-    error_type: str,
-    error_message: str,
-    file_path: Optional[str] = None,
-    additional_context: Optional[str] = None,
-    workspace_path: Optional[str] = None,
-) -> str:
-    """
-    Build context day du cho loi bat ky trong app.
-
-    Cung cap du thong tin de AI co the fix ngay ma khong can hoi lai:
-    - Error details
-    - File content hien tai (neu co OPX -> extract file paths -> doc content)
-    - OPX goc duoc format trong code block
-    - Prompt ro rang yeu cau respond bang OPX format
-
-    Args:
-        error_type: Loai loi (e.g., "Parse Error", "Apply Error")
-        error_message: Message loi
-        file_path: File lien quan (optional)
-        additional_context: Context them, thuong la OPX goc (optional)
-        workspace_path: Workspace root path de doc file content (optional)
-
-    Returns:
-        String context day du cho AI fix ngay
-    """
-    sections = [
-        f"# {error_type.upper()} - FIX REQUIRED",
-        "",
-        f"**Error:** `{error_message}`",
-        "",
-    ]
-
-    if file_path:
-        sections.extend(
-            [
-                f"**Related File:** `{file_path}`",
-                "",
-            ]
-        )
-
-    # Neu additional_context la OPX, extract file paths va doc content hien tai
-    if additional_context and workspace_path:
-        affected_files = _extract_file_paths_from_opx(additional_context)
-        if affected_files:
-            sections.append("## Current File Contents")
-            sections.append("")
-            sections.append(
-                "Below are the CURRENT contents of files that need to be fixed. "
-                "Use these to locate the exact code sections that need changes."
-            )
-            sections.append("")
-            for fp in affected_files:
-                content = _read_current_file_content(fp, workspace_path)
-                if content:
-                    sections.append(f"### `{fp}`")
-                    sections.append("```")
-                    content_lines = content.split("\n")
-                    if len(content_lines) > 300:
-                        sections.append("\n".join(content_lines[:300]))
-                        sections.append(f"... ({len(content_lines) - 300} more lines)")
-                    else:
-                        sections.append(content)
-                    sections.append("```")
-                    sections.append("")
-
-    # OPX goc (format trong code block)
-    if additional_context:
-        sections.extend(
-            [
-                "## Original OPX (Failed)",
-                "",
-                "```xml",
-                additional_context.strip(),
-                "```",
-                "",
-            ]
-        )
-
-    # Prompt huong dan cho IDE agent (da co edit tool san, khong can OPX)
-    sections.extend(
-        [
-            "---",
-            "",
-            "# ACTION REQUIRED",
-            "",
-            "Fix the failed operations based on the error and current file contents above.",
-            "All information you need is provided. Do NOT ask questions - start fixing immediately.",
-            "",
-            "**For each failed operation:**",
-            "1. Open the affected file",
-            "2. Find the section that needs to be changed (use the current file contents "
-            "and the original OPX intent as reference)",
-            "3. Apply the intended change directly using your edit tools",
-            "",
-            "**IMPORTANT:** Only fix the FAILED operations. "
-            "Successful operations (if any) are already applied - do NOT touch them.",
-            "",
-        ]
-    )
-
-    return "\n".join(sections)
-
-
-def _extract_file_paths_from_opx(opx_text: str) -> List[str]:
+def extract_file_paths_from_opx(opx_text: str) -> List[str]:
     """
     Extract danh sach file paths tu OPX text.
     Tim cac attribute file="..." trong <edit> tags.
     """
-    import re
-
     pattern = re.compile(r'<\s*edit\b[^>]*\bfile\s*=\s*"([^"]*)"', re.IGNORECASE)
     paths = []
     seen: set = set()
@@ -580,14 +371,3 @@ def _extract_file_paths_from_opx(opx_text: str) -> List[str]:
             paths.append(fp)
             seen.add(fp)
     return paths
-
-
-def copy_error_to_clipboard(context: str) -> bool:
-    """
-    Copy error context to clipboard.
-
-    Returns:
-        True neu thanh cong, False neu that bai
-    """
-    success, _ = copy_to_clipboard(context)
-    return success

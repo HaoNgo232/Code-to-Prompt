@@ -11,9 +11,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Set, Optional
 
-from application.services.dependency_resolver import DependencyResolver
+from domain.codemap.dependency_resolver import DependencyResolver
 from domain.codemap.symbol_extractor import extract_symbols
-from application.services.workspace_index import collect_files_from_disk
 
 
 @dataclass
@@ -163,7 +162,9 @@ def detect_scope_from_symbols(
     Returns:
         ScopeResult với files chứa symbols làm primary
     """
-    all_files = collect_files_from_disk(workspace_path, workspace_path=workspace_path)
+    from domain.ports.registry import DomainRegistry
+
+    all_files = DomainRegistry.workspace_scanner().collect_files(workspace_path)
 
     primary_files = []
     relevant_symbols: Dict[str, Set[str]] = {}

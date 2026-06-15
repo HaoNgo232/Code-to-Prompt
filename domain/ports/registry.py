@@ -18,14 +18,6 @@ class DomainRegistry:
     def register_tokenization_service(cls, service: ITokenizationService) -> None:
         cls._tokenization_service = service
 
-        # Backward compatibility for old encoder_registry wrapper
-        try:
-            from infrastructure.adapters import encoder_registry
-
-            encoder_registry._tokenization_service = service
-        except ImportError:
-            pass
-
     @classmethod
     def tokenization_service(cls) -> ITokenizationService:
         if cls._tokenization_service is None:

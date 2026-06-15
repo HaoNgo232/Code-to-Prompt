@@ -38,8 +38,9 @@ from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLa
 
 
 from domain.codemap.tree_map_generator import generate_tree_map_only
-from infrastructure.filesystem.file_utils import scan_directory, TreeItem
-from infrastructure.persistence.settings_manager import load_app_settings
+from domain.smart_context.tree_item import TreeItem
+from application.services.workspace_index import WorkspaceScanService
+from application.services.workspace_config import load_app_settings
 from application.services.workspace_config import (
     get_excluded_patterns,
     get_use_gitignore,
@@ -52,7 +53,7 @@ from presentation.config.theme import ThemeColors
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from infrastructure.git.git_utils import DiffOnlyResult
+    pass
 
 
 PromptBreakdown: TypeAlias = dict[str, Any]
@@ -1446,7 +1447,7 @@ class CopyActionController(QObject):
 
     def _scan_full_tree(self, workspace: Path) -> TreeItem:
         """Scan full workspace tree with current exclude settings."""
-        return scan_directory(
+        return WorkspaceScanService.scan_directory(
             workspace,
             ignore_engine=self._view.get_ignore_engine(),
             excluded_patterns=get_excluded_patterns(),
@@ -1477,7 +1478,7 @@ class CopyActionController(QObject):
             use_rel = get_use_relative_paths()
 
             def _build_diff_prompt(
-                diff_result: "DiffOnlyResult",
+                diff_result: Any,
                 instructions: str,
                 include_content: bool,
                 include_tree: bool,

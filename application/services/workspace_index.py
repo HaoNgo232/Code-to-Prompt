@@ -16,7 +16,7 @@ import os
 import logging
 import pathspec
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
 
 if TYPE_CHECKING:
     from infrastructure.filesystem.ignore_engine import IgnoreEngine
@@ -333,13 +333,63 @@ def collect_files_from_disk(
 
     return result
 
-
 from domain.ports.workspace_scanner import IWorkspaceScanner
+
 
 class WorkspaceScanner(IWorkspaceScanner):
     """
     Adapter class for IWorkspaceScanner using collect_files_from_disk.
     """
+
     def collect_files(self, folder: Path) -> List[str]:
         return collect_files_from_disk(folder, workspace_path=folder)
 
+
+class WorkspaceScanService:
+    """
+    Application-level service wrapping infrastructure scan_directory function.
+    This prevents presentation controllers from importing scan_directory directly.
+    """
+
+    @staticmethod
+    def scan_directory(
+        workspace: Path,
+        ignore_engine: Any,
+        excluded_patterns: Optional[List[str]] = None,
+        use_gitignore: bool = True,
+    ) -> Any:
+        from infrastructure.filesystem.file_utils import scan_directory
+
+        return scan_directory(
+            workspace,
+            ignore_engine=ignore_engine,
+            excluded_patterns=excluded_patterns,
+            use_gitignore=use_gitignore,
+        )
+
+
+def get_related_files_for_paths(
+    workspace_path: Path,
+    tree: Optional[Any],
+    paths: Set[str],
+    depth: int,
+) -> Set[str]:
+    """
+    Application-level wrapper to resolve related files for a set of path strings.
+    This prevents the presentation layer from importing DependencyResolver directly.
+    """
+    from domain.codemap.dependency_resolver import DependencyResolver
+
+    resolver = DependencyResolver(workspace_path)
+    resolver.build_file_index(tree)
+
+    related_strs: Set[str] = set()
+    for file_path_str in paths:
+        p = Path(file_path_str)
+        if not p.is_file():
+            continue
+        related = resolver.get_related_files(p, max_depth=depth)
+        for target in related:
+            if target.exists():
+                related_strs.add(str(target.resolve()))
+    return related_strs

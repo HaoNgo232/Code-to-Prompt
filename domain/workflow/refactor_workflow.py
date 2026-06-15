@@ -27,7 +27,7 @@ from domain.workflow.shared.handoff_formatter import (
     format_handoff_xml,
     format_relationships_section,
 )
-from application.services.tokenization_service import TokenizationService
+from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ def run_refactor_discovery(
     refactor_scope: str,
     file_paths: Optional[List[str]] = None,
     max_tokens: int = 80_000,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
 ) -> DiscoveryReport:
     """
     Chạy Pass 1 — Discovery: Phân tích code trước khi refactor.
@@ -111,7 +111,12 @@ def run_refactor_discovery(
     if not ws.is_dir():
         raise DomainValidationError(f"'{workspace_path}' is not a valid directory")
 
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Step 1: Detect scope
     if not file_paths:
@@ -207,7 +212,7 @@ def run_refactor_planning(
     discovery_report_text: str,
     file_paths: Optional[List[str]] = None,
     max_tokens: int = 80_000,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
 ) -> RefactorPlan:
     """
     Chạy Pass 2 — Planning: Lên kế hoạch cụ thể dựa trên discovery.
@@ -227,7 +232,12 @@ def run_refactor_planning(
     if not ws.is_dir():
         raise DomainValidationError(f"'{workspace_path}' is not a valid directory")
 
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Step 1: Parse discovery report to extract file list
     if not file_paths:

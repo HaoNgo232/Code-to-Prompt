@@ -46,8 +46,7 @@ def analyze_blast_radius(
     Returns:
         BlastRadiusResult với structured analysis
     """
-    from application.services.dependency_resolver import DependencyResolver
-    from application.services.workspace_index import collect_files_from_disk
+    from domain.codemap.dependency_resolver import DependencyResolver
 
     max_depth = max(1, min(max_depth, 5))
 
@@ -70,9 +69,9 @@ def analyze_blast_radius(
             ".cpp",
             ".h",
         }
-        all_files = collect_files_from_disk(
-            workspace_root, workspace_path=workspace_root
-        )
+        from domain.ports.registry import DomainRegistry
+
+        all_files = DomainRegistry.workspace_scanner().collect_files(workspace_root)
         code_files = [Path(f) for f in all_files if Path(f).suffix.lower() in code_exts]
 
         # Build reverse dependency map
@@ -241,9 +240,9 @@ def _identify_risk_reasons(result: BlastRadiusResult) -> List[str]:
 
 def _estimate_tokens(result: BlastRadiusResult, workspace_root: Path) -> int:
     """Estimate token cost for reviewing blast radius."""
-    from application.services.tokenization_service import TokenizationService
+    from domain.ports.registry import DomainRegistry
 
-    tok_service = TokenizationService()
+    tok_service = DomainRegistry.tokenization_service()
     total_tokens = 0
 
     # Estimate tokens for each file

@@ -21,7 +21,7 @@ from typing import Callable, Dict, List, Optional, Protocol, Set, cast
 from domain.workflow.shared.handoff_formatter import HandoffContext, format_handoff_xml
 from domain.workflow.shared.token_budget_manager import TokenBudgetManager
 from domain.codemap.graph_builder import CodeMapBuilder
-from application.services.tokenization_service import TokenizationService
+from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ def run_bug_investigation(
     entry_files: Optional[List[str]] = None,
     max_depth: int = 4,
     max_tokens: int = 100_000,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
 ) -> InvestigationResult:
     """
     Chạy Bug Investigation workflow.
@@ -119,7 +119,7 @@ def run_bug_investigation(
         entry_files: Optional starting files (fallback khi không có trace)
         max_depth: Độ sâu trace tối đa (default 4)
         max_tokens: Token budget
-        tokenization_service: Optional TokenizationService
+        tokenization_service: Optional ITokenizationService
 
     Returns:
         InvestigationResult với prompt và trace metadata
@@ -128,7 +128,12 @@ def run_bug_investigation(
     if not ws.is_dir():
         raise DomainValidationError(f"'{workspace_path}' is not a valid directory")
 
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Step 1: Parse error trace
     entry_points: List[Dict[str, object]] = []

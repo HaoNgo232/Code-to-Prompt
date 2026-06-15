@@ -50,7 +50,7 @@ def build_hybrid_investigation_graph(
     Returns:
         List[InvestigationNode] theo thứ tự priority
     """
-    from application.services.dependency_resolver import DependencyResolver
+    from domain.codemap.dependency_resolver import DependencyResolver
     from domain.codemap.graph_builder import CodeMapBuilder
 
     max_depth = max(1, min(max_depth, 5))
@@ -67,10 +67,10 @@ def build_hybrid_investigation_graph(
     def _get_all_files():
         nonlocal _all_files_cache
         if _all_files_cache is None:
-            from application.services.workspace_index import collect_files_from_disk
+            from domain.ports.registry import DomainRegistry
 
-            _all_files_cache = collect_files_from_disk(
-                workspace_root, workspace_path=workspace_root
+            _all_files_cache = DomainRegistry.workspace_scanner().collect_files(
+                workspace_root
             )
         return _all_files_cache
 

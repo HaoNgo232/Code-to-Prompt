@@ -12,7 +12,7 @@ from typing import Set, Optional
 import pytest
 import json
 
-from application.services.dependency_resolver import DependencyResolver
+from domain.codemap.dependency_resolver import DependencyResolver
 from domain.smart_context.loader import get_language
 
 

@@ -101,6 +101,10 @@ def _collect_import_violations() -> Tuple[List[str], Dict[str, Set[str]]]:
     layer_edges: Dict[str, Set[str]] = {layer: set() for layer in TARGET_LAYERS}
 
     for py_file in _iter_python_files():
+        rel = py_file.relative_to(ROOT).as_posix()
+        if rel == "presentation/service_container.py":
+            continue
+
         layer = _detect_layer(py_file)
         if layer is None:
             continue

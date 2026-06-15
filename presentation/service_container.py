@@ -75,8 +75,17 @@ class ServiceContainer:
 
         from domain.ports.registry import DomainRegistry
         from application.services.workspace_index import WorkspaceScanner
+
         DomainRegistry.register_tokenization_service(self._tokenization_service)
         DomainRegistry.register_workspace_scanner(WorkspaceScanner())
+
+        # Backward compatibility for old encoder_registry wrapper
+        try:
+            from infrastructure.adapters import encoder_registry
+
+            encoder_registry._tokenization_service = self._tokenization_service
+        except ImportError:
+            pass
 
         logger.info("ServiceContainer initialized with owned services")
 

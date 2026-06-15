@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from application.interfaces.tokenization_port import ITokenizationService
+    from domain.ports.tokenization_port import ITokenizationService
     from domain.codemap.graph_builder import CodeMapBuilder
 
 from domain.workflow.shared.file_slicer import auto_slice_file, smart_truncate

@@ -33,7 +33,7 @@ from domain.workflow.test_analyzer import (
     TestPriority,
     classify_priority,
 )
-from application.services.tokenization_service import TokenizationService
+from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ def run_test_builder(
     include_existing_tests: bool = True,
     include_git_changes: bool = False,
     output_file: Optional[str] = None,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
 ) -> BuildTestResult:
     """
     Chay Test Builder workflow.
@@ -130,7 +130,7 @@ def run_test_builder(
         include_existing_tests: Co include existing test files lam reference khong
         include_git_changes: Co bao gom git diffs khong
         output_file: Optional path de ghi prompt ra file
-        tokenization_service: Optional TokenizationService (inject)
+        tokenization_service: Optional ITokenizationService (inject)
 
     Returns:
         BuildTestResult voi prompt va metadata
@@ -146,7 +146,12 @@ def run_test_builder(
             raise DomainValidationError("output_file path traversal detected")
 
     # Initialize tokenization service
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Buoc 1: Detect scope - tim source files va dependencies
     if not file_paths:

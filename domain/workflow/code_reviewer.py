@@ -19,8 +19,7 @@ from domain.codemap.graph_builder import CodeMapBuilder
 from domain.workflow.shared.handoff_formatter import HandoffContext, format_handoff_xml
 from shared.types.git_types import GitDiffResult
 from domain.workflow.interfaces.git_port import IGitService
-from application.services.tokenization_service import TokenizationService
-from application.services.workspace_index import collect_files_from_disk
+from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 
 logger = logging.getLogger(__name__)
@@ -86,7 +85,7 @@ def run_code_review(
     include_callers: bool = True,
     max_tokens: int = 120_000,
     base_ref: Optional[str] = None,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
     git_service: Optional[IGitService] = None,
 ) -> ReviewResult:
     """
@@ -109,7 +108,12 @@ def run_code_review(
     if not ws.is_dir():
         raise DomainValidationError(f"'{workspace_path}' is not a valid directory")
 
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Step 1: Pull git diff (với base_ref nếu có)
     try:
@@ -262,7 +266,9 @@ def _find_test_files(
         Danh sách relative paths của test files tìm được
     """
     test_files: List[str] = []
-    all_files = collect_files_from_disk(workspace_path, workspace_path=workspace_path)
+    from domain.ports.registry import DomainRegistry
+
+    all_files = DomainRegistry.workspace_scanner().collect_files(workspace_path)
 
     for source_file in source_files:
         source_path = Path(source_file)

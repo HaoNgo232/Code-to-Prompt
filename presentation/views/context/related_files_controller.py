@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Protocol, Set, runtime_checkable, Optional
 from PySide6.QtCore import QObject
 
-from application.services.dependency_resolver import DependencyResolver
+from application.services.workspace_index import get_related_files_for_paths
 from infrastructure.adapters.qt_utils import run_on_main_thread, schedule_background
 
 
@@ -229,19 +229,11 @@ class RelatedFilesController(QObject):
             try:
                 related_strs: Set[str] = set()
 
-                # Sử dụng DependencyResolver (IMPORTS)
+                # Sử dụng application wrapper
                 full_tree = self._view.scan_full_tree(workspace_path)
-                resolver = DependencyResolver(workspace_path)
-                resolver.build_file_index(full_tree)
-
-                for file_path_str in user_selected:
-                    p = Path(file_path_str)
-                    if not p.is_file():
-                        continue
-                    related = resolver.get_related_files(p, max_depth=depth)
-                    for target in related:
-                        if target.exists():
-                            related_strs.add(str(target.resolve()))
+                related_strs = get_related_files_for_paths(
+                    workspace_path, full_tree, user_selected, depth
+                )
 
                 # Loại bỏ những file user đã chọn trực tiếp
                 new_related = {s for s in related_strs if s not in user_selected}

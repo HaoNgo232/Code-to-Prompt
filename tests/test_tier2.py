@@ -9,7 +9,7 @@ import shutil
 from pathlib import Path
 import pytest
 
-from application.services.dependency_resolver import (
+from domain.codemap.dependency_resolver import (
     DependencyResolver,
     get_related_files_for_selection,
 )

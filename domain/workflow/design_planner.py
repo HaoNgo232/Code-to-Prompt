@@ -36,9 +36,9 @@ from domain.workflow.shared.handoff_formatter import (
 )
 from domain.prompt.generator import generate_file_map
 from infrastructure.filesystem.file_utils import scan_directory
-from application.services.dependency_resolver import DependencyResolver
+from domain.codemap.dependency_resolver import DependencyResolver
 from domain.codemap.graph_builder import CodeMapBuilder
-from application.services.tokenization_service import TokenizationService
+from domain.ports.tokenization_port import ITokenizationService
 from domain.errors import DomainValidationError
 
 logger = logging.getLogger(__name__)
@@ -204,7 +204,7 @@ def run_design_planner(
     max_tokens: int = 100_000,
     include_tests: bool = True,
     output_file: Optional[str] = None,
-    tokenization_service: Optional[TokenizationService] = None,
+    tokenization_service: Optional[ITokenizationService] = None,
 ) -> DesignResult:
     """
     Chạy Design Planner workflow.
@@ -232,7 +232,12 @@ def run_design_planner(
             raise DomainValidationError("output_file path traversal detected")
 
     # Initialize services
-    tok_service = tokenization_service or TokenizationService()
+    if tokenization_service is None:
+        from domain.ports.registry import DomainRegistry
+
+        tok_service = DomainRegistry.tokenization_service()
+    else:
+        tok_service = tokenization_service
 
     # Step 1: Detect scope
     if not file_paths:

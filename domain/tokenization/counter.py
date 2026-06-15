@@ -21,7 +21,12 @@ from typing import Optional, Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from domain.tokenization.cache import TokenCache
 
-from infrastructure.adapters.encoders import _estimate_tokens
+
+def _estimate_tokens(text: str) -> int:
+    if not text:
+        return 0
+    return max(1, len(text) // 4)
+
 
 # Guardrail: skip files > 5MB
 MAX_BYTES = 5 * 1024 * 1024
