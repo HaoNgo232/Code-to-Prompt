@@ -456,8 +456,31 @@ def test_build_fingerprint():
     assert fp1 == fp2
     
     # Thay đổi mtime -> fingerprint thay đổi
-    with patch("pathlib.Path.stat") as mock_stat:
-        mock_stat.return_value.st_mtime = 123456.0
+    import pathlib
+    orig_stat = pathlib.Path.stat
+    orig_posix_stat_stat = pathlib.PosixPath.stat if hasattr(pathlib, "PosixPath") else None
+    orig_windows_stat_stat = pathlib.WindowsPath.stat if hasattr(pathlib, "WindowsPath") else None
+
+    mock_stat_val = MagicMock()
+    mock_stat_val.st_mtime = 123456.0
+    mock_stat_func = MagicMock(return_value=mock_stat_val)
+
+    def apply_mock():
+        pathlib.Path.stat = mock_stat_func
+        if orig_posix_stat_stat:
+            pathlib.PosixPath.stat = mock_stat_func
+        if orig_windows_stat_stat:
+            pathlib.WindowsPath.stat = mock_stat_func
+
+    def restore_mock():
+        pathlib.Path.stat = orig_stat
+        if orig_posix_stat_stat:
+            pathlib.PosixPath.stat = orig_posix_stat_stat
+        if orig_windows_stat_stat:
+            pathlib.WindowsPath.stat = orig_windows_stat_stat
+
+    apply_mock()
+    try:
         fp3 = _build_fingerprint(
             selected_paths={"/mock/workspace/file1.py"},
             instructions="do X",
@@ -466,7 +489,7 @@ def test_build_fingerprint():
             include_git=False,
             use_relative_paths=True
         )
-        mock_stat.return_value.st_mtime = 999999.0
+        mock_stat_val.st_mtime = 999999.0
         fp4 = _build_fingerprint(
             selected_paths={"/mock/workspace/file1.py"},
             instructions="do X",
@@ -476,6 +499,8 @@ def test_build_fingerprint():
             use_relative_paths=True
         )
         assert fp3 != fp4
+    finally:
+        restore_mock()
 
 
 def test_copy_as_file_to_clipboard(tmp_path):
