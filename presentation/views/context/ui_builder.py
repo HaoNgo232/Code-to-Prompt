@@ -808,8 +808,6 @@ class UIBuilderMixin:
             "- Refactor the auth module to use JWT tokens\n"
             "- Fix bug: users get 500 error on /api/login\n"
             "- Add rate limiting to all API endpoints\n\n"
-            "Tip: Write your task first, then click 'AI Suggest Select'\n"
-            "to auto-pick relevant files from the tree."
         )
         self._instructions_field.setStyleSheet(
             f"""
