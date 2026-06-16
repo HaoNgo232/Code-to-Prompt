@@ -150,6 +150,7 @@ from domain.smart_context.tree_item import TreeItem
 
 # -- TokenComparisonService.compare_paths (line 56) --------------------------
 
+
 def test_token_comparison_service_compare_paths(tmp_path):
     """TokenComparisonService.compare_paths() delegates to compare_token_counts (line 56)."""
     file_path = tmp_path / "test.py"
@@ -161,6 +162,7 @@ def test_token_comparison_service_compare_paths(tmp_path):
 
 
 # -- _normalize_existing_files (lines 108-109, 112) --------------------------
+
 
 def test_normalize_existing_files_skips_oserror_path():
     """_normalize_existing_files skips paths where Path.resolve() raises OSError (lines 108-109)."""
@@ -204,6 +206,7 @@ def test_normalize_existing_files_skips_directory(tmp_path):
 
 # -- _read_text_file (lines 124-125) -----------------------------------------
 
+
 def test_read_text_file_returns_none_for_binary(tmp_path):
     """_read_text_file returns None for binary files (line 122 -> None)."""
     file_path = tmp_path / "image.png"
@@ -216,24 +219,33 @@ def test_read_text_file_returns_none_for_oserror(tmp_path):
     """_read_text_file returns None when read_text raises OSError (lines 124-125)."""
     file_path = tmp_path / "test.py"
     file_path.write_text("hello", encoding="utf-8")
-    with patch("domain.tokenization.comparison_service.is_binary_file", return_value=False), \
-         patch.object(Path, "read_text", side_effect=OSError("read error")):
+    with (
+        patch(
+            "domain.tokenization.comparison_service.is_binary_file", return_value=False
+        ),
+        patch.object(Path, "read_text", side_effect=OSError("read error")),
+    ):
         result = _read_text_file(file_path)
     assert result is None
 
 
 # -- _count_smart_tokens (lines 136-137) -------------------------------------
 
+
 def test_count_smart_tokens_exception_returns_full_count(tmp_path):
     """_count_smart_tokens returns full_count when smart_parse raises (lines 136-137)."""
     file_path = tmp_path / "test.py"
     file_path.write_text("x = 1", encoding="utf-8")
-    with patch("domain.tokenization.comparison_service.smart_parse", side_effect=RuntimeError("parse error")):
+    with patch(
+        "domain.tokenization.comparison_service.smart_parse",
+        side_effect=RuntimeError("parse error"),
+    ):
         result = _count_smart_tokens(file_path, "x = 1", 42)
     assert result == 42
 
 
 # -- _count_tree_map_tokens (line 150) ----------------------------------------
+
 
 def test_count_tree_map_tokens_empty_list_returns_zero():
     """_count_tree_map_tokens returns 0 when paths list is empty (line 150)."""
@@ -242,6 +254,7 @@ def test_count_tree_map_tokens_empty_list_returns_zero():
 
 
 # -- _build_tree (line 165) ---------------------------------------------------
+
 
 def test_build_tree_returns_none_for_empty_list():
     """_build_tree returns None for empty path list (line 165)."""
@@ -259,6 +272,7 @@ def test_build_tree_returns_tree_item_for_single_file(tmp_path):
 
 
 # -- _common_parent (lines 185-186) -------------------------------------------
+
 
 def test_common_parent_single_file(tmp_path):
     """_common_parent works with single path."""
@@ -281,13 +295,17 @@ def test_common_parent_value_error_returns_first_parent(tmp_path):
     # Simulate ValueError by patching os.path.commonpath.
     parents = [tmp_path / "a", tmp_path / "b"]
     paths = [p / "file.py" for p in parents]
-    with patch("domain.tokenization.comparison_service.os.path.commonpath", side_effect=ValueError("no common path")):
+    with patch(
+        "domain.tokenization.comparison_service.os.path.commonpath",
+        side_effect=ValueError("no common path"),
+    ):
         result = _common_parent(paths)
     # Should return first parent
     assert result == paths[0].parent
 
 
 # -- _insert_path (lines 193-194, 199-204) ------------------------------------
+
 
 def test_insert_path_creates_nested_dirs(tmp_path):
     """_insert_path correctly builds nested TreeItem structure (lines 199-204)."""
@@ -330,6 +348,7 @@ def test_insert_path_outside_root(tmp_path):
 
 
 # -- _find_child (lines 213-216) ----------------------------------------------
+
 
 def test_find_child_returns_matching_child():
     """_find_child returns the child matching the given path."""

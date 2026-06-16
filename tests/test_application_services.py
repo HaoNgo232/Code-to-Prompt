@@ -2,14 +2,12 @@
 Tests cho các dịch vụ ứng dụng: AIContextWorker, Workspace Config, và Contract Pack.
 """
 
-import os
 import json
 from pathlib import Path
-from typing import List, Optional, Any
+from typing import Any
 import pytest
-from unittest.mock import MagicMock, patch
 
-from domain.ports.ai_port import LLMMessage, LLMResponse
+from domain.ports.ai_port import LLMResponse
 from domain.ports.registry import DomainRegistry
 from domain.contracts.contract_pack import (
     ContractPack,
@@ -18,9 +16,10 @@ from domain.contracts.contract_pack import (
     locked_modify_contract_pack,
     build_contract_pack,
 )
-from application.services.ai_context_worker import AIContextWorker, AIContextWorkerSignals
+from application.services.ai_context_worker import (
+    AIContextWorker,
+)
 from application.services.workspace_config import (
-    PRESET_PROFILES,
     get_excluded_patterns,
     get_use_gitignore,
     get_use_relative_paths,
@@ -35,13 +34,15 @@ from domain.config.app_settings import AppSettings
 # Workspace Config Tests
 # ===========================================================================
 
+
 class DummySettingsService:
     """Mock SettingsService để trả về AppSettings điều khiển được."""
+
     def __init__(self) -> None:
         self._settings = AppSettings(
             excluded_folders="node_modules\ndist",
             use_gitignore=True,
-            use_relative_paths=True
+            use_relative_paths=True,
         )
 
     def load_settings(self) -> AppSettings:
@@ -59,11 +60,11 @@ def mock_settings_service():
         old_service = DomainRegistry.settings_service()
     except RuntimeError:
         pass
-        
+
     service = DummySettingsService()
     DomainRegistry.register_settings_service(service)
     yield service
-    
+
     # Restore old service
     if old_service is not None:
         DomainRegistry.register_settings_service(old_service)
@@ -79,6 +80,7 @@ def test_workspace_config_getters(mock_settings_service):
 def test_workspace_config_add_remove(mock_settings_service):
     """Test thêm và xóa excluded patterns."""
     called = False
+
     def on_change():
         nonlocal called
         called = True
@@ -104,6 +106,7 @@ def test_workspace_config_add_remove(mock_settings_service):
 # Contract Pack Tests
 # ===========================================================================
 
+
 def test_contract_pack_dataclass():
     """Test properties, to_dict, from_dict và format_for_prompt của ContractPack."""
     pack = ContractPack(
@@ -112,9 +115,9 @@ def test_contract_pack_dataclass():
         co_change_groups=[["a.py", "b.py"]],
         review_checklist=["Check 1"],
         required_tests=["test_a.py"],
-        guarded_paths=["secrets/"]
+        guarded_paths=["secrets/"],
     )
-    
+
     # to_dict / from_dict
     d = pack.to_dict()
     restored = ContractPack.from_dict(d)
@@ -159,7 +162,7 @@ def test_contract_pack_save_load(tmp_path: Path):
         return p
 
     locked_modify_contract_pack(tmp_path, modifier)
-    
+
     loaded_mod = load_contract_pack(tmp_path)
     assert loaded_mod.conventions == ["New Conv", "Mod Conv"]
 
@@ -170,9 +173,9 @@ def test_build_contract_pack(tmp_path: Path):
         workspace_root=tmp_path,
         workspace_rules_content="Rule 1\nRule 2",
         error_patterns=["Error 1"],
-        co_change_hints=[["x.py", "y.py"]]
+        co_change_hints=[["x.py", "y.py"]],
     )
-    
+
     assert "Rule 1" in pack.conventions
     assert "Error 1" in pack.anti_patterns
     assert ["x.py", "y.py"] in pack.co_change_groups
@@ -182,24 +185,30 @@ def test_build_contract_pack(tmp_path: Path):
 # AI Context Worker Tests
 # ===========================================================================
 
+
 class DummyAIProvider:
     """Mock AI Provider trả về response cấu trúc định sẵn."""
+
     def __init__(self) -> None:
         self.api_key = ""
         self.base_url = ""
         self.structured_response = LLMResponse(
-            content=json.dumps({
-                "selected_paths": ["main.py", "domain/model.py"],
-                "reasoning": "Core files for execution"
-            }),
-            usage={"total_tokens": 150}
+            content=json.dumps(
+                {
+                    "selected_paths": ["main.py", "domain/model.py"],
+                    "reasoning": "Core files for execution",
+                }
+            ),
+            usage={"total_tokens": 150},
         )
 
     def configure(self, api_key: str, base_url: str) -> None:
         self.api_key = api_key
         self.base_url = base_url
 
-    def generate_structured(self, messages, model_id, json_schema, temperature=0.0) -> LLMResponse:
+    def generate_structured(
+        self, messages, model_id, json_schema, temperature=0.0
+    ) -> LLMResponse:
         return self.structured_response
 
 
@@ -207,13 +216,13 @@ def test_ai_context_worker_success(tmp_path: Path):
     """Test AIContextWorker chạy thành công phát ra tín hiệu finished."""
     # Mock AI provider factory
     provider = DummyAIProvider()
-    
+
     old_factory = None
     try:
         old_factory = DomainRegistry.ai_provider_factory()
     except RuntimeError:
         pass
-        
+
     DomainRegistry.register_ai_provider_factory(lambda: provider)
 
     worker = AIContextWorker(
@@ -223,7 +232,7 @@ def test_ai_context_worker_success(tmp_path: Path):
         file_tree="root\n- main.py",
         user_query="Run model",
         all_file_paths=["main.py", "domain/model.py"],
-        workspace_root=tmp_path
+        workspace_root=tmp_path,
     )
 
     # Listen to signals
@@ -231,7 +240,7 @@ def test_ai_context_worker_success(tmp_path: Path):
     result_paths = []
     result_reasoning = ""
     result_usage = {}
-    
+
     def on_finished(paths, reasoning, usage):
         nonlocal finished_called, result_paths, result_reasoning, result_usage
         finished_called = True
@@ -262,14 +271,16 @@ def test_ai_context_worker_cancelled(tmp_path: Path):
         model_id="gpt-4",
         file_tree="root",
         user_query="Query",
-        workspace_root=tmp_path
+        workspace_root=tmp_path,
     )
-    
+
     finished_called = False
-    worker.signals.finished.connect(lambda p, r, u: setattr(finished_called, 'val', True))
-    
+    worker.signals.finished.connect(
+        lambda p, r, u: setattr(finished_called, "val", True)
+    )
+
     # Cancel worker
     worker.cancel()
     worker.run()
-    
+
     assert finished_called is False

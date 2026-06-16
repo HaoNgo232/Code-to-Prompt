@@ -1698,9 +1698,7 @@ class SettingsViewQt(QWidget):
         # Info body layout
         self._license_info_label = QLabel("Loading license details...")
         self._license_info_label.setStyleSheet(
-            f"color: {ThemeColors.TEXT_SECONDARY}; "
-            f"font-size: 12px; "
-            f"border: none;"
+            f"color: {ThemeColors.TEXT_SECONDARY}; font-size: 12px; border: none;"
         )
         self._license_info_label.setWordWrap(True)
         layout.addWidget(self._license_info_label)
@@ -1715,7 +1713,7 @@ class SettingsViewQt(QWidget):
     def _update_license_display(self) -> None:
         settings = DomainRegistry.settings_service().load_settings()
         info = DomainRegistry.license_service().verify_license_key(settings.license_key)
-        
+
         if info.is_valid:
             self._license_info_label.setText(
                 f"License ID: {info.license_id}\n"
@@ -1735,10 +1733,10 @@ class SettingsViewQt(QWidget):
             "Are you sure you want to deactivate the license on this device?\n"
             "This will close the application and prompt for a new key on next startup.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
             DomainRegistry.settings_service().update_setting("license_key", "")
             from PySide6.QtWidgets import QApplication as QApp
-            QApp.quit()
 
+            QApp.quit()

@@ -3,10 +3,8 @@ Tests cho TagChipsWidget, ChipWidget, và FlowLayout.
 """
 
 import pytest
-from typing import List
-from unittest.mock import MagicMock, patch
-from PySide6.QtCore import Qt, QRect, QSize, QPoint
-from PySide6.QtWidgets import QApplication
+from unittest.mock import MagicMock
+from PySide6.QtCore import Qt, QRect, QSize
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
@@ -52,6 +50,7 @@ def setup_registry():
 
 def test_flow_layout_empty(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     assert layout.count() == 0
@@ -59,6 +58,7 @@ def test_flow_layout_empty(qtbot):
 
 def test_flow_layout_add_item(qtbot):
     from PySide6.QtWidgets import QWidget, QPushButton
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     btn = QPushButton("test")
@@ -68,6 +68,7 @@ def test_flow_layout_add_item(qtbot):
 
 def test_flow_layout_item_at(qtbot):
     from PySide6.QtWidgets import QWidget, QPushButton
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     btn = QPushButton("test")
@@ -78,6 +79,7 @@ def test_flow_layout_item_at(qtbot):
 
 def test_flow_layout_item_at_invalid(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     assert layout.itemAt(0) is None
@@ -86,6 +88,7 @@ def test_flow_layout_item_at_invalid(qtbot):
 
 def test_flow_layout_take_at(qtbot):
     from PySide6.QtWidgets import QWidget, QPushButton
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     btn = QPushButton("test")
@@ -97,6 +100,7 @@ def test_flow_layout_take_at(qtbot):
 
 def test_flow_layout_has_height_for_width(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     assert layout.hasHeightForWidth() is True
@@ -104,6 +108,7 @@ def test_flow_layout_has_height_for_width(qtbot):
 
 def test_flow_layout_height_for_width_empty(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     height = layout.heightForWidth(300)
@@ -112,6 +117,7 @@ def test_flow_layout_height_for_width_empty(qtbot):
 
 def test_flow_layout_size_hint(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     size = layout.sizeHint()
@@ -120,6 +126,7 @@ def test_flow_layout_size_hint(qtbot):
 
 def test_flow_layout_minimum_size(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     size = layout.minimumSize()
@@ -128,6 +135,7 @@ def test_flow_layout_minimum_size(qtbot):
 
 def test_flow_layout_expanding_directions(qtbot):
     from PySide6.QtWidgets import QWidget
+
     container = QWidget()
     layout = FlowLayout(container, spacing=8)
     result = layout.expandingDirections()
@@ -136,6 +144,7 @@ def test_flow_layout_expanding_directions(qtbot):
 
 def test_flow_layout_set_geometry(qtbot):
     from PySide6.QtWidgets import QWidget, QPushButton
+
     container = QWidget()
     container.setFixedSize(400, 200)
     qtbot.addWidget(container)
@@ -167,6 +176,7 @@ def test_chip_widget_removed_signal(qtbot):
 
     # Find and click the close button
     from PySide6.QtWidgets import QPushButton
+
     close_btn = chip.findChild(QPushButton)
     assert close_btn is not None
     close_btn.click()

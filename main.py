@@ -84,6 +84,25 @@ def main() -> None:
     # Apply global dark stylesheet
     apply_theme(app)
 
+    # Boot verification checks
+    from domain.ports.registry import DomainRegistry
+    from infrastructure.persistence.settings_manager import load_app_settings
+
+    # Verify license key stored in settings
+    settings = load_app_settings()
+    license_service = DomainRegistry.license_service()
+    license_info = license_service.verify_license_key(settings.license_key)
+
+    # Check license validation status
+    if not license_info.is_valid:
+        from presentation.widgets.license_dialog import LicenseActivationDialog
+
+        dialog = LicenseActivationDialog()
+        # Execute dialog blocking window boot
+        if dialog.exec() != LicenseActivationDialog.DialogCode.Accepted:
+            # User canceled activation dialog, terminate app gracefully
+            sys.exit(0)
+
     # Initialize global signal bridge on main thread
     get_signal_bridge()
 

@@ -10,12 +10,12 @@ Tests for copy_action_controller.py:
 
 import pytest
 from pathlib import Path
-from typing import Optional, Set, Any
-from unittest.mock import MagicMock, patch, call
+from typing import Optional, Set
+from unittest.mock import MagicMock, patch
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
-from domain.config.output_format import OutputStyle, DEFAULT_OUTPUT_STYLE
+from domain.config.output_format import DEFAULT_OUTPUT_STYLE
 from presentation.views.context.copy_action_controller import (
     PromptCache,
     CopyTaskWorker,
@@ -98,6 +98,7 @@ def make_mock_view(
     copy_config.tree_map_only = False
     copy_config.include_git_diff = False
     from domain.prompt.copy_mode import CopyMode
+
     copy_config.mode = CopyMode.FULL
     view.get_copy_config.return_value = copy_config
 
@@ -309,7 +310,9 @@ def test_security_check_worker_error():
     error_calls = []
     signals.error.connect(lambda msg: error_calls.append(msg))
 
-    with patch.object(DomainRegistry, "security_scanner", side_effect=Exception("scan error")):
+    with patch.object(
+        DomainRegistry, "security_scanner", side_effect=Exception("scan error")
+    ):
         worker = SecurityCheckWorker(paths={"/a/b.py"}, signals=signals, generation=1)
         worker.run()
 
@@ -457,6 +460,7 @@ def test_controller_on_copy_requested_tree_map(qtbot, tmp_path):
 
 def test_controller_on_copy_requested_full(qtbot, tmp_path):
     from domain.prompt.copy_mode import CopyMode
+
     view = make_mock_view(workspace=tmp_path)
     copy_config = MagicMock()
     copy_config.tree_map_only = False
@@ -471,6 +475,7 @@ def test_controller_on_copy_requested_full(qtbot, tmp_path):
 
 def test_controller_on_copy_requested_smart(qtbot, tmp_path):
     from domain.prompt.copy_mode import CopyMode
+
     view = make_mock_view(workspace=tmp_path)
     copy_config = MagicMock()
     copy_config.tree_map_only = False
@@ -485,6 +490,7 @@ def test_controller_on_copy_requested_smart(qtbot, tmp_path):
 
 def test_controller_on_copy_requested_apply(qtbot, tmp_path):
     from domain.prompt.copy_mode import CopyMode
+
     view = make_mock_view(workspace=tmp_path)
     copy_config = MagicMock()
     copy_config.tree_map_only = False

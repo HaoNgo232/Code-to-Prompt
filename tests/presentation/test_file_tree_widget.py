@@ -3,11 +3,8 @@ Tests cho FileTreeWidget - widget tích hợp file tree model, filter và delega
 """
 
 import pytest
-from pathlib import Path
-from typing import Set, List
-from unittest.mock import MagicMock, patch
-from PySide6.QtCore import Qt, QModelIndex
-from PySide6.QtWidgets import QApplication
+from unittest.mock import MagicMock
+from PySide6.QtCore import QModelIndex
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings

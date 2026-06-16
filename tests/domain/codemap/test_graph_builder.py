@@ -1,9 +1,13 @@
-import pytest
-from pathlib import Path
-from unittest.mock import patch
 from domain.codemap.graph_builder import CodeMapBuilder
 from domain.smart_context.tree_item import TreeItem
-from domain.codemap.types import CodeMap, Symbol, Relationship, RelationshipKind, SymbolKind
+from domain.codemap.types import (
+    CodeMap,
+    Symbol,
+    Relationship,
+    RelationshipKind,
+    SymbolKind,
+)
+
 
 class TestCodeMapBuilder:
     def test_build_for_file_read_error(self, tmp_path):
@@ -19,7 +23,9 @@ class TestCodeMapBuilder:
         test_file.write_text("def my_func():\n    pass", encoding="utf-8")
 
         # 2. Build with explicit content
-        codemap = builder.build_for_file(str(test_file), content="def custom_func():\n    pass")
+        codemap = builder.build_for_file(
+            str(test_file), content="def custom_func():\n    pass"
+        )
         assert codemap is not None
         assert codemap.file_path == str(test_file)
         assert len(codemap.symbols) > 0
@@ -32,7 +38,9 @@ class TestCodeMapBuilder:
         #   └── src/
         #        └── helper.py
         main_path = tmp_path / "main.py"
-        main_path.write_text("import src.helper\ndef run():\n    pass", encoding="utf-8")
+        main_path.write_text(
+            "import src.helper\ndef run():\n    pass", encoding="utf-8"
+        )
 
         src_dir = tmp_path / "src"
         src_dir.mkdir()
@@ -51,9 +59,9 @@ class TestCodeMapBuilder:
                     is_dir=True,
                     children=[
                         TreeItem(label="helper.py", path=str(helper_path), is_dir=False)
-                    ]
-                )
-            ]
+                    ],
+                ),
+            ],
         )
 
         builder = CodeMapBuilder(workspace_root=tmp_path)
@@ -72,21 +80,43 @@ class TestCodeMapBuilder:
 
         # Construct a manual CodeMap with specific symbols and relationships to test traversal logic
         # A simple chain: funcA -> funcB -> funcC
-        sym1 = Symbol(name="funcA", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=1, line_end=2)
-        sym2 = Symbol(name="funcB", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=5, line_end=6)
-        sym3 = Symbol(name="funcC", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=10, line_end=11)
+        sym1 = Symbol(
+            name="funcA",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=1,
+            line_end=2,
+        )
+        sym2 = Symbol(
+            name="funcB",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=5,
+            line_end=6,
+        )
+        sym3 = Symbol(
+            name="funcC",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=10,
+            line_end=11,
+        )
 
-        rel1 = Relationship(source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2)
-        rel2 = Relationship(source="funcB", target="funcC", kind=RelationshipKind.CALLS, source_line=6)
+        rel1 = Relationship(
+            source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2
+        )
+        rel2 = Relationship(
+            source="funcB", target="funcC", kind=RelationshipKind.CALLS, source_line=6
+        )
 
         codemap = CodeMap(
-            file_path=file_path,
-            symbols=[sym1, sym2, sym3],
-            relationships=[rel1, rel2]
+            file_path=file_path, symbols=[sym1, sym2, sym3], relationships=[rel1, rel2]
         )
 
         builder.codemaps[file_path] = codemap
-        builder.codemaps[empty_file_path] = CodeMap(file_path=empty_file_path, symbols=[], relationships=[])
+        builder.codemaps[empty_file_path] = CodeMap(
+            file_path=empty_file_path, symbols=[], relationships=[]
+        )
 
         # Update builder indexes manually for caller/callee testing
         builder._callers_index["funcB"] = ["funcA"]
@@ -113,15 +143,21 @@ class TestCodeMapBuilder:
         assert "funcA" in related_rev
 
         # 4. Search with specific file_path limit
-        related_scoped = builder.get_related_symbols("funcA", depth=1, file_path=file_path)
+        related_scoped = builder.get_related_symbols(
+            "funcA", depth=1, file_path=file_path
+        )
         assert "funcB" in related_scoped
 
         # 5. Search with non-existent file_path scoped limit (falls back to all codemaps)
-        related_scoped_none = builder.get_related_symbols("funcA", depth=1, file_path="nonexistent.py")
+        related_scoped_none = builder.get_related_symbols(
+            "funcA", depth=1, file_path="nonexistent.py"
+        )
         assert len(related_scoped_none) > 0
 
         # 6. Search with a valid but empty file scope (searches only that file, resulting in 0 matches)
-        related_scoped_empty = builder.get_related_symbols("funcA", depth=1, file_path=empty_file_path)
+        related_scoped_empty = builder.get_related_symbols(
+            "funcA", depth=1, file_path=empty_file_path
+        )
         assert len(related_scoped_empty) == 0
 
         # Test callers and callees APIs
@@ -134,17 +170,31 @@ class TestCodeMapBuilder:
         builder = CodeMapBuilder(workspace_root=tmp_path)
         file_path = str(tmp_path / "prog.py")
 
-        sym1 = Symbol(name="funcA", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=1, line_end=2)
-        sym2 = Symbol(name="funcB", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=5, line_end=6)
+        sym1 = Symbol(
+            name="funcA",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=1,
+            line_end=2,
+        )
+        sym2 = Symbol(
+            name="funcB",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=5,
+            line_end=6,
+        )
 
         # Cycle: funcA -> funcB and funcB -> funcA
-        rel1 = Relationship(source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2)
-        rel2 = Relationship(source="funcB", target="funcA", kind=RelationshipKind.CALLS, source_line=6)
+        rel1 = Relationship(
+            source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2
+        )
+        rel2 = Relationship(
+            source="funcB", target="funcA", kind=RelationshipKind.CALLS, source_line=6
+        )
 
         codemap = CodeMap(
-            file_path=file_path,
-            symbols=[sym1, sym2],
-            relationships=[rel1, rel2]
+            file_path=file_path, symbols=[sym1, sym2], relationships=[rel1, rel2]
         )
 
         builder.codemaps[file_path] = codemap
@@ -174,14 +224,26 @@ class TestCodeMapBuilder:
         builder = CodeMapBuilder(workspace_root=tmp_path)
         file_path = str(tmp_path / "main.py")
 
-        sym1 = Symbol(name="funcA", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=1, line_end=2)
-        sym2 = Symbol(name="funcB", kind=SymbolKind.FUNCTION, file_path=file_path, line_start=5, line_end=6)
-        rel = Relationship(source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2)
+        sym1 = Symbol(
+            name="funcA",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=1,
+            line_end=2,
+        )
+        sym2 = Symbol(
+            name="funcB",
+            kind=SymbolKind.FUNCTION,
+            file_path=file_path,
+            line_start=5,
+            line_end=6,
+        )
+        rel = Relationship(
+            source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2
+        )
 
         codemap = CodeMap(
-            file_path=file_path,
-            symbols=[sym1, sym2],
-            relationships=[rel]
+            file_path=file_path, symbols=[sym1, sym2], relationships=[rel]
         )
 
         builder.codemaps[file_path] = codemap
@@ -195,20 +257,24 @@ class TestCodeMapBuilder:
         # Invalidate file in cache
         builder.invalidate_file(file_path)
         assert file_path not in builder.codemaps
-        assert "funcA" not in builder._callees_index or "funcB" not in builder._callees_index["funcA"]
-        assert "funcB" not in builder._callers_index or "funcA" not in builder._callers_index["funcB"]
+        assert (
+            "funcA" not in builder._callees_index
+            or "funcB" not in builder._callees_index["funcA"]
+        )
+        assert (
+            "funcB" not in builder._callers_index
+            or "funcA" not in builder._callers_index["funcB"]
+        )
 
     def test_invalidate_file_removal_exceptions(self, tmp_path):
         # Trigger the ValueError try-except blocks inside invalidate_file (lines 221-222, 226-227)
         builder = CodeMapBuilder(workspace_root=tmp_path)
         file_path = str(tmp_path / "main.py")
 
-        rel = Relationship(source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2)
-        codemap = CodeMap(
-            file_path=file_path,
-            symbols=[],
-            relationships=[rel]
+        rel = Relationship(
+            source="funcA", target="funcB", kind=RelationshipKind.CALLS, source_line=2
         )
+        codemap = CodeMap(file_path=file_path, symbols=[], relationships=[rel])
 
         builder.codemaps[file_path] = codemap
         # Setup index so key exists, but value lists do NOT contain funcA or funcB (triggers ValueError on remove)

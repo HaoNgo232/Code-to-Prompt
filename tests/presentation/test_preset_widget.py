@@ -4,13 +4,13 @@ Tests cho PresetWidget - UI component cho Context Presets.
 
 import pytest
 from typing import List
-from unittest.mock import MagicMock, patch, call
-from PySide6.QtCore import Qt, Signal, QObject
-from PySide6.QtWidgets import QInputDialog, QMessageBox, QPushButton
+from unittest.mock import MagicMock, patch
+from PySide6.QtCore import Signal, QObject
+from PySide6.QtWidgets import QInputDialog, QMessageBox
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
-from presentation.components.preset_widget import PresetWidget, _MockCombo
+from presentation.components.preset_widget import PresetWidget
 
 
 class DummySettingsService:
@@ -50,6 +50,7 @@ class DummyPresetEntry:
 
 class DummyController(QObject):
     """Minimal mock for PresetController."""
+
     presets_changed = Signal()
     preset_loaded = Signal(str)
 
@@ -281,7 +282,9 @@ def test_on_menu_action_delete_cancelled(controller, qtbot):
     action = MagicMock()
     action.data.return_value = "__DELETE__"
 
-    with patch.object(QMessageBox, "warning", return_value=QMessageBox.StandardButton.Cancel):
+    with patch.object(
+        QMessageBox, "warning", return_value=QMessageBox.StandardButton.Cancel
+    ):
         widget._on_menu_action(action)
 
     delete_mock.assert_not_called()
@@ -299,7 +302,9 @@ def test_on_menu_action_delete_confirmed(controller, qtbot):
     action = MagicMock()
     action.data.return_value = "__DELETE__"
 
-    with patch.object(QMessageBox, "warning", return_value=QMessageBox.StandardButton.Yes):
+    with patch.object(
+        QMessageBox, "warning", return_value=QMessageBox.StandardButton.Yes
+    ):
         widget._on_menu_action(action)
 
     delete_mock.assert_called_once_with("id1")

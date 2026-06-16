@@ -3,8 +3,7 @@ Tests cho FileTreeModel - QAbstractItemModel với lazy loading và selection.
 """
 
 import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from PySide6.QtCore import Qt, QModelIndex
 
 from domain.ports.registry import DomainRegistry
@@ -123,7 +122,13 @@ class TestTreeNode:
             is_dir=True,
             is_loaded=True,
             children=[
-                TreeItem(label="main.py", path="/workspace/main.py", is_dir=False, is_loaded=True, children=[]),
+                TreeItem(
+                    label="main.py",
+                    path="/workspace/main.py",
+                    is_dir=False,
+                    is_loaded=True,
+                    children=[],
+                ),
             ],
         )
         node = TreeNode.from_tree_item(item, depth=0, max_depth=1)
@@ -147,7 +152,13 @@ class TestTreeNode:
                     is_dir=True,
                     is_loaded=True,
                     children=[
-                        TreeItem(label="deep.py", path="/root/sub/deep.py", is_dir=False, is_loaded=True, children=[]),
+                        TreeItem(
+                            label="deep.py",
+                            path="/root/sub/deep.py",
+                            is_dir=False,
+                            is_loaded=True,
+                            children=[],
+                        ),
                     ],
                 )
             ],
@@ -170,7 +181,13 @@ class TestTreeNode:
             is_dir=True,
             is_loaded=True,
             children=[
-                TreeItem(label="a.py", path="/ws/a.py", is_dir=False, is_loaded=True, children=[]),
+                TreeItem(
+                    label="a.py",
+                    path="/ws/a.py",
+                    is_dir=False,
+                    is_loaded=True,
+                    children=[],
+                ),
             ],
         )
         path_index = {}
@@ -321,7 +338,11 @@ def test_model_select_deselect_node(model_with_tree):
     # Get check state
     state = model.data(root_idx, Qt.ItemDataRole.CheckStateRole)
     # Root is a dir, so we get a folder check state
-    assert state in (Qt.CheckState.Checked, Qt.CheckState.PartiallyChecked, Qt.CheckState.Unchecked)
+    assert state in (
+        Qt.CheckState.Checked,
+        Qt.CheckState.PartiallyChecked,
+        Qt.CheckState.Unchecked,
+    )
 
 
 def test_model_setdata_unchecked(model_with_tree):
@@ -336,7 +357,9 @@ def test_model_setdata_unchecked(model_with_tree):
 
 
 def test_model_setdata_invalid_index(model):
-    result = model.setData(QModelIndex(), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+    result = model.setData(
+        QModelIndex(), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole
+    )
     assert result is False
 
 
@@ -436,14 +459,18 @@ def test_token_count_worker_success(tmp_path):
 
 def test_token_count_worker_no_auto_delete():
     tokenization_service = MagicMock()
-    worker = TokenCountWorker([], tokenization_service=tokenization_service, generation=1)
+    worker = TokenCountWorker(
+        [], tokenization_service=tokenization_service, generation=1
+    )
     # TokenCountWorker uses setAutoDelete(True) unlike CopyTaskWorker
     assert isinstance(worker.autoDelete(), bool)  # Just ensure no exception
 
 
 def test_token_count_worker_cancel():
     tokenization_service = MagicMock()
-    worker = TokenCountWorker([], tokenization_service=tokenization_service, generation=1)
+    worker = TokenCountWorker(
+        [], tokenization_service=tokenization_service, generation=1
+    )
     worker.cancel()
     assert worker._cancelled is True
 

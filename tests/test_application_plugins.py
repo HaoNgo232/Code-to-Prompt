@@ -11,9 +11,11 @@ from application.plugins.contracts import (
     WorkflowPluginMetadata,
     WorkflowPluginRequest,
     WorkflowPluginResult,
-    IWorkflowPlugin,
 )
-from application.plugins.registry import WorkflowPluginRegistry, workflow_plugin_registry
+from application.plugins.registry import (
+    WorkflowPluginRegistry,
+    workflow_plugin_registry,
+)
 
 
 # Mock plugin thuc thi interface IWorkflowPlugin
@@ -115,7 +117,9 @@ def test_registry_execute_success():
     plugin = DummyPlugin("p1")
     registry.register(plugin)
 
-    req = WorkflowPluginRequest(workspace_path=Path("/tmp"), action="analyze", payload={"deep": True})
+    req = WorkflowPluginRequest(
+        workspace_path=Path("/tmp"), action="analyze", payload={"deep": True}
+    )
     res = registry.execute("p1", req)
 
     assert res.success is True

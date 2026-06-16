@@ -22,7 +22,9 @@ class TestTreeMapGenerator(unittest.TestCase):
             is_dir=True,
             children=[],
         )
-        self.file_main = TreeItem(label="main.py", path="/workspace/src/main.py", is_dir=False)
+        self.file_main = TreeItem(
+            label="main.py", path="/workspace/src/main.py", is_dir=False
+        )
         self.dir_src = TreeItem(
             label="src",
             path="/workspace/src",

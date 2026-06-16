@@ -1,8 +1,13 @@
 import unittest
 from pathlib import Path
-from domain.prompt.assembler import assemble_prompt, assemble_smart_prompt, _strip_xml_simple
+from domain.prompt.assembler import (
+    assemble_prompt,
+    assemble_smart_prompt,
+    _strip_xml_simple,
+)
 from domain.config.output_format import OutputStyle
 from shared.types.git_types import GitDiffResult, GitLogResult
+
 
 class TestPromptAssemblerExtra(unittest.TestCase):
     def test_assemble_prompt_fallback(self):
@@ -58,7 +63,9 @@ class TestPromptAssemblerExtra(unittest.TestCase):
             instructions_at_top=True,
             output_style=OutputStyle.XML,
         )
-        self.assertTrue(prompt.startswith("<user_instructions>\nDo something\n</user_instructions>"))
+        self.assertTrue(
+            prompt.startswith("<user_instructions>\nDo something\n</user_instructions>")
+        )
         self.assertIn("<project_rules>\nRule A\n</project_rules>", prompt)
         self.assertIn("<index>index_val</index>", prompt)
 
@@ -83,7 +90,7 @@ class TestPromptAssemblerExtra(unittest.TestCase):
             file_map="src/",
             user_instructions="Do something",
             project_rules="Rule A",
-            semantic_index="<index total_files=\"5\">index_val</index>",
+            semantic_index='<index total_files="5">index_val</index>',
             instructions_at_top=True,
             git_diffs=git_diffs,
             output_style=OutputStyle.PLAIN,
@@ -134,7 +141,9 @@ class TestPromptAssemblerExtra(unittest.TestCase):
             output_style=OutputStyle.XML,
         )
         self.assertIn("<project_rules>\nRule A\n  </project_rules>", prompt)
-        self.assertIn("<user_instructions>\nDo something\n  </user_instructions>", prompt)
+        self.assertIn(
+            "<user_instructions>\nDo something\n  </user_instructions>", prompt
+        )
         self.assertIn("<index>index_val</index>", prompt)
 
     def test_assemble_plain_with_options(self):
@@ -175,9 +184,14 @@ class TestPromptAssemblerExtra(unittest.TestCase):
         # Empty input
         self.assertEqual(_strip_xml_simple(""), "")
         # Attribute only
-        self.assertEqual(_strip_xml_simple('<tag total_files="5"/>'), "Metadata: total_files: 5")
-        self.assertEqual(_strip_xml_simple('<tag path="a.py" dependents="2"/>'), "Metadata: path: a.py, dependents: 2")
+        self.assertEqual(
+            _strip_xml_simple('<tag total_files="5"/>'), "Metadata: total_files: 5"
+        )
+        self.assertEqual(
+            _strip_xml_simple('<tag path="a.py" dependents="2"/>'),
+            "Metadata: path: a.py, dependents: 2",
+        )
         # Mixed content
-        self.assertEqual(_strip_xml_simple('<tag>hello</tag>'), "hello")
+        self.assertEqual(_strip_xml_simple("<tag>hello</tag>"), "hello")
         # Multi newline cleanup
         self.assertEqual(_strip_xml_simple("hello\n\n\n\nworld"), "hello\n\nworld")

@@ -5,7 +5,6 @@ Tests cho presentation/utils modules:
 """
 
 import pytest
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from domain.ports.registry import DomainRegistry
@@ -47,6 +46,7 @@ def setup_registry():
 
 def test_copy_to_clipboard_success(qtbot):
     from presentation.utils.clipboard import copy_to_clipboard
+
     success, err = copy_to_clipboard("Hello world")
     assert success is True
     assert err == ""
@@ -54,6 +54,7 @@ def test_copy_to_clipboard_success(qtbot):
 
 def test_copy_to_clipboard_empty_string(qtbot):
     from presentation.utils.clipboard import copy_to_clipboard
+
     success, err = copy_to_clipboard("")
     # Empty string is still valid clipboard content
     assert isinstance(success, bool)
@@ -62,6 +63,7 @@ def test_copy_to_clipboard_empty_string(qtbot):
 def test_copy_to_clipboard_no_clipboard(qtbot):
     from presentation.utils.clipboard import copy_to_clipboard
     from PySide6.QtGui import QGuiApplication
+
     with patch.object(QGuiApplication, "clipboard", return_value=None):
         success, err = copy_to_clipboard("text")
         assert success is False
@@ -71,6 +73,7 @@ def test_copy_to_clipboard_no_clipboard(qtbot):
 def test_copy_to_clipboard_exception(qtbot):
     from presentation.utils.clipboard import copy_to_clipboard
     from PySide6.QtGui import QGuiApplication
+
     with patch.object(QGuiApplication, "clipboard", side_effect=RuntimeError("crash")):
         success, err = copy_to_clipboard("text")
         assert success is False
@@ -79,6 +82,7 @@ def test_copy_to_clipboard_exception(qtbot):
 
 def test_get_clipboard_text_success(qtbot):
     from presentation.utils.clipboard import copy_to_clipboard, get_clipboard_text
+
     copy_to_clipboard("clipboard content")
     success, text = get_clipboard_text()
     assert success is True
@@ -88,6 +92,7 @@ def test_get_clipboard_text_success(qtbot):
 def test_get_clipboard_text_no_clipboard(qtbot):
     from presentation.utils.clipboard import get_clipboard_text
     from PySide6.QtGui import QGuiApplication
+
     with patch.object(QGuiApplication, "clipboard", return_value=None):
         success, err = get_clipboard_text()
         assert success is False
@@ -97,6 +102,7 @@ def test_get_clipboard_text_no_clipboard(qtbot):
 def test_get_clipboard_text_exception(qtbot):
     from presentation.utils.clipboard import get_clipboard_text
     from PySide6.QtGui import QGuiApplication
+
     with patch.object(QGuiApplication, "clipboard", side_effect=RuntimeError("crash")):
         success, err = get_clipboard_text()
         assert success is False
@@ -111,6 +117,7 @@ def test_get_clipboard_text_exception(qtbot):
 def test_history_view_qt_imports():
     """Test that history_view_qt.py exports all expected symbols."""
     import presentation.views.history.history_view_qt as hvq
+
     assert hasattr(hvq, "HistoryViewQt")
     assert hasattr(hvq, "DateGroupHeader")
     assert hasattr(hvq, "OperationBadge")
@@ -125,6 +132,7 @@ def test_history_view_qt_imports():
 
 def test_get_history_entries_calls_service():
     from presentation.views.history.history_view_qt import get_history_entries
+
     history_service = MagicMock()
     history_service.get_history_entries.return_value = []
 
@@ -136,6 +144,7 @@ def test_get_history_entries_calls_service():
 
 def test_get_entry_by_id_calls_service():
     from presentation.views.history.history_view_qt import get_entry_by_id
+
     history_service = MagicMock()
     history_service.get_entry_by_id.return_value = None
 
@@ -146,6 +155,7 @@ def test_get_entry_by_id_calls_service():
 
 def test_clear_history_calls_service():
     from presentation.views.history.history_view_qt import clear_history
+
     history_service = MagicMock()
     history_service.clear_history.return_value = 5
 
@@ -156,6 +166,7 @@ def test_clear_history_calls_service():
 
 def test_get_history_stats_calls_service():
     from presentation.views.history.history_view_qt import get_history_stats
+
     history_service = MagicMock()
     history_service.get_history_stats.return_value = {"total": 10}
 
@@ -167,6 +178,7 @@ def test_get_history_stats_calls_service():
 
 def test_delete_entry_calls_service():
     from presentation.views.history.history_view_qt import delete_entry
+
     history_service = MagicMock()
     history_service.delete_entry.return_value = True
 

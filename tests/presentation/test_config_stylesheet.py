@@ -3,8 +3,6 @@ Tests cho stylesheet.py và theme_qss.py.
 """
 
 import sys
-import os
-import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QPushButton
 
@@ -13,7 +11,6 @@ from presentation.config.stylesheet import (
     setup_button,
     get_global_stylesheet,
 )
-from presentation.config.theme_qss import generate_app_stylesheet
 
 
 def test_apply_cursor_pointer(qtbot):
@@ -48,9 +45,12 @@ def test_theme_qss_meipass_branch():
     # Test compilation of theme_qss under PyInstaller MEIPASS environment
     # Since these are module-level variables evaluated on import,
     # we need to unload the module and reload it with sys._MEIPASS patched.
-    
+
     # 1. Unload the module from sys.modules
-    modules_to_unload = ["presentation.config.theme_qss", "presentation.config.stylesheet"]
+    modules_to_unload = [
+        "presentation.config.theme_qss",
+        "presentation.config.stylesheet",
+    ]
     saved_modules = {}
     for m in modules_to_unload:
         if m in sys.modules:
@@ -63,10 +63,10 @@ def test_theme_qss_meipass_branch():
     try:
         # 3. Import again
         import presentation.config.theme_qss as theme_qss
-        
+
         # Verify the assets directory points to MEIPASS
         assert "/mock/meipass" in theme_qss._ARROW_RIGHT
-        
+
         qss = theme_qss.generate_app_stylesheet()
         assert isinstance(qss, str)
         assert "arrow-right.svg" in qss
@@ -74,7 +74,7 @@ def test_theme_qss_meipass_branch():
         # Clean up
         if hasattr(sys, "_MEIPASS"):
             del sys._MEIPASS
-        
+
         # Restore original modules
         for m in modules_to_unload:
             if m in saved_modules:

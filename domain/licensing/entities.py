@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class LicenseInfo:
     license_id: str

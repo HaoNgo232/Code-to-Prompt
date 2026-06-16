@@ -3,8 +3,7 @@ Tests cho TokenStatsPanelQt.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
-from PySide6.QtCore import Qt
+from unittest.mock import MagicMock
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
 from presentation.components.token_stats_qt import TokenStatsPanelQt
@@ -12,10 +11,7 @@ from presentation.components.token_stats_qt import TokenStatsPanelQt
 
 class DummySettingsService:
     def __init__(self) -> None:
-        self._settings = AppSettings(
-            model_id="gpt-5.1",
-            use_gitignore=True
-        )
+        self._settings = AppSettings(model_id="gpt-5.1", use_gitignore=True)
 
     def load_settings(self) -> AppSettings:
         return self._settings
@@ -32,15 +28,15 @@ def setup_settings_port():
         old_service = DomainRegistry.settings_service()
     except RuntimeError:
         pass
-        
+
     old_provider = DomainRegistry._settings_provider
-        
+
     service = DummySettingsService()
     DomainRegistry.register_settings_service(service)
     DomainRegistry.register_settings_provider(lambda: service.load_settings())
-    
+
     yield service
-    
+
     if old_service is not None:
         DomainRegistry.register_settings_service(old_service)
     DomainRegistry._settings_provider = old_provider
@@ -75,7 +71,7 @@ def test_token_stats_panel_update_stats(qtbot):
     # We can temporarily mock self._selected_model.context_length to 100,000 for easier numbers
     panel._selected_model = MagicMock()
     panel._selected_model.context_length = 100000
-    
+
     # 78k = 78% (Medium warning level)
     panel.update_stats(file_count=5, file_tokens=70000, instruction_tokens=8000)
     assert panel._usage_label.text() == "78,000 / 100,000"
@@ -114,7 +110,7 @@ def test_token_stats_panel_model_changed(qtbot):
             break
 
     assert target_idx >= 0
-    
+
     # Change index via combo box
     panel._model_combo.setCurrentIndex(target_idx)
 
@@ -137,10 +133,11 @@ def test_token_stats_panel_set_loading(qtbot):
 def test_token_stats_panel_invalid_saved_model(qtbot, setup_settings_port):
     # Set invalid model_id in settings
     setup_settings_port.update_setting("model_id", "invalid-model")
-    
+
     mock_tok = MagicMock()
     panel = TokenStatsPanelQt(mock_tok)
     qtbot.addWidget(panel)
     # Should fall back to DEFAULT_MODEL_ID
     from domain.config.model_config import DEFAULT_MODEL_ID
+
     assert panel._selected_model_id == DEFAULT_MODEL_ID

@@ -1,5 +1,3 @@
-import pytest
-import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 from application.services.workspace_rules import (
@@ -9,8 +7,9 @@ from application.services.workspace_rules import (
     remove_rule_file,
     is_rule_file,
     get_rule_file_contents,
-    _get_rules_path
+    _get_rules_path,
 )
+
 
 class TestWorkspaceRulesExtra:
     def test_get_rules_path_permission_error(self):
@@ -45,7 +44,7 @@ class TestWorkspaceRulesExtra:
         # File outside workspace triggers ValueError -> logs warning and returns (lines 69-71)
         outside_file = "/outside/path/rules.md"
         add_rule_file(tmp_path, outside_file)
-        
+
         # Verify it wasn't added
         rules = load_workspace_rules(tmp_path)
         assert len(rules) == 0
@@ -53,7 +52,7 @@ class TestWorkspaceRulesExtra:
     def test_remove_rule_file_not_in_workspace(self, tmp_path):
         # File outside workspace triggers ValueError -> returns (lines 89-90)
         outside_file = "/outside/path/rules.md"
-        remove_rule_file(tmp_path, outside_file) # Should not raise exception
+        remove_rule_file(tmp_path, outside_file)  # Should not raise exception
 
     def test_is_rule_file_not_in_workspace(self, tmp_path):
         # File outside workspace triggers ValueError -> returns False (lines 111-112)
@@ -74,7 +73,7 @@ class TestWorkspaceRulesExtra:
 
         # 3. rule3.md: file too large (lines 138-139)
         rule3 = tmp_path / "rule3.md"
-        rule3.write_text("a" * 15, encoding="utf-8") # size 15
+        rule3.write_text("a" * 15, encoding="utf-8")  # size 15
 
         # 4. rule4.md: permission error reading file (lines 143-144)
         rule4 = tmp_path / "rule4.md"
@@ -88,7 +87,7 @@ class TestWorkspaceRulesExtra:
             if "rule3.md" in str(self_obj):
                 # Fake a large size
                 mock_stat_val = MagicMock()
-                mock_stat_val.st_size = 11 * 1024 * 1024 # 11MB
+                mock_stat_val.st_size = 11 * 1024 * 1024  # 11MB
                 return mock_stat_val
             return orig_stat(self_obj, *args, **kwargs)
 
@@ -97,19 +96,20 @@ class TestWorkspaceRulesExtra:
                 raise PermissionError("Mock Read Denied")
             return orig_read(self_obj, *args, **kwargs)
 
-        with patch.object(Path, "stat", mock_stat), \
-             patch.object(Path, "read_text", mock_read):
-            
+        with (
+            patch.object(Path, "stat", mock_stat),
+            patch.object(Path, "read_text", mock_read),
+        ):
             result = get_rule_file_contents(tmp_path)
-            
+
             # verify rule1.md is present
             assert "--- Rule File: rule1.md ---" in result
             assert "content 1" in result
-            
+
             # verify rule2.md (missing) is skipped
             # verify rule3.md (too large) is skipped
             assert "rule3.md" not in result
-            
+
             # verify rule4.md (permission denied) is skipped
             assert "rule4.md" not in result
 

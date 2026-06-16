@@ -5,9 +5,8 @@ DirtyRepoDialogQt, FilePreviewDialogQt, CacheManagementDialogQt.
 
 import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import QMessageBox, QPushButton, QApplication
+from unittest.mock import MagicMock, patch
+from PySide6.QtWidgets import QMessageBox, QPushButton
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
@@ -128,7 +127,9 @@ def mock_security_scanner():
 def test_security_dialog_renders(qtbot, mock_security_scanner):
     match = _make_security_match()
     cb = MagicMock()
-    dialog = SecurityDialogQt(parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb)
+    dialog = SecurityDialogQt(
+        parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb
+    )
     qtbot.addWidget(dialog)
     dialog.show()
     assert dialog.windowTitle() == "Security Warning"
@@ -137,7 +138,9 @@ def test_security_dialog_renders(qtbot, mock_security_scanner):
 def test_security_dialog_copy_anyway(qtbot, mock_security_scanner):
     match = _make_security_match()
     cb = MagicMock()
-    dialog = SecurityDialogQt(parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb)
+    dialog = SecurityDialogQt(
+        parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb
+    )
     qtbot.addWidget(dialog)
     dialog.show()
 
@@ -156,7 +159,9 @@ def test_security_dialog_copy_anyway(qtbot, mock_security_scanner):
 def test_security_dialog_cancel(qtbot, mock_security_scanner):
     match = _make_security_match()
     cb = MagicMock()
-    dialog = SecurityDialogQt(parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb)
+    dialog = SecurityDialogQt(
+        parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb
+    )
     qtbot.addWidget(dialog)
     dialog.show()
 
@@ -175,11 +180,15 @@ def test_security_dialog_cancel(qtbot, mock_security_scanner):
 def test_security_dialog_copy_results(qtbot, mock_security_scanner):
     match = _make_security_match()
     cb = MagicMock()
-    dialog = SecurityDialogQt(parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb)
+    dialog = SecurityDialogQt(
+        parent=None, prompt="test prompt", matches=[match], on_copy_anyway=cb
+    )
     qtbot.addWidget(dialog)
     dialog.show()
 
-    with patch("presentation.components.dialogs.dialogs_qt.copy_to_clipboard") as mock_copy:
+    with patch(
+        "presentation.components.dialogs.dialogs_qt.copy_to_clipboard"
+    ) as mock_copy:
         dialog._copy_results()
         mock_copy.assert_called_once()
 
@@ -188,7 +197,9 @@ def test_security_dialog_no_file_path(qtbot, mock_security_scanner):
     """Test with match that has no file_path."""
     match = _make_security_match(file_path="")
     cb = MagicMock()
-    dialog = SecurityDialogQt(parent=None, prompt="", matches=[match], on_copy_anyway=cb)
+    dialog = SecurityDialogQt(
+        parent=None, prompt="", matches=[match], on_copy_anyway=cb
+    )
     qtbot.addWidget(dialog)
     dialog.show()
     # Should render without error even with empty file path
@@ -203,7 +214,9 @@ def test_security_dialog_no_file_path(qtbot, mock_security_scanner):
 def test_remote_repo_dialog_renders(qtbot):
     repo_manager = MagicMock()
     on_success = MagicMock()
-    dialog = RemoteRepoDialogQt(parent=None, repo_manager=repo_manager, on_clone_success=on_success)
+    dialog = RemoteRepoDialogQt(
+        parent=None, repo_manager=repo_manager, on_clone_success=on_success
+    )
     qtbot.addWidget(dialog)
     dialog.show()
     assert dialog.windowTitle() == "Open Remote Repository"
@@ -213,7 +226,9 @@ def test_remote_repo_dialog_renders(qtbot):
 def test_remote_repo_dialog_empty_url(qtbot):
     repo_manager = MagicMock()
     on_success = MagicMock()
-    dialog = RemoteRepoDialogQt(parent=None, repo_manager=repo_manager, on_clone_success=on_success)
+    dialog = RemoteRepoDialogQt(
+        parent=None, repo_manager=repo_manager, on_clone_success=on_success
+    )
     qtbot.addWidget(dialog)
     dialog.show()
 
@@ -232,7 +247,9 @@ def test_remote_repo_dialog_clone_success(qtbot, tmp_path):
     repo_manager.clone_repo.return_value = repo_path
 
     on_success = MagicMock()
-    dialog = RemoteRepoDialogQt(parent=None, repo_manager=repo_manager, on_clone_success=on_success)
+    dialog = RemoteRepoDialogQt(
+        parent=None, repo_manager=repo_manager, on_clone_success=on_success
+    )
     qtbot.addWidget(dialog)
     dialog.show()
 
@@ -244,7 +261,9 @@ def test_remote_repo_dialog_clone_success(qtbot, tmp_path):
 def test_remote_repo_dialog_clone_error(qtbot):
     repo_manager = MagicMock()
     on_success = MagicMock()
-    dialog = RemoteRepoDialogQt(parent=None, repo_manager=repo_manager, on_clone_success=on_success)
+    dialog = RemoteRepoDialogQt(
+        parent=None, repo_manager=repo_manager, on_clone_success=on_success
+    )
     qtbot.addWidget(dialog)
     dialog.show()
 
@@ -311,7 +330,9 @@ def test_dirty_repo_dialog_discard_cancel(qtbot):
     qtbot.addWidget(dialog)
     dialog.show()
 
-    with patch.object(QMessageBox, "warning", return_value=QMessageBox.StandardButton.No):
+    with patch.object(
+        QMessageBox, "warning", return_value=QMessageBox.StandardButton.No
+    ):
         dialog._discard_and_pull()
     # Should not proceed
     repo_manager.discard_changes.assert_not_called()
@@ -331,7 +352,9 @@ def test_dirty_repo_dialog_discard_confirm(qtbot):
     )
     qtbot.addWidget(dialog)
 
-    with patch.object(QMessageBox, "warning", return_value=QMessageBox.StandardButton.Yes):
+    with patch.object(
+        QMessageBox, "warning", return_value=QMessageBox.StandardButton.Yes
+    ):
         dialog._discard_and_pull()
 
     # Should proceed (thread runs but we don't wait for it)
@@ -347,7 +370,9 @@ def test_file_preview_dialog_with_content(qtbot, tmp_path):
     f = tmp_path / "test.py"
     f.write_text("line1\nline2\nline3")
 
-    dialog = FilePreviewDialogQt(parent=None, file_path=str(f), content="line1\nline2\nline3")
+    dialog = FilePreviewDialogQt(
+        parent=None, file_path=str(f), content="line1\nline2\nline3"
+    )
     qtbot.addWidget(dialog)
     dialog.show()
     assert dialog.windowTitle() != ""
@@ -393,7 +418,9 @@ def test_cache_management_dialog_renders(qtbot):
     repo_manager.list_cached_repos.return_value = []
     on_open = MagicMock()
 
-    dialog = CacheManagementDialogQt(parent=None, repo_manager=repo_manager, on_open_repo=on_open)
+    dialog = CacheManagementDialogQt(
+        parent=None, repo_manager=repo_manager, on_open_repo=on_open
+    )
     qtbot.addWidget(dialog)
     dialog.show()
     assert dialog.windowTitle() == "Cached Repositories"
@@ -412,7 +439,9 @@ def test_cache_management_dialog_with_repos(qtbot):
     repo_manager.list_cached_repos.return_value = [repo]
     on_open = MagicMock()
 
-    dialog = CacheManagementDialogQt(parent=None, repo_manager=repo_manager, on_open_repo=on_open)
+    dialog = CacheManagementDialogQt(
+        parent=None, repo_manager=repo_manager, on_open_repo=on_open
+    )
     qtbot.addWidget(dialog)
     dialog.show()
     assert dialog.isVisible()

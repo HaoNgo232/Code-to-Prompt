@@ -2,13 +2,13 @@
 Tests cho module Memory ở domain layer (domain/memory/)
 """
 
-import json
-from pathlib import Path
-from unittest.mock import patch, mock_open
-import pytest
 
 from domain.memory.memory_types import MemoryEntry, MemoryStore
-from domain.memory.memory_service import load_memory_store, save_memory_store, add_memory
+from domain.memory.memory_service import (
+    load_memory_store,
+    save_memory_store,
+    add_memory,
+)
 from domain.memory.memory_prompt_adapter import load_memory_for_prompt
 
 
@@ -20,7 +20,7 @@ def test_memory_entry_dataclass():
         linked_files=["tests/test_bug.py"],
         linked_symbols=["test_bug"],
         workflow="rp_review",
-        tags=["bugfix", "tests"]
+        tags=["bugfix", "tests"],
     )
     assert entry.layer == "action"
     assert entry.content == "Fixed test runner bug"
@@ -48,9 +48,24 @@ def test_memory_store_dataclass():
     assert store.version == 2
     assert len(store.entries) == 0
 
-    e1 = MemoryEntry(layer="action", content="Action content", linked_files=["file1.py"], workflow="w1")
-    e2 = MemoryEntry(layer="decision", content="Decision content", linked_files=["file2.py"], workflow="w2")
-    e3 = MemoryEntry(layer="constraint", content="Constraint content", linked_files=["file1.py", "file2.py"], workflow="w1")
+    e1 = MemoryEntry(
+        layer="action",
+        content="Action content",
+        linked_files=["file1.py"],
+        workflow="w1",
+    )
+    e2 = MemoryEntry(
+        layer="decision",
+        content="Decision content",
+        linked_files=["file2.py"],
+        workflow="w2",
+    )
+    e3 = MemoryEntry(
+        layer="constraint",
+        content="Constraint content",
+        linked_files=["file1.py", "file2.py"],
+        workflow="w1",
+    )
 
     store.add(e1)
     store.add(e2)
@@ -143,7 +158,7 @@ def test_add_memory_logic(tmp_path):
     """Test add_memory thêm entry mới và kiểm soát giới hạn max_entries."""
     # Thêm memory lần đầu
     add_memory(tmp_path, "action", "Content 1", max_entries=2)
-    
+
     loaded = load_memory_store(tmp_path)
     assert len(loaded.entries) == 1
     assert loaded.entries[0].content == "Content 1"
@@ -172,7 +187,7 @@ def test_add_memory_corrupted_file_handles(tmp_path):
 
     # Không bị crash, tự overwrite
     add_memory(tmp_path, "decision", "New Decision", max_entries=2)
-    
+
     loaded = load_memory_store(tmp_path)
     assert len(loaded.entries) == 1
     assert loaded.entries[0].content == "New Decision"
@@ -193,7 +208,7 @@ def test_load_memory_for_prompt_legacy_fallback(tmp_path):
     """Test load_memory_for_prompt fallback sang legacy memory.xml khi v2 rỗng."""
     synapse_dir = tmp_path / ".synapse"
     synapse_dir.mkdir(parents=True)
-    
+
     # Không tạo v2, chỉ tạo legacy xml
     xml_file = synapse_dir / "memory.xml"
     xml_file.write_text("<memory>Legacy Content</memory>", encoding="utf-8")
@@ -212,7 +227,7 @@ def test_load_memory_for_prompt_legacy_exception(tmp_path):
     """Test load_memory_for_prompt trả về None khi đọc legacy file bị lỗi."""
     synapse_dir = tmp_path / ".synapse"
     synapse_dir.mkdir(parents=True)
-    
+
     # Tạo folder thay vì file để tạo exception khi đọc text
     xml_file = synapse_dir / "memory.xml"
     xml_file.mkdir()

@@ -8,7 +8,6 @@ Targets missing coverage:
 
 from pathlib import Path
 
-import pytest
 
 from shared.types.prompt_types import FileEntry
 from domain.prompt.formatters.xml import (
@@ -24,6 +23,7 @@ from domain.prompt.formatters.plain import format_files_plain
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_entry(
     display_path: str = "file.py",
@@ -58,7 +58,9 @@ class TestFormatFilesXml:
 
     def test_error_entry_renders_skipped_attribute(self):
         """Entry with error renders skipped='true' (line 46)."""
-        entry = _make_entry(display_path="error.py", content=None, error="File not found")
+        entry = _make_entry(
+            display_path="error.py", content=None, error="File not found"
+        )
         result = format_files_xml([entry])
         assert 'skipped="true"' in result
         assert "File not found" in result
@@ -66,7 +68,9 @@ class TestFormatFilesXml:
 
     def test_error_entry_skips_content_block(self):
         """Error entries must NOT contain a <content> element."""
-        entry = _make_entry(display_path="bad.py", content=None, error="Permission denied")
+        entry = _make_entry(
+            display_path="bad.py", content=None, error="Permission denied"
+        )
         result = format_files_xml([entry])
         assert "<content>" not in result
 
@@ -177,7 +181,9 @@ class TestFormatFilesPlain:
 
     def test_other_error_branch_raw_message(self):
         """Generic error string is used verbatim as content_display (line 37-38)."""
-        entry = _make_entry(display_path="broken.py", content=None, error="Permission denied")
+        entry = _make_entry(
+            display_path="broken.py", content=None, error="Permission denied"
+        )
         result = format_files_plain([entry])
         assert "Permission denied" in result
         # Must NOT add '(skipped)' suffix for generic errors
@@ -195,7 +201,9 @@ class TestFormatFilesPlain:
 
     def test_no_depends_on_when_dependencies_none(self):
         """No DEPENDS ON line when entry.dependencies is None."""
-        entry = _make_entry(display_path="app.py", content="import os", dependencies=None)
+        entry = _make_entry(
+            display_path="app.py", content="import os", dependencies=None
+        )
         result = format_files_plain([entry])
         assert "DEPENDS ON" not in result
 
@@ -207,7 +215,9 @@ class TestFormatFilesPlain:
         assert "FILE: empty.py" in result
         # The content block after separator should be empty / just whitespace
         lines = result.splitlines()
-        header_idx = next(i for i, l in enumerate(lines) if l.startswith("FILE: empty.py"))
+        header_idx = next(
+            i for i, l in enumerate(lines) if l.startswith("FILE: empty.py")
+        )
         # After header + separator, remaining lines should contain no actual code
         rest = "\n".join(lines[header_idx + 2 :])
         assert rest.strip() == ""

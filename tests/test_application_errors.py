@@ -2,7 +2,6 @@
 Tests cho các class trong application/errors.py
 """
 
-import pytest
 from application.errors import (
     ApplicationError,
     UseCaseValidationError,
@@ -48,10 +47,12 @@ def test_application_error_to_dict():
 def test_application_error_from_domain():
     """Test factory method from_domain tạo ra ApplicationError từ DomainError."""
     domain_err = DomainError("domain crash", details={"domain_id": 123})
-    
+
     # Gọi from_domain trực tiếp từ ApplicationError base class
-    app_err = ApplicationError.from_domain(domain_err, code="new_app_code", details={"extra": True})
-    
+    app_err = ApplicationError.from_domain(
+        domain_err, code="new_app_code", details={"extra": True}
+    )
+
     assert app_err.message == "domain crash"
     assert app_err.code == "new_app_code"
     # Kiểm tra việc merge details

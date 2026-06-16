@@ -3,14 +3,17 @@ Tests cho FileTreeFilterProxy - search và filter trong file tree.
 """
 
 import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-from PySide6.QtCore import Qt, QModelIndex
+from unittest.mock import MagicMock
+from PySide6.QtCore import QModelIndex
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
-from presentation.components.file_tree.file_tree_filter import FileTreeFilterProxy, CODE_SEARCH_PREFIX
-from presentation.components.file_tree.file_tree_model import FileTreeModel, FileTreeRoles
+from presentation.components.file_tree.file_tree_filter import (
+    FileTreeFilterProxy,
+)
+from presentation.components.file_tree.file_tree_model import (
+    FileTreeModel,
+)
 
 
 class DummySettingsService:

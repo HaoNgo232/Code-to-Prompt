@@ -2,7 +2,6 @@
 Tests cho TierSelector component.
 """
 
-import pytest
 from PySide6.QtCore import Qt
 from presentation.components.tier_selector import TierSelector
 
@@ -31,7 +30,7 @@ def test_tier_selector_initial_state(qtbot):
 def test_tier_selector_click(qtbot):
     selector = TierSelector()
     qtbot.addWidget(selector)
-    
+
     # Track signal emission
     emitted = []
     selector.tier_changed.connect(lambda t: emitted.append(t))

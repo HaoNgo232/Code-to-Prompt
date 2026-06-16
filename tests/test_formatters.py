@@ -119,6 +119,7 @@ class TestGenerateFileSummaryXmlMinimal:
     def test_contains_required_sections(self) -> None:
         """Minimal XML summary chứa các sections tối giản cho OPX."""
         from domain.prompt.formatters.xml import generate_file_summary_xml_minimal
+
         result = generate_file_summary_xml_minimal()
         assert "<file_summary>" in result
         assert "<purpose>" in result

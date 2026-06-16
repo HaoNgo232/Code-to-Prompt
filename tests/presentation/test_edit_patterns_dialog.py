@@ -2,9 +2,8 @@
 Tests cho EditPatternsDialog.
 """
 
-import pytest
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPushButton, QPlainTextEdit
+from PySide6.QtWidgets import QPushButton
 from presentation.components.dialogs.edit_patterns_dialog import EditPatternsDialog
 
 
@@ -17,7 +16,7 @@ def test_edit_patterns_dialog_initial_state(qtbot):
     # Editor should contain non-empty patterns joined by newline
     # wait, edit_patterns_dialog does not filter during init: self._editor.setPlainText("\n".join(self._initial_patterns))
     assert dialog._editor.toPlainText() == "node_modules\ndist\n   \ntemp"
-    
+
     # get_patterns filters empty and strips whitespace
     res = dialog.get_patterns()
     assert res == ["node_modules", "dist", "temp"]
@@ -35,7 +34,7 @@ def test_edit_patterns_dialog_cancel(qtbot):
             break
 
     assert cancel_btn is not None
-    
+
     # Click cancel should reject the dialog
     with qtbot.waitSignal(dialog.rejected):
         qtbot.mouseClick(cancel_btn, Qt.MouseButton.LeftButton)

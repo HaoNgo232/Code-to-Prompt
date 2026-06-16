@@ -5,7 +5,6 @@ Tests cho ContextViewQt.
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QMainWindow, QStatusBar
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
@@ -14,10 +13,7 @@ from presentation.views.context.context_view_qt import ContextViewQt
 
 class DummySettingsService:
     def __init__(self) -> None:
-        self._settings = AppSettings(
-            model_id="gpt-5.1",
-            use_gitignore=True
-        )
+        self._settings = AppSettings(model_id="gpt-5.1", use_gitignore=True)
 
     def load_settings(self) -> AppSettings:
         return self._settings
@@ -112,10 +108,7 @@ def test_context_view_restore_tree_state(qtbot, tmp_path):
     view.on_workspace_changed(tmp_path)
 
     # Restore state
-    view.restore_tree_state(
-        selected_files=[str(f1)],
-        expanded_folders=[str(d1)]
-    )
+    view.restore_tree_state(selected_files=[str(f1)], expanded_folders=[str(d1)])
     # verify
     assert str(f1) in view.file_tree_widget.get_selected_paths()
 
@@ -124,10 +117,10 @@ def test_context_view_instructions(qtbot):
     get_ws = lambda: Path("/mock/workspace")
     view = ContextViewQt(get_workspace=get_ws)
     qtbot.addWidget(view)
-    
+
     view.set_instructions_text("instruction test text")
     assert view.get_instructions_text() == "instruction test text"
-    
+
     # Change trigger
     view._instructions_field.setPlainText("hello world test")
     # trigger slot
@@ -145,7 +138,7 @@ def test_context_view_workspace_changed(qtbot, tmp_path, setup_settings_registry
     # Trigger workspace changed
     new_ws = tmp_path / "new_workspace"
     new_ws.mkdir()
-    
+
     view.on_workspace_changed(new_ws)
 
     # Watcher should be stopped and restarted for new workspace
@@ -171,9 +164,9 @@ def test_context_view_show_copy_breakdown(qtbot):
         "content_tokens": 1000,
         "instruction_tokens": 500,
         "tree_tokens": 100,
-        "copy_mode": "Full Copy"
+        "copy_mode": "Full Copy",
     }
-    
+
     with patch("presentation.components.toast.toast_qt.toast_success") as mock_toast:
         view.show_copy_breakdown(1600, breakdown)
         mock_toast.assert_called_once()
@@ -185,11 +178,11 @@ def test_context_view_cleanup(qtbot, setup_settings_registry):
     get_ws = lambda: Path("/mock/workspace")
     view = ContextViewQt(get_workspace=get_ws)
     qtbot.addWidget(view)
-    
+
     # Setup some dummy states to cleanup
     view._ai_suggest_worker = MagicMock()
-    
+
     view.cleanup()
-    
+
     assert view._ai_suggest_worker is None
     watcher.stop.assert_called_once()

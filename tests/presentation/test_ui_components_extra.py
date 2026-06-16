@@ -2,13 +2,10 @@
 Tests cho các UI components nhỏ: ToggleSwitch, create_colored_icon, etc.
 """
 
-import os
 import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QMouseEvent
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings

@@ -123,8 +123,8 @@ class ServiceContainer:
         DomainRegistry.register_memory_monitor(get_memory_monitor())
 
         from infrastructure.adapters.license_service import Ed25519LicenseService
-        DomainRegistry.register_license_service(Ed25519LicenseService())
 
+        DomainRegistry.register_license_service(Ed25519LicenseService())
 
         # Backward compatibility for old encoder_registry wrapper
         try:

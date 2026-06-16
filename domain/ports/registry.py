@@ -25,7 +25,6 @@ from domain.ports.memory_port import IMemoryMonitor
 from domain.ports.license_service_port import ILicenseService
 
 
-
 class DomainRegistry:
     """
     Registry tinh (Service Locator) o Domain layer.
