@@ -1,15 +1,14 @@
-import sys
 import importlib
 from unittest.mock import patch, MagicMock
 import pytest
 
-# Pre-import GUI modules to ensure they bind real PySide6 classes 
+# Pre-import GUI modules to ensure they bind real PySide6 classes
 # before any global mocks are applied during tests.
 from presentation.views.settings.settings_view_qt import SettingsViewQt
-from presentation.components.tag_chips_widget import TagChipsWidget
 
 from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
+
 
 class DummySettingsService:
     def __init__(self) -> None:
@@ -33,6 +32,7 @@ class DummySettingsService:
 class DummySessionState:
     def __init__(self) -> None:
         pass
+
     def clear_session_state(self) -> None:
         pass
 
@@ -148,6 +148,7 @@ def setup_registry_dependencies():
 
 def test_main_boot_bypasses_license_check_with_no_license_arg():
     import main
+
     with (
         patch("sys.argv", ["main.py", "--no-license"]),
         patch("PySide6.QtWidgets.QApplication"),
@@ -159,7 +160,9 @@ def test_main_boot_bypasses_license_check_with_no_license_arg():
         patch("infrastructure.adapters.encoder_registry.initialize_encoder"),
         patch("shared.config.paths.ensure_app_directories"),
         patch("infrastructure.adapters.windows_utils.set_app_user_model_id"),
-        patch("domain.ports.registry.DomainRegistry.license_service") as mock_license_service
+        patch(
+            "domain.ports.registry.DomainRegistry.license_service"
+        ) as mock_license_service,
     ):
         importlib.reload(main)
         try:
@@ -171,6 +174,7 @@ def test_main_boot_bypasses_license_check_with_no_license_arg():
 
 def test_main_boot_enforces_license_check_by_default():
     import main
+
     with (
         patch("sys.argv", ["main.py"]),
         patch("PySide6.QtWidgets.QApplication"),
@@ -182,29 +186,71 @@ def test_main_boot_enforces_license_check_by_default():
         patch("infrastructure.adapters.encoder_registry.initialize_encoder"),
         patch("shared.config.paths.ensure_app_directories"),
         patch("infrastructure.adapters.windows_utils.set_app_user_model_id"),
-        patch("infrastructure.persistence.settings_manager.load_app_settings") as mock_load_settings,
-        patch("domain.ports.registry.DomainRegistry.license_service") as mock_license_service
+        patch(
+            "infrastructure.persistence.settings_manager.load_app_settings"
+        ) as mock_load_settings,
+        patch(
+            "presentation.widgets.license_dialog.LicenseActivationDialog"
+        ) as mock_dialog_class,
     ):
-        # Setup mocks
+        # Setup mocks: empty license key should trigger the dialog
         mock_settings = MagicMock()
-        mock_settings.license_key = "dummy"
+        mock_settings.license_key = ""
         mock_load_settings.return_value = mock_settings
-        
-        mock_lic_info = MagicMock()
-        mock_lic_info.is_valid = True
-        mock_license_service.return_value.verify_license_key.return_value = mock_lic_info
-        
+
+        mock_dialog = MagicMock()
+        mock_dialog_class.DialogCode.Accepted = 1
+        mock_dialog.exec.return_value = 1
+        mock_dialog_class.return_value = mock_dialog
+
         importlib.reload(main)
         try:
             main.main()
         except SystemExit:
-            pass # Ignore exits for mock setups if any
-            
-        mock_license_service.assert_called_once()
-        mock_license_service.return_value.verify_license_key.assert_called_once_with("dummy")
+            pass  # Ignore exits for mock setups if any
+
+        mock_dialog_class.assert_called_once()
+        mock_dialog.exec.assert_called_once()
 
 
-def test_settings_view_hides_licensing_with_no_license_arg(qtbot, setup_registry_dependencies):
+def test_main_boot_bypasses_dialog_if_license_exists():
+    import main
+
+    with (
+        patch("sys.argv", ["main.py"]),
+        patch("PySide6.QtWidgets.QApplication"),
+        patch("PySide6.QtGui.QIcon"),
+        patch("presentation.config.theme.apply_theme"),
+        patch("presentation.utils.qt_utils.get_signal_bridge"),
+        patch("presentation.main_window.SynapseMainWindow"),
+        patch("presentation.service_container.ServiceContainer"),
+        patch("infrastructure.adapters.encoder_registry.initialize_encoder"),
+        patch("shared.config.paths.ensure_app_directories"),
+        patch("infrastructure.adapters.windows_utils.set_app_user_model_id"),
+        patch(
+            "infrastructure.persistence.settings_manager.load_app_settings"
+        ) as mock_load_settings,
+        patch(
+            "presentation.widgets.license_dialog.LicenseActivationDialog"
+        ) as mock_dialog_class,
+    ):
+        # Setup mocks: non-empty license key should NOT trigger the dialog
+        mock_settings = MagicMock()
+        mock_settings.license_key = "dummy"
+        mock_load_settings.return_value = mock_settings
+
+        importlib.reload(main)
+        try:
+            main.main()
+        except SystemExit:
+            pass
+
+        mock_dialog_class.assert_not_called()
+
+
+def test_settings_view_hides_licensing_with_no_license_arg(
+    qtbot, setup_registry_dependencies
+):
     with patch("sys.argv", ["main.py", "--no-license"]):
         view = SettingsViewQt()
         qtbot.addWidget(view)

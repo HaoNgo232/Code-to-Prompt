@@ -1,6 +1,9 @@
 import pytest
+from unittest.mock import patch, MagicMock
+import requests
 from domain.licensing.entities import LicenseInfo
 from domain.ports.registry import DomainRegistry
+from infrastructure.adapters.license_service import GumroadLicenseService
 
 
 def test_license_info_entity():
@@ -11,6 +14,10 @@ def test_license_info_entity():
         product="Synapse Desktop",
         is_valid=True,
         error_message="",
+        uses=2,
+        purchase_date="2026-06-16T10:00:00Z",
+        refunded=False,
+        disputed=False,
     )
     assert info.license_id == "LIC-12345"
     assert info.email == "test@example.com"
@@ -18,6 +25,10 @@ def test_license_info_entity():
     assert info.product == "Synapse Desktop"
     assert info.is_valid is True
     assert info.error_message == ""
+    assert info.uses == 2
+    assert info.purchase_date == "2026-06-16T10:00:00Z"
+    assert info.refunded is False
+    assert info.disputed is False
 
 
 def test_license_service_registry_not_registered():
@@ -31,23 +42,6 @@ def test_license_service_registry_not_registered():
         DomainRegistry._license_service = original_service
 
 
-def test_license_service_empty_or_malformed_key():
-    from infrastructure.adapters.license_service import Ed25519LicenseService
-
-    service = Ed25519LicenseService()
-    info = service.verify_license_key("")
-    assert info.is_valid is False
-    assert "empty" in info.error_message.lower()
-
-    info2 = service.verify_license_key("SYNAPSE-KEY.invalidpayload.invalidsig")
-    assert info2.is_valid is False
-    assert (
-        "structure" in info2.error_message.lower()
-        or "decoding" in info2.error_message.lower()
-        or "decode" in info2.error_message.lower()
-    )
-
-
 def test_app_settings_contains_license_key():
     from domain.config.app_settings import AppSettings
 
@@ -58,81 +52,145 @@ def test_app_settings_contains_license_key():
     settings_dict = settings.to_dict()
     assert "license_key" in settings_dict
 
-    loaded_settings = AppSettings.from_dict({"license_key": "SYNAPSE-KEY.abc.123"})
-    assert loaded_settings.license_key == "SYNAPSE-KEY.abc.123"
+    loaded_settings = AppSettings.from_dict({"license_key": "A1B2C3D4"})
+    assert loaded_settings.license_key == "A1B2C3D4"
 
 
-def test_cryptographic_verification_with_generated_keys():
-    import json
-    import base64
-    from cryptography.hazmat.primitives.asymmetric import ed25519
-    from cryptography.hazmat.primitives import serialization
-    from infrastructure.adapters.license_service import Ed25519LicenseService
+def test_license_service_empty_key():
+    service = GumroadLicenseService()
+    info = service.verify_license_key("")
+    assert info.is_valid is False
+    assert "empty" in info.error_message.lower()
 
-    # Generate temporary key pair
-    private_key = ed25519.Ed25519PrivateKey.generate()
-    public_key = private_key.public_key()
 
-    public_pem = public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-
-    service = Ed25519LicenseService(public_key_pem=public_pem)
-
-    # Sign custom payload
-    payload = {
-        "license_id": "LIC-TEST-1",
-        "email": "tester@test.com",
-        "expiry_date": "2030-01-01",
-        "product": "Synapse Desktop",
+@patch("requests.post")
+def test_license_service_valid_key(mock_post):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "success": True,
+        "uses": 1,
+        "purchase": {
+            "email": "buyer@example.com",
+            "product_name": "Synapse Desktop",
+            "sale_timestamp": "2026-06-16T10:00:00Z",
+            "refunded": False,
+            "disputed": False,
+        },
     }
-    payload_str = json.dumps(payload, separators=(",", ":"))
-    payload_b64 = (
-        base64.urlsafe_b64encode(payload_str.encode("utf-8"))
-        .decode("utf-8")
-        .rstrip("=")
+    mock_post.return_value = mock_response
+
+    service = GumroadLicenseService(product_id="test-prod-id")
+    info = service.verify_license_key("A1B2C3D4")
+
+    assert info.is_valid is True
+    assert info.license_id == "A1B2C3D4"
+    assert info.email == "buyer@example.com"
+    assert info.product == "Synapse Desktop"
+    assert info.uses == 1
+    assert info.refunded is False
+    assert info.disputed is False
+
+    mock_post.assert_called_once_with(
+        "https://api.gumroad.com/v2/licenses/verify",
+        json={
+            "product_id": "test-prod-id",
+            "license_key": "A1B2C3D4",
+            "increment_uses_count": True,
+        },
+        timeout=10,
     )
 
-    signature = private_key.sign(payload_b64.encode("utf-8"))
-    sig_b64 = base64.urlsafe_b64encode(signature).decode("utf-8").rstrip("=")
 
-    full_key = f"SYNAPSE-KEY.{payload_b64}.{sig_b64}"
+@patch("requests.post")
+def test_license_service_invalid_key_404(mock_post):
+    mock_response = MagicMock()
+    mock_response.status_code = 404
+    mock_post.return_value = mock_response
 
-    # Verify the signature
-    info = service.verify_license_key(full_key)
-    assert info.is_valid is True
-    assert info.license_id == "LIC-TEST-1"
-    assert info.email == "tester@test.com"
-
-
-def test_embedded_key_pair_verification():
-    from infrastructure.adapters.license_service import Ed25519LicenseService
-
-    service = Ed25519LicenseService()
-
-    # Generate live using tool parameters inside test
-    from tools.license_generator import sign_license
-
-    live_key = sign_license("LIC-LIVE", "live@test.com", 30)
-    info = service.verify_license_key(live_key)
-    assert info.is_valid is True
-    assert info.email == "live@test.com"
+    service = GumroadLicenseService()
+    info = service.verify_license_key("INVALID-KEY")
+    assert info.is_valid is False
+    assert "invalid" in info.error_message.lower()
 
 
-def test_lifetime_license_verification():
-    from infrastructure.adapters.license_service import Ed25519LicenseService
-    from tools.license_generator import sign_license
+@patch("requests.post")
+def test_license_service_refunded_key(mock_post):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "success": True,
+        "uses": 2,
+        "purchase": {
+            "email": "buyer@example.com",
+            "product_name": "Synapse Desktop",
+            "sale_timestamp": "2026-06-16T10:00:00Z",
+            "refunded": True,
+            "disputed": False,
+        },
+    }
+    mock_post.return_value = mock_response
 
-    service = Ed25519LicenseService()
+    service = GumroadLicenseService()
+    info = service.verify_license_key("REFUNDED-KEY")
+    assert info.is_valid is False
+    assert info.refunded is True
+    assert "refunded" in info.error_message.lower()
 
-    # Generate and verify lifetime key
-    lifetime_key = sign_license(
-        "LIC-LIFETIME-TEST", "lifetime@test.com", 365, lifetime=True
-    )
-    info = service.verify_license_key(lifetime_key)
 
-    assert info.is_valid is True
-    assert info.expiry_date == "never"
-    assert info.email == "lifetime@test.com"
-    assert info.license_id == "LIC-LIFETIME-TEST"
+@patch("requests.post")
+def test_license_service_disputed_key(mock_post):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "success": True,
+        "uses": 1,
+        "purchase": {
+            "email": "buyer@example.com",
+            "product_name": "Synapse Desktop",
+            "sale_timestamp": "2026-06-16T10:00:00Z",
+            "refunded": False,
+            "disputed": True,
+        },
+    }
+    mock_post.return_value = mock_response
+
+    service = GumroadLicenseService()
+    info = service.verify_license_key("DISPUTED-KEY")
+    assert info.is_valid is False
+    assert info.disputed is True
+    assert "disputed" in info.error_message.lower()
+
+
+@patch("requests.post")
+def test_license_service_expired_subscription(mock_post):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "success": True,
+        "uses": 1,
+        "purchase": {
+            "email": "buyer@example.com",
+            "product_name": "Synapse Desktop",
+            "sale_timestamp": "2026-06-16T10:00:00Z",
+            "refunded": False,
+            "disputed": False,
+            "subscription_ended_at": "2026-06-15T10:00:00Z",
+        },
+    }
+    mock_post.return_value = mock_response
+
+    service = GumroadLicenseService()
+    info = service.verify_license_key("EXPIRED-SUB-KEY")
+    assert info.is_valid is False
+    assert "expired" in info.error_message.lower()
+
+
+@patch("requests.post")
+def test_license_service_network_error(mock_post):
+    mock_post.side_effect = requests.exceptions.RequestException("Connection timed out")
+
+    service = GumroadLicenseService()
+    info = service.verify_license_key("ANY-KEY")
+    assert info.is_valid is False
+    assert "network error" in info.error_message.lower()

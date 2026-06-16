@@ -19,7 +19,9 @@ class LicenseActivationDialog(QDialog):
         self.setWindowTitle("Activate Synapse Desktop")
         self.setMinimumSize(520, 320)
         self.resize(520, 320)
-        self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
+        self.setWindowFlags(
+            self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint
+        )
         self.setStyleSheet(
             f"background-color: {ThemeColors.BG_SURFACE}; color: {ThemeColors.TEXT_PRIMARY};"
         )
@@ -60,17 +62,28 @@ class LicenseActivationDialog(QDialog):
 
         # Desc
         desc_label = QLabel(
-            "Synapse Desktop requires a valid cryptographic license key to run.\n"
-            "Please paste your license activation key below:"
+            "Synapse Desktop requires a valid Gumroad license key to run.\n"
+            "Please paste your license key below:"
         )
         desc_label.setStyleSheet(
             f"color: {ThemeColors.TEXT_SECONDARY}; font-size: {ThemeFonts.SIZE_BODY}px;"
         )
         layout.addWidget(desc_label)
 
+        # Purchase link
+        self.buy_link = QLabel(
+            f'<a href="https://gumroad.com" style="color: {ThemeColors.PRIMARY}; text-decoration: none;">'
+            "Don't have a license key? Purchase one here</a>"
+        )
+        self.buy_link.setOpenExternalLinks(True)
+        self.buy_link.setStyleSheet(
+            f"font-size: {ThemeFonts.SIZE_BODY}px; margin-bottom: 4px;"
+        )
+        layout.addWidget(self.buy_link)
+
         # Text input (QPlainTextEdit for long keys)
         self.key_input = QPlainTextEdit()
-        self.key_input.setPlaceholderText("SYNAPSE-KEY.eyJsaWNlbnNlX2lk...[Signature]")
+        self.key_input.setPlaceholderText("A1B2C3D4-E5F60718-9ABCDEF0-1234ABCD")
         self.key_input.setStyleSheet(
             f"""
             QPlainTextEdit {{
@@ -160,17 +173,43 @@ class LicenseActivationDialog(QDialog):
             self.error_label.setVisible(True)
             return
 
-        service = DomainRegistry.license_service()
-        info = service.verify_license_key(key)
+        self.error_label.setVisible(False)
+        self.key_input.setEnabled(False)
+        self.cancel_btn.setEnabled(False)
+        self.activate_btn.setEnabled(False)
+        self.activate_btn.setText("Activating...")
 
-        if info.is_valid:
-            try:
-                DomainRegistry.settings_service().update_setting("license_key", key)
-                self.accept()
-            except Exception as e:
-                self.error_label.setText(f"Failed to save settings: {e}")
+        from presentation.utils.qt_utils import schedule_background
+
+        def do_verify():
+            service = DomainRegistry.license_service()
+            return service.verify_license_key(key)
+
+        def on_finished():
+            self.key_input.setEnabled(True)
+            self.cancel_btn.setEnabled(True)
+            self.activate_btn.setEnabled(True)
+            self.activate_btn.setText("Activate")
+
+        def on_result(info):
+            if info.is_valid:
+                try:
+                    DomainRegistry.settings_service().update_setting("license_key", key)
+                    self.accept()
+                except Exception as e:
+                    self.error_label.setText(f"Failed to save settings: {e}")
+                    self.error_label.setVisible(True)
+            else:
+                self.error_label.setText(info.error_message or "Invalid license key")
                 self.error_label.setVisible(True)
 
-        else:
-            self.error_label.setText(info.error_message or "Invalid license key")
+        def on_error(err_str):
+            self.error_label.setText(f"Verification process failed: {err_str}")
             self.error_label.setVisible(True)
+
+        schedule_background(
+            do_verify,
+            on_result=on_result,
+            on_error=on_error,
+            on_finished=on_finished,
+        )

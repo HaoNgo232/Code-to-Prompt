@@ -63,7 +63,11 @@ cd Synapse-Desktop
 ```bash
 git clone https://github.com/HaoNgo232/Synapse-Desktop.git
 cd Synapse-Desktop
+# Build standard version (enforces license check):
 chmod +x build-appimage.sh && ./build-appimage.sh
+
+# Build personal version (bypasses license check by default):
+chmod +x build-appimage.sh && ./build-appimage.sh --no-license
 ```
 
 ### 📦 Build Windows .exe
@@ -71,7 +75,11 @@ chmod +x build-appimage.sh && ./build-appimage.sh
 ```powershell
 git clone https://github.com/HaoNgo232/Synapse-Desktop.git
 cd Synapse-Desktop
+# Build standard version (enforces license check):
 .\build-windows.ps1
+
+# Build personal version (bypasses license check by default):
+.\build-windows.ps1 -NoLicense
 ```
 
 ### 🔧 Manual Install — Linux / macOS
@@ -754,7 +762,7 @@ SYNAPSE_DEBUG=1          # Enable detailed debug logging
 
 ### CLI Arguments
 ```bash
---no-license             # Bypass the license verification checks (active by default)
+--no-license             # Bypass the license verification checks
 ```
 
 ## License

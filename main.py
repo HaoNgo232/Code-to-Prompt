@@ -84,19 +84,15 @@ def main() -> None:
     # Apply global dark stylesheet
     apply_theme(app)
 
-    # Boot verification checks
     # Boot verification checks — unless --no-license CLI argument is passed
     if "--no-license" not in sys.argv:
-        from domain.ports.registry import DomainRegistry
         from infrastructure.persistence.settings_manager import load_app_settings
 
         # Verify license key stored in settings
         settings = load_app_settings()
-        license_service = DomainRegistry.license_service()
-        license_info = license_service.verify_license_key(settings.license_key)
 
-        # Check license validation status
-        if not license_info.is_valid:
+        # Check if license key exists
+        if not settings.license_key:
             from presentation.widgets.license_dialog import LicenseActivationDialog
 
             dialog = LicenseActivationDialog()

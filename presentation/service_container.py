@@ -121,10 +121,9 @@ class ServiceContainer:
         DomainRegistry.register_history_service(HistoryService())
         DomainRegistry.register_app_lifecycle(AppLifecycleService())
         DomainRegistry.register_memory_monitor(get_memory_monitor())
+        from infrastructure.adapters.license_service import GumroadLicenseService
 
-        from infrastructure.adapters.license_service import Ed25519LicenseService
-
-        DomainRegistry.register_license_service(Ed25519LicenseService())
+        DomainRegistry.register_license_service(GumroadLicenseService())
 
         # Backward compatibility for old encoder_registry wrapper
         try:

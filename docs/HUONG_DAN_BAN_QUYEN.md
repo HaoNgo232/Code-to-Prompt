@@ -1,79 +1,91 @@
 # Hướng Dẫn Sử Dụng Tính Năng Bản Quyền (Licensing Guide)
 
-Tài liệu này hướng dẫn bạn cách khởi chạy, tạo mã kích hoạt (License Key) và kích hoạt/hủy kích hoạt bản quyền cho ứng dụng **Synapse Desktop**.
+Tài liệu này hướng dẫn cách khởi chạy ứng dụng Synapse Desktop với các chế độ bản quyền, cách cấu hình sản phẩm trên Gumroad và cơ chế kích hoạt trực tuyến.
 
 ---
 
-## Bước 1: Chạy ứng dụng (Bật/Tắt check bản quyền)
+## Bước 1: Khởi chạy ứng dụng (Bật/Tắt kiểm tra bản quyền)
 
-Ứng dụng **mặc định luôn yêu cầu và kiểm tra bản quyền** khi khởi chạy. Tuy nhiên, để thuận tiện cho việc phát triển, ta sử dụng tham số `--no-license` để tắt tính năng này.
+Mặc định ứng dụng sẽ kiểm tra xem đã có key bản quyền trong cài đặt hay chưa. Tuy nhiên, lập trình viên có thể tùy chọn bật/tắt tính năng này để thuận tiện cho việc phát triển.
 
-### 1.1 Khởi chạy chế độ phát triển (Dev Mode - Bỏ qua check bản quyền)
-Script khởi động dự án đã được tích hợp sẵn tham số `--no-license`:
+### 1.1 Khởi chạy chế độ phát triển (Bỏ qua kiểm tra bản quyền)
+Script khởi chạy mặc định của dự án đã được tích hợp sẵn tham số `--no-license`:
 ```bash
 ./start.sh
 ```
-Hoặc dùng lệnh python trực tiếp:
+Hoặc chạy trực tiếp bằng python:
 ```bash
 PYTHONPATH=. .venv/bin/python main.py --no-license
 ```
-* **Kết quả:** Ứng dụng tự động bỏ qua kiểm tra bản quyền và khởi động trực tiếp vào giao diện chính để bạn phát triển các tính năng khác.
+* **Kết quả:** Ứng dụng bỏ qua tất cả kiểm tra bản quyền và vào thẳng màn hình chính.
 
-### 1.2 Khởi chạy chế độ kiểm thử bản quyền (Bật check bản quyền)
-Để kiểm thử giao diện kích hoạt hoặc luồng xác thực bản quyền, bạn cần chạy ứng dụng mà **không** truyền tham số `--no-license`:
+### 1.2 Khởi chạy chế độ kiểm thử bản quyền (Bật kiểm tra bản quyền)
+Để kiểm tra giao diện kích hoạt hoặc luồng xác thực thực tế với Gumroad API:
 ```bash
 PYTHONPATH=. .venv/bin/python main.py
 ```
-* **Kết quả:** Cửa sổ chính của ứng dụng sẽ **không** hiện lên ngay. Thay vào đó, hộp thoại **"Activate Synapse Desktop"** sẽ xuất hiện yêu cầu bạn nhập License Key để kích hoạt.
+* **Kết quả:** Nếu chưa có key bản quyền lưu trong cài đặt, hộp thoại **"Activate Synapse Desktop"** sẽ xuất hiện yêu cầu bạn nhập License Key để kích hoạt.
 
 ---
 
-## Bước 2: Tạo License Key hợp lệ (Developer Tool)
-Mở một cửa sổ terminal mới và chạy lệnh sau để sinh ra một mã kích hoạt dùng thử:
+## Bước 2: Tạo sản phẩm và License Key trên Gumroad
 
-* **Tạo Key có thời hạn 365 ngày (cho email `dev@test.com`):**
-  ```bash
-  PYTHONPATH=. .venv/bin/python tools/license_generator.py --id LIC-DEV-99 --email dev@test.com --days 365
-  ```
+Thay vì tự sinh key offline bằng tool, chúng ta sử dụng hệ thống quản lý bản quyền của Gumroad:
 
-* **Tạo Key trọn đời (Lifetime - Mua 1 lần):**
-  ```bash
-  PYTHONPATH=. .venv/bin/python tools/license_generator.py --id LIC-LIFE-99 --email dev@test.com --lifetime
-  ```
-
-* **Kết quả hiển thị trên terminal:**
-  ```text
-  === GENERATED LICENSE KEY ===
-  SYNAPSE-KEY.eyJsaWNlbnNlX2lkIjoiTElDLURFVi05OSIsImVtYWlsIjoiZGV2QHN5bmFwc2UuY29tIiwiZXhwaXJ5X2RhdGUiOiIyMDI3LTA2LTE2IiwicHJvZHVjdCI6IlN5bmFwc2UgRGVza3RvcCJ9._5HUQ2FSsfevsNnZ59c_HEMwYD8sdElU58LLcxkepdwYt8QIVGKYIoNqzPCFC3GJAA6HP7Pe515p_-eZjCF9Dw
-  =============================
-  ```
-  *(Hãy bôi đen và copy toàn bộ chuỗi ký tự bắt đầu bằng `SYNAPSE-KEY.` cho đến hết)*
+1. Đăng nhập vào tài khoản Gumroad của bạn và chọn **New Product**.
+2. Chọn loại sản phẩm là **Digital product**.
+3. Trong phần cấu hình sản phẩm, hãy bật tùy chọn **Generate unique license keys per sale** (Gumroad sẽ tự động tạo key cho mỗi đơn hàng của khách hàng).
+4. Lưu và xuất bản sản phẩm. Lấy **Product ID** từ trang chi tiết sản phẩm của Gumroad.
+5. Cập nhật Product ID vào class `GumroadLicenseService` tại file `infrastructure/adapters/license_service.py`:
+   ```python
+   DEFAULT_PRODUCT_ID = "YOUR_GUMROAD_PRODUCT_ID"  # Thay bằng ID sản phẩm thực tế của bạn
+   ```
 
 ---
 
 ## Bước 3: Kích hoạt ứng dụng
-1. Khởi chạy ứng dụng ở chế độ kiểm thử (Bước 1.2).
-2. Dán (Paste) chuỗi License Key vừa copy ở Bước 2 vào ô nhập liệu.
-3. Nhấp vào nút **Activate**.
-4. **Kết quả:** Hộp thoại sẽ đóng lại và cửa sổ chính của Synapse Desktop sẽ xuất hiện!
+
+1. Chạy ứng dụng ở chế độ kiểm thử (Bước 1.2).
+2. Nhập key bản quyền nhận được từ Gumroad (định dạng thường là `XXXX-XXXX-XXXX-XXXX`).
+3. Click **Activate**.
+4. Ứng dụng sẽ gọi API trực tuyến của Gumroad (`POST https://api.gumroad.com/v2/licenses/verify`) để kiểm tra:
+   - Nếu Key hợp lệ: Key sẽ được lưu vào file cấu hình `settings.json`, hộp thoại đóng lại và màn hình chính hiện ra.
+   - Nếu Key không hợp lệ hoặc đã bị hoàn tiền (Refunded)/Tranh chấp (Disputed): Thông báo lỗi chi tiết sẽ được hiển thị.
 
 ---
 
 ## Bước 4: Kiểm tra và Hủy kích hoạt (Deactivate)
+
 1. Trên giao diện chính của Synapse Desktop, chọn tab **Settings** (biểu tượng bánh răng ở góc dưới).
-2. Tại cột thứ 3, bạn sẽ thấy một thẻ mới mang tên **Product Licensing** hiển thị chi tiết thông tin bản quyền của bạn (Mã số bản quyền, Email sở hữu, Ngày hết hạn).
-3. Để gỡ bỏ bản quyền (ví dụ khi muốn chuyển sang máy khác):
+2. Tại phần **Product Licensing**, bạn sẽ thấy thông tin chi tiết bản quyền:
+   - Key bản quyền đã được che bớt ký tự để bảo mật.
+   - Email người mua bản quyền.
+   - Trạng thái bản quyền.
+3. Để hủy kích hoạt bản quyền trên thiết bị hiện tại (ví dụ: khi muốn chuyển sang máy khác):
    - Nhấp vào nút **Deactivate License**.
-   - Hộp thoại xác nhận sẽ hiện ra. Chọn **Yes**.
-   - **Kết quả:** Ứng dụng sẽ tự động xóa key bản quyền trong file cài đặt và đóng phần mềm. Lần khởi chạy kế tiếp sẽ tiếp tục yêu cầu nhập key bản quyền từ đầu.
+   - Xác nhận **Yes**.
+   - **Kết quả:** Ứng dụng xóa key bản quyền khỏi cài đặt cục bộ và thoát chương trình. Lần chạy tiếp theo sẽ yêu cầu kích hoạt lại.
+
+* **Mẹo gỡ License nhanh bằng dòng lệnh (CLI) để test:**
+  Nếu bạn muốn gỡ nhanh license key mà không cần mở giao diện của phần mềm, hãy chạy lệnh Python một dòng sau trong Terminal:
+  ```bash
+  python3 -c "import json, pathlib; p = pathlib.Path.home() / '.config/synapse-desktop/settings.json'; d = json.loads(p.read_text()) if p.exists() else {}; d['license_key'] = ''; p.write_text(json.dumps(d, indent=4))"
+  ```
 
 ---
 
 ## Lưu ý kỹ thuật cho Lập trình viên
-* **Vị trí lưu Key:** Key bản quyền sau khi kích hoạt thành công được lưu tại file cấu hình hệ thống chuẩn `~/.config/synapse-desktop/settings.json` (dưới trường `"license_key"`). Để phục vụ backward compatibility, ứng dụng cũng hỗ trợ tự động di chuyển key từ đường dẫn cũ `~/.synapse-desktop/settings.json` nếu có.
-* **Cơ chế bảo mật:** Thuật toán sử dụng là **Ed25519** (mật mã hóa bất đối xứng). 
-  - Khóa công khai (**Public Key**) được nhúng cứng trong file `infrastructure/adapters/license_service.py`.
-  - Khóa bí mật (**Private Key**) nằm trong công cụ `tools/license_generator.py` dùng để ký số ra License Key. Khi triển khai thực tế trên môi trường Production, khóa bí mật này phải được cất giữ trên server kích hoạt và không được đóng gói cùng ứng dụng.
-* **Cơ chế Feature Flag cho Build Production:**
-  - Để đảm bảo tính bảo mật, các bản build đóng gói (AppImage cho Linux, EXE cho Windows) sẽ **luôn thực thi kiểm tra bản quyền** do không truyền tham số `--no-license` theo mặc định.
-  - Ta không cần cấu hình thêm bất kỳ biến môi trường (`SYNAPSE_LICENSE_CHECK`) hay runtime hook phức tạp nào khác cho PyInstaller.
+
+* **Vị trí lưu Key:** Key sau khi kích hoạt thành công được lưu tại `~/.config/synapse-desktop/settings.json` (trường `"license_key"`).
+* **Cơ chế offline:** Ứng dụng **chỉ gọi API Gumroad trực tuyến 1 lần duy nhất lúc kích hoạt**. Khi khởi động các lần tiếp theo, ứng dụng chỉ kiểm tra xem trường `license_key` trong cài đặt có khác rỗng hay không, giúp khởi động cực kỳ nhanh và hoạt động offline hoàn toàn.
+* **Cơ chế Feature Flag:** Để đóng gói sản phẩm thương mại (AppImage trên Linux, EXE trên Windows), quá trình build mặc định sẽ không truyền tham số `--no-license`, bắt buộc ứng dụng phải được kích hoạt bản quyền qua giao diện để có thể sử dụng.
+* **Tắt kiểm tra bản quyền khi build bản cá nhân:**
+  * **Trên Linux (AppImage):** Bạn có thể truyền thêm tham số `--no-license` khi chạy script build để AppImage tự động bỏ qua check bản quyền khi khởi chạy:
+    ```bash
+    ./build-appimage.sh --no-license
+    ```
+  * **Trên Windows (EXE):** Bạn có thể truyền thêm cờ `-NoLicense` khi chạy script build bằng PowerShell để file EXE đóng gói tự động bỏ qua check bản quyền:
+    ```powershell
+    .\build-windows.ps1 -NoLicense
+    ```
+

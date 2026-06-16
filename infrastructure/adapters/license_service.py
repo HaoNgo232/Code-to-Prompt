@@ -1,34 +1,18 @@
-import base64
-import json
 import logging
+import requests
 from datetime import datetime, timezone
-from typing import Optional
 from domain.licensing.entities import LicenseInfo
 from domain.ports.license_service_port import ILicenseService
-from cryptography.hazmat.primitives.asymmetric import ed25519
-from cryptography.hazmat.primitives import serialization
 
 logger = logging.getLogger(__name__)
 
-# Real Ed25519 Public Key embedded in the application
-PUBLIC_KEY_PEM = b"""-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAcLMiz6I+e23S5bHacVz9ufMKTTnA955lxWpZYFsb3KQ=
------END PUBLIC KEY-----"""
 
+class GumroadLicenseService(ILicenseService):
+    DEFAULT_PRODUCT_ID = "YOUR_GUMROAD_PRODUCT_ID"
+    API_URL = "https://api.gumroad.com/v2/licenses/verify"
 
-class Ed25519LicenseService(ILicenseService):
-    def __init__(self, public_key_pem: bytes = PUBLIC_KEY_PEM) -> None:
-        self._public_key: Optional[ed25519.Ed25519PublicKey] = None
-        try:
-            pub_key = serialization.load_pem_public_key(public_key_pem)
-            if isinstance(pub_key, ed25519.Ed25519PublicKey):
-                self._public_key = pub_key
-            else:
-                raise ValueError("Provided key is not an Ed25519 public key")
-        except Exception as e:
-            logger.error("Failed to load embedded public key: %s", e)
-            self._public_key = None
-
+    def __init__(self, product_id: str = DEFAULT_PRODUCT_ID) -> None:
+        self._product_id = product_id
 
     def verify_license_key(self, key_str: str) -> LicenseInfo:
         if not key_str or not key_str.strip():
@@ -36,117 +20,131 @@ class Ed25519LicenseService(ILicenseService):
                 "", "", "", "", is_valid=False, error_message="License key is empty"
             )
 
-        parts = key_str.strip().split(".")
-        if len(parts) != 3 or parts[0] != "SYNAPSE-KEY":
-            return LicenseInfo(
-                "",
-                "",
-                "",
-                "",
-                is_valid=False,
-                error_message="Invalid license key format structure",
-            )
+        key_str = key_str.strip()
 
-        payload_b64, signature_b64 = parts[1], parts[2]
-
-        # Decode payload
         try:
-            # Fix base64 padding if needed
-            payload_padding = len(payload_b64) % 4
-            if payload_padding:
-                payload_b64 += "=" * (4 - payload_padding)
-            payload_bytes = base64.urlsafe_b64decode(payload_b64)
-            payload_json = json.loads(payload_bytes.decode("utf-8"))
-        except Exception as e:
-            return LicenseInfo(
-                "",
-                "",
-                "",
-                "",
-                is_valid=False,
-                error_message=f"Failed to decode license payload: {e}",
-            )
+            payload = {
+                "product_id": self._product_id,
+                "license_key": key_str,
+                "increment_uses_count": True,
+            }
+            response = requests.post(self.API_URL, json=payload, timeout=10)
 
-        # Extract values
-        license_id = payload_json.get("license_id", "")
-        email = payload_json.get("email", "")
-        expiry_date_str = payload_json.get("expiry_date", "")
-        product = payload_json.get("product", "")
-
-        if not license_id or not email or not expiry_date_str:
-            return LicenseInfo(
-                "",
-                "",
-                "",
-                "",
-                is_valid=False,
-                error_message="Missing required license fields",
-            )
-
-        if product != "Synapse Desktop":
-            return LicenseInfo(
-                license_id,
-                email,
-                expiry_date_str,
-                product,
-                is_valid=False,
-                error_message="License is for a different product",
-            )
-
-        # Validate expiry date
-        if expiry_date_str != "never":
-            try:
-                expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
-                # Use UTC to prevent local clock spoofing where possible
-                if expiry_date < datetime.now(timezone.utc).date():
-                    return LicenseInfo(
-                        license_id,
-                        email,
-                        expiry_date_str,
-                        product,
-                        is_valid=False,
-                        error_message=f"License expired on {expiry_date_str}",
-                    )
-            except ValueError:
+            if response.status_code == 404:
                 return LicenseInfo(
-                    license_id,
-                    email,
-                    expiry_date_str,
-                    product,
+                    license_id=key_str,
+                    email="",
+                    expiry_date="",
+                    product="",
                     is_valid=False,
-                    error_message="Invalid expiry date format",
+                    error_message="Invalid license key",
                 )
 
+            if response.status_code != 200:
+                try:
+                    err_msg = response.json().get(
+                        "message", f"HTTP error {response.status_code}"
+                    )
+                except Exception:
+                    err_msg = f"HTTP error {response.status_code}"
+                return LicenseInfo(
+                    license_id=key_str,
+                    email="",
+                    expiry_date="",
+                    product="",
+                    is_valid=False,
+                    error_message=err_msg,
+                )
 
-        # Verify signature
-        if not self._public_key:
+            data = response.json()
+            success = data.get("success", False)
+            if not success:
+                err_msg = data.get("message", "Verification failed")
+                return LicenseInfo(
+                    license_id=key_str,
+                    email="",
+                    expiry_date="",
+                    product="",
+                    is_valid=False,
+                    error_message=err_msg,
+                )
+
+            uses = data.get("uses", 0)
+            purchase = data.get("purchase", {})
+            email = purchase.get("email", "")
+            product_name = purchase.get("product_name", "")
+            purchase_date = purchase.get("sale_timestamp", "")
+            refunded = purchase.get("refunded", False)
+            disputed = purchase.get("disputed", False)
+
+            if refunded:
+                return LicenseInfo(
+                    license_id=key_str,
+                    email=email,
+                    expiry_date="never",
+                    product=product_name,
+                    is_valid=False,
+                    error_message="License key has been refunded",
+                    uses=uses,
+                    purchase_date=purchase_date,
+                    refunded=refunded,
+                    disputed=disputed,
+                )
+
+            if disputed:
+                return LicenseInfo(
+                    license_id=key_str,
+                    email=email,
+                    expiry_date="never",
+                    product=product_name,
+                    is_valid=False,
+                    error_message="License key is disputed",
+                    uses=uses,
+                    purchase_date=purchase_date,
+                    refunded=refunded,
+                    disputed=disputed,
+                )
+
+            subscription_ended_at = purchase.get("subscription_ended_at")
+            if subscription_ended_at:
+                try:
+                    dt_str = subscription_ended_at.replace("Z", "+00:00")
+                    end_dt = datetime.fromisoformat(dt_str)
+                    if datetime.now(timezone.utc) > end_dt:
+                        return LicenseInfo(
+                            license_id=key_str,
+                            email=email,
+                            expiry_date=subscription_ended_at[:10],
+                            product=product_name,
+                            is_valid=False,
+                            error_message="Subscription has expired",
+                            uses=uses,
+                            purchase_date=purchase_date,
+                            refunded=refunded,
+                            disputed=disputed,
+                        )
+                except Exception as e:
+                    logger.warning("Failed to parse subscription_ended_at: %s", e)
+
             return LicenseInfo(
-                license_id,
-                email,
-                expiry_date_str,
-                product,
-                is_valid=False,
-                error_message="Licensing system integrity error (Public Key missing)",
+                license_id=key_str,
+                email=email,
+                expiry_date="never",
+                product=product_name,
+                is_valid=True,
+                uses=uses,
+                purchase_date=purchase_date,
+                refunded=refunded,
+                disputed=disputed,
             )
 
-        try:
-            signature_padding = len(signature_b64) % 4
-            if signature_padding:
-                signature_b64 += "=" * (4 - signature_padding)
-            signature_bytes = base64.urlsafe_b64decode(signature_b64)
-
-            # Reconstruct exact raw payload string bytes signed by server
-            # Note: We must sign/verify the exact bytes of the payload portion
-            raw_payload_bytes = parts[1].encode("utf-8")
-            self._public_key.verify(signature_bytes, raw_payload_bytes)
-        except Exception:
+        except requests.exceptions.RequestException as e:
+            logger.error("Gumroad API connection error: %s", e)
             return LicenseInfo(
-                license_id,
-                email,
-                expiry_date_str,
-                product,
+                license_id=key_str,
+                email="",
+                expiry_date="",
+                product="",
                 is_valid=False,
-                error_message="License signature validation failed",
+                error_message=f"Network error: {e}",
             )
-
-        return LicenseInfo(license_id, email, expiry_date_str, product, is_valid=True)

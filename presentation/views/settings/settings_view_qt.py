@@ -956,6 +956,7 @@ class SettingsViewQt(QWidget):
 
         # Product Licensing — unless --no-license CLI argument is passed
         import sys
+
         if "--no-license" not in sys.argv:
             license_card = self._build_license_section()
             col3_layout.addWidget(license_card)
@@ -1714,24 +1715,54 @@ class SettingsViewQt(QWidget):
 
     def _update_license_display(self) -> None:
         settings = DomainRegistry.settings_service().load_settings()
-        info = DomainRegistry.license_service().verify_license_key(settings.license_key)
-
-        if info.is_valid:
-            expiry_str = (
-                "Lifetime (Never Expires)"
-                if info.expiry_date == "never"
-                else info.expiry_date
-            )
-            self._license_info_label.setText(
-                f"License ID: {info.license_id}\n"
-                f"Licensed Owner: {info.email}\n"
-                f"Valid Until: {expiry_str}\n"
-                f"Status: Active / Verified"
-            )
-            self._deactivate_btn.setEnabled(True)
-        else:
+        if not settings.license_key:
             self._license_info_label.setText("Product is currently UNLICENSED.")
             self._deactivate_btn.setEnabled(False)
+            return
+
+        self._license_info_label.setText("Checking license status...")
+        self._deactivate_btn.setEnabled(False)
+
+        from presentation.utils.qt_utils import schedule_background
+
+        def do_verify():
+            return DomainRegistry.license_service().verify_license_key(
+                settings.license_key
+            )
+
+        def on_result(info):
+            if info.is_valid:
+                expiry_str = (
+                    "Lifetime (Never Expires)"
+                    if info.expiry_date == "never"
+                    else info.expiry_date
+                )
+                masked_key = settings.license_key
+                if len(masked_key) > 10:
+                    masked_key = f"{masked_key[:4]}...{masked_key[-4:]}"
+                self._license_info_label.setText(
+                    f"License Key: {masked_key}\n"
+                    f"Licensed Owner: {info.email}\n"
+                    f"Valid Until: {expiry_str}\n"
+                    f"Status: Active / Verified"
+                )
+                self._deactivate_btn.setEnabled(True)
+            else:
+                self._license_info_label.setText(
+                    f"Product is currently UNLICENSED.\nReason: {info.error_message or 'Invalid key'}"
+                )
+                self._deactivate_btn.setEnabled(False)
+
+        def on_error(err):
+            masked_key = settings.license_key
+            if len(masked_key) > 10:
+                masked_key = f"{masked_key[:4]}...{masked_key[-4:]}"
+            self._license_info_label.setText(
+                f"License Key: {masked_key}\nStatus: Active (Offline Mode)"
+            )
+            self._deactivate_btn.setEnabled(True)
+
+        schedule_background(do_verify, on_result=on_result, on_error=on_error)
 
     def _on_deactivate_clicked(self) -> None:
         reply = QMessageBox.question(
