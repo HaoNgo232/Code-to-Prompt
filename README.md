@@ -1,10 +1,10 @@
-# Code to Prompt
+# Synapse Desktop
 
 > **Manually select the right code context, use AI web chat to analyze or plan, then give your IDE agent a clearer task with less exploration cost.**
 
 _Note: This is a personal tool built to reduce AI costs by using web chat for planning instead of expensive IDE agent scans._
 
-**Code to Prompt** is a local desktop app that helps you manually select project files, package them into AI-ready prompts, and use web chat models such as ChatGPT, Claude, or Gemini to understand code, create plans, or prepare specs before using an IDE agent.
+**Synapse Desktop** is a local desktop app that helps you manually select project files, package them into AI-ready prompts, and use web chat models such as ChatGPT, Claude, or Gemini to understand code, create plans, or prepare specs before using an IDE agent.
 
 The main goal is simple:
 
@@ -16,11 +16,11 @@ Use cheaper / free AI web chat for context understanding and planning
 IDE agents can already explore and understand codebases by themselves.  
 But that exploration often costs time, tool calls, and tokens.
 
-Code to Prompt helps you front-load part of that work manually:
+Synapse Desktop helps you front-load part of that work manually:
 
 ```text
 You choose relevant files
-→ Code to Prompt packages them
+→ Synapse Desktop packages them
 → Web chat analyzes / plans
 → IDE agent receives a clearer task
 → IDE agent spends less context discovering what you already prepared
@@ -32,7 +32,7 @@ You choose relevant files
 
 ## Installation
 
-> Code to Prompt is currently tested mainly on Linux.  
+> Synapse Desktop is currently tested mainly on Linux.  
 > Windows support is beta.  
 > macOS has not been fully tested yet.
 
@@ -45,40 +45,40 @@ Pick your usecase and copy the entire block:
 ### 🚀 Quick Start — Linux
 
 ```bash
-git clone https://github.com/HaoNgo232/Code-to-Prompt.git
-cd Code-to-Prompt
+git clone https://github.com/HaoNgo232/Synapse-Desktop.git
+cd Synapse-Desktop
 chmod +x start.sh && ./start.sh
 ```
 
 ### 🚀 Quick Start — Windows
 
 ```powershell
-git clone https://github.com/HaoNgo232/Code-to-Prompt.git
-cd Code-to-Prompt
+git clone https://github.com/HaoNgo232/Synapse-Desktop.git
+cd Synapse-Desktop
 .\start.bat
 ```
 
 ### 📦 Build AppImage — Linux
 
 ```bash
-git clone https://github.com/HaoNgo232/Code-to-Prompt.git
-cd Code-to-Prompt
+git clone https://github.com/HaoNgo232/Synapse-Desktop.git
+cd Synapse-Desktop
 chmod +x build-appimage.sh && ./build-appimage.sh
 ```
 
 ### 📦 Build Windows .exe
 
 ```powershell
-git clone https://github.com/HaoNgo232/Code-to-Prompt.git
-cd Code-to-Prompt
+git clone https://github.com/HaoNgo232/Synapse-Desktop.git
+cd Synapse-Desktop
 .\build-windows.ps1
 ```
 
 ### 🔧 Manual Install — Linux / macOS
 
 ```bash
-git clone https://github.com/HaoNgo232/Code-to-Prompt.git
-cd Code-to-Prompt
+git clone https://github.com/HaoNgo232/Synapse-Desktop.git
+cd Synapse-Desktop
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python main_window.py
@@ -87,8 +87,8 @@ python main_window.py
 ### 🔧 Manual Install — Windows PowerShell
 
 ```powershell
-git clone https://github.com/HaoNgo232/Code-to-Prompt.git
-cd Code-to-Prompt
+git clone https://github.com/HaoNgo232/Synapse-Desktop.git
+cd Synapse-Desktop
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -97,7 +97,7 @@ python main_window.py
 
 ---
 
-## What problem does Code to Prompt solve?
+## What problem does Synapse Desktop solve?
 
 AI coding agents inside IDEs are powerful. They can read files, search code, inspect dependencies, and understand the project by themselves.
 
@@ -113,7 +113,7 @@ When an IDE agent explores a codebase, it may spend:
 
 For many tasks, you already know which files are likely relevant.
 
-**Code to Prompt lets you manually select those files first, package them into a structured prompt, and use AI web chat to analyze or plan before involving your IDE agent.**
+**Synapse Desktop lets you manually select those files first, package them into a structured prompt, and use AI web chat to analyze or plan before involving your IDE agent.**
 
 This is useful when you want to:
 
@@ -186,7 +186,7 @@ This split can reduce paid IDE agent usage because the agent does not need to sp
 
 ## Important: manual selection is the main idea
 
-Code to Prompt is intentionally built around **manual file selection**.
+Synapse Desktop is intentionally built around **manual file selection**.
 
 The user remains in control.
 
@@ -210,7 +210,7 @@ human-guided context selection
 
 ## Workflows
 
-Code to Prompt supports multiple workflows — see [Example workflows](#example-workflows) below for step-by-step guides with copy-paste prompts.
+Synapse Desktop supports multiple workflows — see [Example workflows](#example-workflows) below for step-by-step guides with copy-paste prompts.
 
 ## Key features
 
@@ -240,7 +240,7 @@ The token count updates in real time as you select or deselect files.
 
 ### Token counting
 
-Code to Prompt shows token usage while you select files.
+Synapse Desktop shows token usage while you select files.
 
 This helps you avoid sending too much context to AI web chat.
 
@@ -284,7 +284,7 @@ Return:
 
 ### Related Files
 
-Code to Prompt can help include files related by imports or dependencies.
+Synapse Desktop can help include files related by imports or dependencies.
 
 You can choose depth from 1 to 5.
 
@@ -323,7 +323,7 @@ See: [docs/PRESETS.md](docs/PRESETS.md)
 
 ### Prompt templates
 
-Code to Prompt includes reusable prompt templates for common tasks:
+Synapse Desktop includes reusable prompt templates for common tasks:
 
 - planning
 - spec generation
@@ -404,7 +404,7 @@ path/to/new_file.ext
 
 ## Visual diff preview
 
-Before applying AI-generated changes, Code to Prompt shows a diff preview.
+Before applying AI-generated changes, Synapse Desktop shows a diff preview.
 
 This helps you catch mistakes before modifying your project.
 
@@ -414,7 +414,7 @@ Original files are backed up automatically before changes are applied.
 
 ## Copy Error Context
 
-If an AI-generated patch cannot be applied because the search block does not match the current file, Code to Prompt can generate error context.
+If an AI-generated patch cannot be applied because the search block does not match the current file, Synapse Desktop can generate error context.
 
 Send that error context back to the AI so it can correct the patch.
 
@@ -424,9 +424,9 @@ Send that error context back to the AI so it can correct the patch.
 
 ### Local-first
 
-Code to Prompt processes your project locally.
+Synapse Desktop processes your project locally.
 
-Your code is not uploaded by Code to Prompt.
+Your code is not uploaded by Synapse Desktop.
 
 You decide what to copy and where to paste it.
 
@@ -434,7 +434,7 @@ You decide what to copy and where to paste it.
 
 ### Secret scanning
 
-Before copying context, Code to Prompt can scan for possible secrets such as:
+Before copying context, Synapse Desktop can scan for possible secrets such as:
 
 - API keys
 - access tokens
@@ -465,7 +465,7 @@ src/app.py
 
 ### Safety recommendations
 
-Code to Prompt can read and modify files in folders you open.
+Synapse Desktop can read and modify files in folders you open.
 
 Before applying patches:
 
@@ -480,7 +480,7 @@ Before applying patches:
 
 ## MCP server for AI IDEs
 
-Code to Prompt can run as an MCP server for AI IDEs such as Cursor, Claude Code, and other MCP-compatible tools.
+Synapse Desktop can run as an MCP server for AI IDEs such as Cursor, Claude Code, and other MCP-compatible tools.
 
 Currently, the MCP server provides:
 
@@ -587,7 +587,7 @@ Plan:
 
 1. **Copy Tree Map**
 2. Paste into web chat
-3. Get file recommendations → select those files in Code to Prompt
+3. Get file recommendations → select those files in Synapse Desktop
 
 **Prompt:**
 

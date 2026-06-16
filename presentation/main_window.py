@@ -141,11 +141,11 @@ class SynapseMainWindow(QMainWindow):
 
     # ── Window title (dynamic) ────────────────────────────────────
     def _update_window_title(self) -> None:
-        """Đặt window title hiển thị: 'Code to Prompt — [Folder Name]'."""
+        """Đặt window title hiển thị: 'Synapse Desktop — [Folder Name]'."""
         if self.workspace_path:
-            self.setWindowTitle(f"Code to Prompt — {self.workspace_path.name}")
+            self.setWindowTitle(f"Synapse Desktop — {self.workspace_path.name}")
         else:
-            self.setWindowTitle("Code to Prompt — No project open")
+            self.setWindowTitle("Synapse Desktop — No project open")
 
     # ── Build UI ──────────────────────────────────────────────────
     def _build_ui(self) -> None:
@@ -215,7 +215,7 @@ class SynapseMainWindow(QMainWindow):
     def _build_top_bar(self) -> QFrame:
         """Xây dựng thanh công cụ phía trên (top bar 48px height).
 
-        Bao gồm: [App Icon + "Code to Prompt"] — [Đường dẫn thư mục] — [Thông số RAM] — [Recent ▾] [Open Folder].
+        Bao gồm: [App Icon + "Synapse Desktop"] — [Đường dẫn thư mục] — [Thông số RAM] — [Recent ▾] [Open Folder].
         """
         bar = QFrame()
         bar.setFixedHeight(48)
@@ -234,10 +234,10 @@ class SynapseMainWindow(QMainWindow):
             str(self.assets_dir / "gem.svg"), ThemeColors.PRIMARY
         )
         app_icon.setPixmap(icon_gem.pixmap(QSize(18, 18)))
-        app_icon.setToolTip("Code to Prompt")
+        app_icon.setToolTip("Synapse Desktop")
         layout.addWidget(app_icon)
 
-        app_title = QLabel("Code to Prompt")
+        app_title = QLabel("Synapse Desktop")
         app_title.setStyleSheet(
             f"font-size: {ThemeFonts.SIZE_SUBTITLE}px; "
             f"font-weight: 700; "
@@ -428,7 +428,7 @@ class SynapseMainWindow(QMainWindow):
         version_label.setStyleSheet(
             f"color: {ThemeColors.TEXT_MUTED}; font-size: {ThemeFonts.SIZE_CAPTION}px;"
         )
-        version_label.setToolTip("Code to Prompt version")
+        version_label.setToolTip("Synapse Desktop version")
         status_bar.addPermanentWidget(version_label)
 
         self._update_status_bar()

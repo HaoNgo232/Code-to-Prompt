@@ -59,8 +59,8 @@ def main() -> None:
     )
 
     app = QApplication(sys.argv)
-    app.setApplicationName("Code to Prompt")
-    app.setOrganizationName("Code to Prompt")
+    app.setApplicationName("Synapse Desktop")
+    app.setOrganizationName("Synapse Desktop")
 
     # Store boot container on app instance for reuse
     app._service_container = _boot_container  # type: ignore[attr-defined]

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build AppImage for Code to Prompt
+# Build AppImage for Synapse Desktop
 # Usage: ./build-appimage.sh
 #
 # Requirements:
@@ -9,7 +9,7 @@
 
 set -e
 
-APP_NAME="Code-to-Prompt"
+APP_NAME="Synapse-Desktop"
 APP_VERSION="1.0.0"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build"
@@ -67,7 +67,7 @@ echo "[4/6] Creating desktop entry..."
 cat > "$APPDIR/$APP_NAME.desktop" << EOF
 [Desktop Entry]
 Type=Application
-Name=Code to Prompt
+Name=Synapse Desktop
 Comment=Copy Context and Apply OPX for AI-assisted coding
 Exec=$APP_NAME
 Icon=$APP_NAME
@@ -84,7 +84,7 @@ SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
 export PATH="${HERE}/usr/bin:${PATH}"
 export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
-exec "${HERE}/usr/bin/Code-to-Prompt" "$@"
+exec "${HERE}/usr/bin/Synapse-Desktop" "$@"
 EOF
 chmod +x "$APPDIR/AppRun"
 
