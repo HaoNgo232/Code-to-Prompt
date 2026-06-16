@@ -141,13 +141,35 @@ DESKTOP_DIR="$HOME/Desktop"
 
 # Detect WSL to move to Windows Desktop
 if grep -qE "(Microsoft|WSL)" /proc/version 2>/dev/null; then
-    # Running under WSL, resolve Windows User Profile path
+    # Method 1: Try interop with cmd.exe
     WIN_USERPROFILE=$(cmd.exe /c "echo %USERPROFILE%" 2>/dev/null | tr -d '\r')
     if [ -n "$WIN_USERPROFILE" ]; then
         WSL_DESKTOP=$(wslpath "$WIN_USERPROFILE/Desktop" 2>/dev/null)
         if [ -d "$WSL_DESKTOP" ]; then
             DESKTOP_DIR="$WSL_DESKTOP"
         fi
+    fi
+
+    # Method 2: Case-insensitive match under /mnt/c/Users if Method 1 failed
+    if [ "$DESKTOP_DIR" = "$HOME/Desktop" ] || [ ! -d "$DESKTOP_DIR" ]; then
+        WSL_USER=$(whoami)
+        for d in /mnt/c/Users/*; do
+            if [ -d "$d/Desktop" ] && [ "$(echo "$(basename "$d")" | tr '[:upper:]' '[:lower:]')" = "$(echo "$WSL_USER" | tr '[:upper:]' '[:lower:]')" ]; then
+                DESKTOP_DIR="$d/Desktop"
+                break
+            fi
+        done
+    fi
+
+    # Method 3: Find any user folder on C: drive that has a Desktop (excluding system profiles)
+    if [ "$DESKTOP_DIR" = "$HOME/Desktop" ] || [ ! -d "$DESKTOP_DIR" ]; then
+        for d in /mnt/c/Users/*; do
+            bname=$(basename "$d")
+            if [ "$bname" != "Public" ] && [ "$bname" != "All Users" ] && [ "$bname" != "Default" ] && [ "$bname" != "Default User" ] && [ -d "$d/Desktop" ]; then
+                DESKTOP_DIR="$d/Desktop"
+                break
+            fi
+        done
     fi
 fi
 
