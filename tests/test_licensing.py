@@ -34,4 +34,17 @@ def test_license_service_empty_or_malformed_key():
     assert info2.is_valid is False
     assert "structure" in info2.error_message.lower() or "decoding" in info2.error_message.lower() or "decode" in info2.error_message.lower()
 
+def test_app_settings_contains_license_key():
+    from domain.config.app_settings import AppSettings
+    settings = AppSettings()
+    assert hasattr(settings, "license_key")
+    assert settings.license_key == ""
+    
+    settings_dict = settings.to_dict()
+    assert "license_key" in settings_dict
+    
+    loaded_settings = AppSettings.from_dict({"license_key": "SYNAPSE-KEY.abc.123"})
+    assert loaded_settings.license_key == "SYNAPSE-KEY.abc.123"
+
+
 
