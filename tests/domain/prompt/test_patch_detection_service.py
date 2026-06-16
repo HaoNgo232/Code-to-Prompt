@@ -1,5 +1,7 @@
 import time
 import os
+from unittest.mock import patch
+
 from domain.prompt.patch_detection_service import (
     PatchDetectionService,
 )
@@ -152,3 +154,25 @@ def test_none_like_input_handled() -> None:
     # Test "null" string
     result = service.detect("null")
     assert result.has_patches is False
+
+
+def test_non_string_input_returns_false() -> None:
+    """Kiểm tra đầu vào không phải chuỗi trả về has_patches=False."""
+    service = PatchDetectionService()
+    result = service.detect(123)  # type: ignore
+    assert result.has_patches is False
+    assert len(result.file_actions) == 0
+    assert len(result.affected_files) == 0
+
+
+def test_relpath_exception_handled() -> None:
+    """Kiểm tra xử lý ngoại lệ khi os.path.relpath ném ra lỗi."""
+    current_dir = os.getcwd()
+    abs_path = os.path.join(current_dir, "src", "main.py")
+    text = f'<edit file="{abs_path}" op="remove" />'
+    service = PatchDetectionService(workspace_root=current_dir)
+
+    with patch("os.path.relpath", side_effect=ValueError("Mocked relpath error")):
+        result = service.detect(text)
+        assert result.has_patches is True
+        assert abs_path in result.affected_files
