@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 # Real Ed25519 Public Key embedded in the application
 PUBLIC_KEY_PEM = b"""-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAfvU9vWzG3r5P9fI1sS3+p1lJmR0s8yXk2aO4fK+3JtQ=
+MCowBQYDK2VwAyEAcLMiz6I+e23S5bHacVz9ufMKTTnA955lxWpZYFsb3KQ=
 -----END PUBLIC KEY-----"""
+
 
 class Ed25519LicenseService(ILicenseService):
     def __init__(self, public_key_pem: bytes = PUBLIC_KEY_PEM) -> None:

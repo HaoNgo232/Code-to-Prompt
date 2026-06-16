@@ -46,5 +46,56 @@ def test_app_settings_contains_license_key():
     loaded_settings = AppSettings.from_dict({"license_key": "SYNAPSE-KEY.abc.123"})
     assert loaded_settings.license_key == "SYNAPSE-KEY.abc.123"
 
+def test_cryptographic_verification_with_generated_keys():
+    import json
+    import base64
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+    from cryptography.hazmat.primitives import serialization
+    from infrastructure.adapters.license_service import Ed25519LicenseService
+    
+    # Generate temporary key pair
+    private_key = ed25519.Ed25519PrivateKey.generate()
+    public_key = private_key.public_key()
+    
+    public_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    
+    service = Ed25519LicenseService(public_key_pem=public_pem)
+    
+    # Sign custom payload
+    payload = {
+        "license_id": "LIC-TEST-1",
+        "email": "tester@test.com",
+        "expiry_date": "2030-01-01",
+        "product": "Synapse Desktop"
+    }
+    payload_str = json.dumps(payload, separators=(',', ':'))
+    payload_b64 = base64.urlsafe_b64encode(payload_str.encode("utf-8")).decode("utf-8").rstrip("=")
+    
+    signature = private_key.sign(payload_b64.encode("utf-8"))
+    sig_b64 = base64.urlsafe_b64encode(signature).decode("utf-8").rstrip("=")
+    
+    full_key = f"SYNAPSE-KEY.{payload_b64}.{sig_b64}"
+    
+    # Verify the signature
+    info = service.verify_license_key(full_key)
+    assert info.is_valid is True
+    assert info.license_id == "LIC-TEST-1"
+    assert info.email == "tester@test.com"
+
+def test_embedded_key_pair_verification():
+    from infrastructure.adapters.license_service import Ed25519LicenseService
+    service = Ed25519LicenseService()
+    
+    # Generate live using tool parameters inside test
+    from tools.license_generator import sign_license
+    live_key = sign_license("LIC-LIVE", "live@test.com", 30)
+    info = service.verify_license_key(live_key)
+    assert info.is_valid is True
+    assert info.email == "live@test.com"
+
+
 
 
