@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class GumroadLicenseService(ILicenseService):
-    DEFAULT_PRODUCT_ID = "YOUR_GUMROAD_PRODUCT_ID"
+    DEFAULT_PRODUCT_ID = "g3j8iqBm8C6LIwSAqro1Ww=="
     API_URL = "https://api.gumroad.com/v2/licenses/verify"
 
     def __init__(self, product_id: str = DEFAULT_PRODUCT_ID) -> None:
