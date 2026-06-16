@@ -78,6 +78,40 @@ def test_dummy_git():
     assert logs.log_content == "dummy log"
 
 
+def test_dummy_git_all_methods() -> None:
+    """Exercises all remaining IGitService methods not covered by test_dummy_git."""
+    git = DummyGitService()
+
+    # get_diff_only
+    diff_only = git.get_diff_only(Path("."))
+    assert diff_only is not None
+    assert diff_only.diff_content == ""
+
+    # filter_diff_by_files
+    filtered = git.filter_diff_by_files("some diff", ["file.py"])
+    assert filtered == ""
+
+    # extract_changed_files_from_diff
+    changed = git.extract_changed_files_from_diff("some diff")
+    assert changed == []
+
+    # build_diff_prompt
+    prompt = git.build_diff_prompt(diff_only, "instructions", True, True)
+    assert prompt == ""
+
+
 def test_dummy_ast():
     parser = DummyAstParser()
     assert parser.parse_file(Path("test.py")) == {"symbols": []}
+
+
+def test_dummy_ast_all_methods() -> None:
+    """Exercises all remaining IAstParser methods not covered by test_dummy_ast."""
+    parser = DummyAstParser()
+
+    repo_map = parser.generate_repo_map(["file.py"], Path("."))
+    assert repo_map == ""
+
+    # With no workspace root
+    repo_map2 = parser.generate_repo_map(["a.py", "b.py"])
+    assert repo_map2 == ""

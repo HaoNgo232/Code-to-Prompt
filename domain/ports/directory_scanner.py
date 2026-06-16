@@ -17,8 +17,8 @@ class IDirectoryScanner(abc.ABC):
         excluded_patterns: Optional[List[str]] = None,
         use_gitignore: bool = True,
     ) -> TreeItem:
-        """Scan a directory recursively and build its TreeItem structure, respecting ignore rules."""
-        pass
+        """Scan a directory recursively and build its TreeItem structure, respecting ignore rules."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def scan_directory_shallow(
@@ -28,8 +28,8 @@ class IDirectoryScanner(abc.ABC):
         depth: int = 1,
         excluded_patterns: Optional[List[str]] = None,
     ) -> TreeItem:
-        """Scan a directory shallowly up to a specified depth, respecting ignore rules."""
-        pass
+        """Scan a directory shallowly up to a specified depth, respecting ignore rules."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def load_folder_children(
@@ -40,5 +40,5 @@ class IDirectoryScanner(abc.ABC):
         use_gitignore: bool = True,
         workspace_root: Optional[Path] = None,
     ) -> None:
-        """Load children for a folder node on-demand, respecting ignore rules."""
-        pass
+        """Load children for a folder node on-demand, respecting ignore rules."""  # pragma: no cover
+        pass  # pragma: no cover

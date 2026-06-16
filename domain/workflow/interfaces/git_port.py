@@ -9,15 +9,15 @@ class IGitService(abc.ABC):
     def get_diffs(
         self, root_path: Path, base_ref: Optional[str] = None
     ) -> Optional[GitDiffResult]:
-        """Lay git diff cua repository."""
-        pass
+        """Lay git diff cua repository."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def get_logs(
         self, root_path: Path, max_commits: int = 10
     ) -> Optional[GitLogResult]:
-        """Lay git log cua repository."""
-        pass
+        """Lay git log cua repository."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def get_diff_only(
@@ -27,18 +27,18 @@ class IGitService(abc.ABC):
         include_staged: bool = True,
         include_unstaged: bool = True,
     ) -> DiffOnlyResult:
-        """Lay git diff rut gon cho Copy Diff Only."""
-        pass
+        """Lay git diff rut gon cho Copy Diff Only."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def filter_diff_by_files(self, diff_content: str, files: List[str]) -> str:
-        """Loc noi dung diff chi giu lai cac file trong danh sach."""
-        pass
+        """Loc noi dung diff chi giu lai cac file trong danh sach."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def extract_changed_files_from_diff(self, diff_content: str) -> List[str]:
-        """Trich xuat danh sach file thay doi tu noi dung diff."""
-        pass
+        """Trich xuat danh sach file thay doi tu noi dung diff."""  # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def build_diff_prompt(
@@ -54,5 +54,5 @@ class IGitService(abc.ABC):
         related_max_files: int = 20,
         output_format: str = "xml",
     ) -> str:
-        """Build prompt from diff result for Copy Diff Only."""
-        pass
+        """Build prompt from diff result for Copy Diff Only."""  # pragma: no cover
+        pass  # pragma: no cover
