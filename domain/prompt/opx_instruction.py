@@ -103,8 +103,7 @@ src/lib/feature-flags.ts
 - If you see `[NOTE: File content trimmed...]` or `[NOTE: Converted to Smart Context...]` or `[NOTE: File severely truncated...]` in a file's content, do NOT generate SEARCH/REPLACE blocks for that file if you don't know the exact content.
 - If a patch is impossible due to truncation, explicitly mention this in your response and ask the user to provide the full content of the specific file.
 
-# Output format
+# Search/Replace patch output format
 - Emit all Search/Replace blocks inside a fenced ```text ... ``` or ``` ... ``` block for reliable parsing.
-- You can optionally include a continuous context memory block at the very end of your response to keep track of important context across conversational turns:
 
 </search_replace_instructions>"""
