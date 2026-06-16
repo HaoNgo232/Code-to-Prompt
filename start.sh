@@ -89,7 +89,7 @@ fi
 echo -e "${GREEN}Starting application (Synapse Desktop)...${NC}\n"
 # Set PYTHONPATH to current directory to ensure modules are found
 export PYTHONPATH=$PYTHONPATH:.
-python3 main.py
+python3 main.py --no-license "$@"
 
 # Save exit code
 APP_EXIT_CODE=$?

@@ -85,9 +85,8 @@ def main() -> None:
     apply_theme(app)
 
     # Boot verification checks
-    # Boot verification checks — only when SYNAPSE_LICENSE_CHECK is enabled
-    # and --no-license CLI argument is not passed
-    if os.environ.get("SYNAPSE_LICENSE_CHECK") == "1" and "--no-license" not in sys.argv:
+    # Boot verification checks — unless --no-license CLI argument is passed
+    if "--no-license" not in sys.argv:
         from domain.ports.registry import DomainRegistry
         from infrastructure.persistence.settings_manager import load_app_settings
 

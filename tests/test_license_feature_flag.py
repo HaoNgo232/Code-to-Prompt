@@ -1,4 +1,3 @@
-import os
 import sys
 import importlib
 from unittest.mock import patch, MagicMock
@@ -147,43 +146,7 @@ def setup_registry_dependencies():
         DomainRegistry.register_license_service(orig_license_service)
 
 
-def test_runtime_hook_sets_env_var(monkeypatch):
-    monkeypatch.delenv("SYNAPSE_LICENSE_CHECK", raising=False)
-    
-    # Import/execute the runtime hook
-    import runtime_hook_license
-    importlib.reload(runtime_hook_license)
-    
-    assert os.environ.get("SYNAPSE_LICENSE_CHECK") == "1"
-
-
-def test_main_boot_bypasses_license_check_when_flag_off(monkeypatch):
-    monkeypatch.setenv("SYNAPSE_LICENSE_CHECK", "0")
-    
-    import main
-    with (
-        patch("PySide6.QtWidgets.QApplication"),
-        patch("PySide6.QtGui.QIcon"),
-        patch("presentation.config.theme.apply_theme"),
-        patch("presentation.utils.qt_utils.get_signal_bridge"),
-        patch("presentation.main_window.SynapseMainWindow"),
-        patch("presentation.service_container.ServiceContainer"),
-        patch("infrastructure.adapters.encoder_registry.initialize_encoder"),
-        patch("shared.config.paths.ensure_app_directories"),
-        patch("infrastructure.adapters.windows_utils.set_app_user_model_id"),
-        patch("domain.ports.registry.DomainRegistry.license_service") as mock_license_service
-    ):
-        importlib.reload(main)
-        try:
-            main.main()
-        except SystemExit:
-            pass
-        mock_license_service.assert_not_called()
-
-
-def test_main_boot_bypasses_license_check_with_no_license_arg(monkeypatch):
-    monkeypatch.setenv("SYNAPSE_LICENSE_CHECK", "1")
-    
+def test_main_boot_bypasses_license_check_with_no_license_arg():
     import main
     with (
         patch("sys.argv", ["main.py", "--no-license"]),
@@ -206,9 +169,7 @@ def test_main_boot_bypasses_license_check_with_no_license_arg(monkeypatch):
         mock_license_service.assert_not_called()
 
 
-def test_main_boot_enforces_license_check_when_flag_on(monkeypatch):
-    monkeypatch.setenv("SYNAPSE_LICENSE_CHECK", "1")
-    
+def test_main_boot_enforces_license_check_by_default():
     import main
     with (
         patch("sys.argv", ["main.py"]),
@@ -243,26 +204,14 @@ def test_main_boot_enforces_license_check_when_flag_on(monkeypatch):
         mock_license_service.return_value.verify_license_key.assert_called_once_with("dummy")
 
 
-def test_settings_view_hides_licensing_when_flag_off(qtbot, setup_registry_dependencies, monkeypatch):
-    monkeypatch.setenv("SYNAPSE_LICENSE_CHECK", "0")
-    
-    view = SettingsViewQt()
-    qtbot.addWidget(view)
-    
-    # Assert _deactivate_btn is not created (since build_license_section is not called)
-    assert not hasattr(view, "_deactivate_btn")
-
-
-def test_settings_view_hides_licensing_with_no_license_arg(qtbot, setup_registry_dependencies, monkeypatch):
-    monkeypatch.setenv("SYNAPSE_LICENSE_CHECK", "1")
+def test_settings_view_hides_licensing_with_no_license_arg(qtbot, setup_registry_dependencies):
     with patch("sys.argv", ["main.py", "--no-license"]):
         view = SettingsViewQt()
         qtbot.addWidget(view)
         assert not hasattr(view, "_deactivate_btn")
 
 
-def test_settings_view_shows_licensing_when_flag_on(qtbot, setup_registry_dependencies, monkeypatch):
-    monkeypatch.setenv("SYNAPSE_LICENSE_CHECK", "1")
+def test_settings_view_shows_licensing_by_default(qtbot, setup_registry_dependencies):
     with patch("sys.argv", ["main.py"]):
         view = SettingsViewQt()
         qtbot.addWidget(view)

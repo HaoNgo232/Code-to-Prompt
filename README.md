@@ -745,10 +745,16 @@ Return:
 6. Possible side effects
 ```
 
-## Environment variables
+## Environment variables & CLI Options
 
+### Environment Variables
 ```bash
-SYNAPSE_DEBUG=1   # Enable detailed debug logging
+SYNAPSE_DEBUG=1          # Enable detailed debug logging
+```
+
+### CLI Arguments
+```bash
+--no-license             # Bypass the license verification checks (active by default)
 ```
 
 ## License
