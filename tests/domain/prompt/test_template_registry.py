@@ -7,10 +7,10 @@ from domain.prompt.template_manager import (
 )
 
 
-def test_list_returns_exactly_7_builtin():
-    # Built-in templates should have only 7.
+def test_list_returns_exactly_8_builtin():
+    # Built-in templates should have only 8.
     builtin = [t for t in list_templates() if not t.is_custom]
-    assert len(builtin) == 7
+    assert len(builtin) == 8
     expected_ids = {
         "bug_hunter",
         "security_auditor",
@@ -19,6 +19,7 @@ def test_list_returns_exactly_7_builtin():
         "test_writer",
         "performance_optimizer",
         "doc_generator",
+        "roi_analyer",
     }
     assert {t.template_id for t in builtin} == expected_ids
 
@@ -64,7 +65,7 @@ def test_lite_dir_not_loaded():
         assert content_loaded != content_lite_file
 
 
-def test_all_7_templates_have_content():
+def test_all_8_templates_have_content():
     expected_ids = [
         "bug_hunter",
         "security_auditor",
@@ -73,6 +74,7 @@ def test_all_7_templates_have_content():
         "test_writer",
         "performance_optimizer",
         "doc_generator",
+        "roi_analyer",
     ]
     for tid in expected_ids:
         content = load_template(tid)

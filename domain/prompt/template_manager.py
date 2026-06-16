@@ -127,6 +127,13 @@ class BuiltInTemplateProvider(TemplateProvider):
                 is_custom=False,
                 has_lite=True,
             ),
+            "roi_analyer": TemplateInfo(
+                template_id="roi_analyer",
+                display_name="ROI Analyzer",
+                description="Evaluate the codebase ROI from technical, product, and business perspectives",
+                is_custom=False,
+                has_lite=False,
+            ),
         }
 
     def list_templates(self) -> list[TemplateInfo]:
