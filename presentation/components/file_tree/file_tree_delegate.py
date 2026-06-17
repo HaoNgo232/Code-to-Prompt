@@ -30,9 +30,90 @@ from PySide6.QtGui import (
     QPixmap,
 )
 import qtawesome as qta
+from pathlib import Path
+import json
+import logging
 
 from presentation.config.theme import ThemeColors, ThemeFonts
 from presentation.components.file_tree.file_tree_model import FileTreeRoles
+
+logger = logging.getLogger(__name__)
+
+class MaterialIconMapper:
+    """Parses material-icons.json and maps files/folders to their SVG icons."""
+    def __init__(self, assets_dir: Path):
+        self.assets_dir = assets_dir
+        self.json_path = assets_dir / "material-icons" / "material-icons.json"
+        self.icons_dir = assets_dir / "material-icons"
+        self.enabled = False
+        self.data: dict = {}
+        self.load_config()
+
+    def load_config(self):
+        if not self.json_path.exists():
+            logger.info(f"Material-icons config not found at {self.json_path}. Falling back to default icons.")
+            return
+        try:
+            with open(self.json_path, "r", encoding="utf-8") as f:
+                self.data = json.load(f)
+            self.enabled = True
+        except Exception as e:
+            logger.error(f"Failed to load material-icons config: {e}")
+
+    def get_icon_path(self, name: str, is_dir: bool, is_expanded: bool = False) -> str | None:
+        if not self.enabled:
+            return None
+
+        name_lower = name.lower()
+
+        if is_dir:
+            icon_def = None
+            if is_expanded:
+                icon_def = self.data.get("folderNamesExpanded", {}).get(name_lower)
+            if not icon_def:
+                icon_def = self.data.get("folderNames", {}).get(name_lower)
+            if not icon_def:
+                icon_def = self.data.get("folderExpanded" if is_expanded else "folder")
+            return self._resolve_definition(icon_def)
+
+        # 1. Exact filename match
+        icon_def = self.data.get("fileNames", {}).get(name_lower)
+
+        # 2. Extension match
+        if not icon_def:
+            parts = name_lower.split(".")
+            if len(parts) > 1:
+                # Check multi-part extensions (e.g. test.spec.js)
+                for i in range(1, len(parts)):
+                    ext = ".".join(parts[i:])
+                    icon_def = self.data.get("fileExtensions", {}).get(ext)
+                    if icon_def:
+                        break
+
+        # 3. Default file fallback
+        if not icon_def:
+            icon_def = self.data.get("file")
+
+        return self._resolve_definition(icon_def)
+
+    def _resolve_definition(self, icon_def: str | None) -> str | None:
+        if not icon_def:
+            return None
+        definition = self.data.get("iconDefinitions", {}).get(icon_def)
+        if not definition:
+            return None
+        rel_path = definition.get("iconPath")
+        if not rel_path:
+            return None
+        if rel_path.startswith("./"):
+            rel_path = rel_path[2:]
+        elif rel_path.startswith("/"):
+            rel_path = rel_path[1:]
+
+        full_path = self.icons_dir / rel_path
+        if full_path.exists():
+            return str(full_path)
+        return None
 
 
 # Row dimensions
