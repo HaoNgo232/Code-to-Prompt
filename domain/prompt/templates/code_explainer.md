@@ -51,14 +51,3 @@ Recommended order to explore the codebase:
 9. Anti-Patterns to Watch
 - Patterns in the codebase that may slow down development or introduce bugs
 - What to be careful about when making changes
-
-Response requirements:
-- Focus on clarity, structure, and architectural reasoning — not exhaustive detail.
-- Explain the system in layers (high-level → detailed).
-- Always tie explanations to actual code (files, modules, entry points).
-- Prioritize understanding over completeness.
-- Highlight WHY decisions were likely made, not just WHAT exists.
-- Identify risks and complexity hotspots early.
-- Be direct and honest; do not sugarcoat.
-- Prioritize actionable insights.
-- If the codebase is too large, ask me to provide important files such as README, dependency files, entry points, core modules, config, tests, CI/CD, and architecture documentation.

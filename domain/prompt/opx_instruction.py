@@ -94,7 +94,7 @@ src/lib/feature-flags.ts
 >>>>>>> RENAME
 
 # Guidance for reliable patches
-- Make the SEARCH block unique: include enough surrounding lines so it matches exactly once in the file.
+- Make the SEARCH block unique but keep it as SHORT as possible (just enough to make it unique).
 - The entire SEARCH region is replaced by the entire REPLACE block.
 - Preserve indentation to fit the surrounding code.
 - If you need to make multiple edits to the same file, output multiple blocks. Order them top-to-bottom to avoid offset drift.
@@ -103,7 +103,9 @@ src/lib/feature-flags.ts
 - If you see `[NOTE: File content trimmed...]` or `[NOTE: Converted to Smart Context...]` or `[NOTE: File severely truncated...]` in a file's content, do NOT generate SEARCH/REPLACE blocks for that file if you don't know the exact content.
 - If a patch is impossible due to truncation, explicitly mention this in your response and ask the user to provide the full content of the specific file.
 
-# Search/Replace patch output format
-- Emit all Search/Replace blocks inside a fenced ```text ... ``` or ``` ... ``` block for reliable parsing.
+# Response Structure
+Patches are the primary deliverable. Keep your response focused and concise.
+All Search/Replace blocks grouped together in a single fenced ```text ... ``` block at the END.
+Do NOT scatter patches throughout a long explanation — group them all at the end for easy parsing.
 
 </search_replace_instructions>"""

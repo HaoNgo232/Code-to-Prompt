@@ -32,17 +32,3 @@ For each recommendation, provide:
 5. Anti-Recommendations
 - Patterns/approaches to avoid at current stage
 - Why they would increase unnecessary complexity
-
-Response requirements:
-- Enforce Clean Architecture principles:
-  - Domain layer must not depend on infrastructure/frameworks.
-  - Application orchestrates use cases only.
-  - Infrastructure handles DB, APIs, external systems.
-- Apply Domain-Driven Design (pragmatic level):
-  - Ubiquitous language across codebase.
-  - Clear Entity vs Value Object distinction.
-  - Business logic must reside in domain.
-- Do NOT introduce patterns or abstractions without real justification.
-- Be direct and honest; do not sugarcoat.
-- Prioritize actionable insights.
-- If the codebase is too large, ask me to provide important files such as README, dependency files, entry points, core modules, config, tests, CI/CD, and architecture documentation.

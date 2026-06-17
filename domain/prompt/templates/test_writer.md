@@ -40,12 +40,3 @@ Please analyze and provide the following sections:
 8. Coverage Gaps
 - What is NOT covered
 - Risk of missing coverage
-
-Response requirements:
-- Test behavior, not implementation.
-- Optimize for confidence per test, not number of tests.
-- Prioritize high-risk and high-impact areas.
-- Avoid over-testing low-value code.
-- Be direct and honest; do not sugarcoat.
-- Prioritize actionable insights.
-- If the codebase is too large, ask me to provide important files such as README, dependency files, entry points, core modules, config, tests, CI/CD, and architecture documentation.

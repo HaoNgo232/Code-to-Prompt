@@ -22,8 +22,3 @@ For each bug, provide:
 
 3. Anti-False-Positive Note
 - Briefly list what was checked but intentionally NOT flagged (to show restraint)
-
-Response requirements:
-- Be direct and honest; do not sugarcoat.
-- Prioritize actionable insights.
-- If the codebase is too large, ask me to provide important files such as README, dependency files, entry points, core modules, config, tests, CI/CD, and architecture documentation.
