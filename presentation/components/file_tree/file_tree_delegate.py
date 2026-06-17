@@ -106,12 +106,8 @@ class MaterialIconMapper:
         rel_path = definition.get("iconPath")
         if not rel_path:
             return None
-        if rel_path.startswith("./"):
-            rel_path = rel_path[2:]
-        elif rel_path.startswith("/"):
-            rel_path = rel_path[1:]
-
-        full_path = self.icons_dir / rel_path
+        filename = Path(rel_path).name
+        full_path = self.icons_dir / "icons" / filename
         if full_path.exists():
             return str(full_path)
         return None
