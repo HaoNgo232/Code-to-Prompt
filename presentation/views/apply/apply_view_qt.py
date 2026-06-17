@@ -1217,13 +1217,13 @@ class ApplyViewQt(QWidget):
             if self._summary_label:
                 self._summary_label.setText(
                     f"Found {num_changes} changes in {num_files} affected files. "
-                    f"<a href='show_files' style='color: {ThemeColors.PRIMARY}; text-decoration: none; font-weight: bold;'>[Show Files]</a>"
+                    f"<a href='show_files' style='color: #4ADE80; text-decoration: none; font-weight: bold;'>[Show Files]</a>"
                 )
                 self._summary_label.setToolTip("")
                 self._summary_label.setStyleSheet(
-                    f"font-size: 11px; color: {ThemeColors.PRIMARY}; font-weight: 600; "
-                    f"background-color: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); "
-                    f"border-radius: 6px; padding: 6px 10px; margin-top: 4px;"
+                    "font-size: 11px; color: #4ADE80; font-weight: 600; "
+                    "background-color: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.2); "
+                    "border-radius: 6px; padding: 6px 10px; margin-top: 4px;"
                 )
                 self._summary_label.show()
             if self._apply_btn:
