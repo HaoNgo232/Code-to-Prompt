@@ -110,6 +110,13 @@ if (Test-Path $ICON_FILE) {
 # ── Step 4: Collect add-data paths ────────────────────────────
 Write-Host "[4/7] Collecting data files..." -ForegroundColor Green
 
+# Fetch Material Icons if missing
+$MATERIAL_ICONS_DIR = Join-Path $ASSETS_DIR "material-icons"
+if (-not (Test-Path $MATERIAL_ICONS_DIR)) {
+    Write-Host "  Material icons missing. Fetching..." -ForegroundColor Green
+    & $VENV_PYTHON scripts/fetch_material_icons.py
+}
+
 $addDataArgs = @()
 
 # Assets directory (fonts, icons, images)

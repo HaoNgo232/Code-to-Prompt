@@ -61,6 +61,9 @@ fi
 echo "Installing PyInstaller..."
 pip install pyinstaller --quiet
 
+echo "Fetching material icons if missing..."
+python3 scripts/fetch_material_icons.py
+
 echo "[2/6] Building with PyInstaller..."
 pyinstaller \
     --name "$APP_NAME" \

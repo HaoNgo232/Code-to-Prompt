@@ -26,3 +26,6 @@ tmp/
 .pip_wheels/
 pytest.ini
 .antigravitycli/2cddb850-27e5-48ee-9a14-47f354be0c13.json
+
+# VS Code Material Icons Theme Integration
+assets/material-icons/
