@@ -77,7 +77,7 @@ x = 10
 
     def test_parse_with_special_characters_in_description(self):
         """Verify description parsing handles special characters (regex symbols, unicode, emojis) correctly."""
-        text = """
+        text = r"""
 <<<<<<< SEARCH src/main.py - Sửa hàm render() với regex: \w+ [a-z]* (như $1?!). 🎉
 import sys
 =======
