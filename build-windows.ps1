@@ -27,7 +27,7 @@ $Clean = $true
 $ErrorActionPreference = "Stop"
 
 # ── Configuration ──────────────────────────────────────────────
-$APP_NAME = "Synapse-Desktop"
+$APP_NAME = "Synapse"
 $APP_VERSION = "1.0.0"
 $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $BUILD_DIR = Join-Path $SCRIPT_DIR "build"

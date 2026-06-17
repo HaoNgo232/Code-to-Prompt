@@ -9,7 +9,7 @@
 
 set -e
 
-APP_NAME="Synapse-Desktop"
+APP_NAME="Synapse"
 APP_VERSION="1.0.0"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build"
@@ -174,7 +174,7 @@ if grep -qE "(Microsoft|WSL)" /proc/version 2>/dev/null; then
 fi
 
 OUTPUT_FILE="$BUILD_DIR/$APP_NAME-$APP_VERSION-x86_64.AppImage"
-DESKTOP_DEST="$DESKTOP_DIR/$APP_NAME-$APP_VERSION-x86_64.AppImage"
+DESKTOP_DEST="$DESKTOP_DIR/$APP_NAME.AppImage"
 
 if [ -f "$OUTPUT_FILE" ]; then
     # Ensure destination directory exists
