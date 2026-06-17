@@ -126,6 +126,7 @@ class UIBuilderMixin:
         from shared.utils.path_utils import get_assets_dir
 
         assets_dir = str(get_assets_dir())
+        arrow_down_url = os.path.join(assets_dir, "arrow-down.svg").replace("\\", "/")
 
         # Style cho toolbar buttons (Modern & Minimal)
         modern_btn_style = (
@@ -174,7 +175,7 @@ class UIBuilderMixin:
             }}
             QToolButton:hover {{ background: {ThemeColors.BG_HOVER}; }}
             QToolButton::menu-indicator {{
-                image: url({os.path.join(assets_dir, "arrow-down.svg").replace("\\", "/")});
+                image: url({arrow_down_url});
                 subcontrol-origin: padding; subcontrol-position: center right;
                 right: 6px; width: 8px; height: 8px;
             }}
@@ -231,7 +232,7 @@ class UIBuilderMixin:
             }}
             QToolButton:hover {{ background: {ThemeColors.BG_HOVER}; }}
             QToolButton::menu-indicator {{
-                image: url({os.path.join(assets_dir, "arrow-down.svg").replace("\\", "/")});
+                image: url({arrow_down_url});
                 subcontrol-origin: padding; subcontrol-position: center right;
                 right: 6px; width: 8px; height: 8px;
             }}
@@ -412,7 +413,7 @@ class UIBuilderMixin:
                 border-color: {ThemeColors.BORDER_LIGHT};
             }}
             QToolButton::menu-indicator {{
-                image: url({os.path.join(assets_dir, "arrow-down.svg").replace("\\", "/")});
+                image: url({arrow_down_url});
                 subcontrol-origin: padding;
                 subcontrol-position: center right;
                 right: 8px;
@@ -497,7 +498,7 @@ class UIBuilderMixin:
                 border-color: {ThemeColors.BORDER_LIGHT};
             }}
             QToolButton::menu-indicator {{
-                image: url({os.path.join(assets_dir, "arrow-down.svg").replace("\\", "/")});
+                image: url({arrow_down_url});
                 subcontrol-origin: padding;
                 subcontrol-position: center right;
                 right: 8px;

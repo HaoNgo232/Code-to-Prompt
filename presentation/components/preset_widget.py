@@ -86,6 +86,7 @@ class PresetWidget(QWidget):
 
         self._assets_dir = str(get_assets_dir())
         arrow_icon = os.path.join(self._assets_dir, "arrow-down.svg")
+        arrow_icon_url = arrow_icon.replace("\\", "/")
 
         # --- Nut chinh (QToolButton + QMenu) ---
         self._main_btn = QToolButton()
@@ -111,7 +112,7 @@ class PresetWidget(QWidget):
                 border-color: {ThemeColors.BORDER};
             }}
             QToolButton::menu-indicator {{
-                image: url({arrow_icon.replace("\\", "/")});
+                image: url({arrow_icon_url});
                 subcontrol-origin: padding;
                 subcontrol-position: center right;
                 right: 6px;
