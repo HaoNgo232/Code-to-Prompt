@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Optional, Any, Protocol
 import logging
 
+from infrastructure.adapters.subprocess_utils import run_subprocess
+
 # Single source of truth cho path display - thay the ban sao inline cu
 # Truoc day inline de tranh circular import, gio an toan vi path_utils
 # khong import git_utils hay prompt_generator
@@ -180,7 +182,7 @@ def is_git_repo(root_path: Path) -> bool:
         return False
 
     try:
-        result = subprocess.run(
+        result = run_subprocess(
             ["git", "-C", str(root_path), "rev-parse", "--is-inside-work-tree"],
             capture_output=True,
             text=True,
@@ -215,7 +217,7 @@ def get_git_diffs(
                 logger.warning("Rejected suspicious base_ref: %s", base_ref)
                 return None
             # Diff against specific ref
-            diff_cmd = subprocess.run(
+            diff_cmd = run_subprocess(
                 ["git", "-C", str(root_path), "diff", "--no-color", base_ref, "--"],
                 capture_output=True,
                 text=True,
@@ -225,7 +227,7 @@ def get_git_diffs(
         else:
             # Working tree diff (unstaged)
             # --no-color is important to avoid ANSI codes in output
-            work_tree = subprocess.run(
+            work_tree = run_subprocess(
                 ["git", "-C", str(root_path), "diff", "--no-color"],
                 capture_output=True,
                 text=True,
@@ -233,7 +235,7 @@ def get_git_diffs(
             )
 
             # Staged diff
-            staged = subprocess.run(
+            staged = run_subprocess(
                 ["git", "-C", str(root_path), "diff", "--staged", "--no-color"],
                 capture_output=True,
                 text=True,
@@ -278,7 +280,7 @@ def get_git_logs(root_path: Path, max_commits: int = 10) -> Optional[GitLogResul
             str(max_commits),
         ]
 
-        result = subprocess.run(
+        result = run_subprocess(
             cmd,
             capture_output=True,
             text=True,
@@ -391,7 +393,7 @@ def get_diff_only(
         # 1. Uncommitted changes (staged + unstaged)
         if include_unstaged:
             # Unstaged changes (working tree vs index)
-            result = subprocess.run(
+            result = run_subprocess(
                 ["git", "diff", "--stat"],
                 cwd=workspace_path,
                 capture_output=True,
@@ -400,7 +402,7 @@ def get_diff_only(
             )
             result_stdout = result.stdout or ""
             if result.returncode == 0 and result_stdout.strip():
-                unstaged_diff = subprocess.run(
+                unstaged_diff = run_subprocess(
                     ["git", "diff"],
                     cwd=workspace_path,
                     capture_output=True,
@@ -421,7 +423,7 @@ def get_diff_only(
 
         if include_staged:
             # Staged changes (index vs HEAD)
-            result = subprocess.run(
+            result = run_subprocess(
                 ["git", "diff", "--cached", "--stat"],
                 cwd=workspace_path,
                 capture_output=True,
@@ -430,7 +432,7 @@ def get_diff_only(
             )
             result_stdout = result.stdout or ""
             if result.returncode == 0 and result_stdout.strip():
-                staged_diff = subprocess.run(
+                staged_diff = run_subprocess(
                     ["git", "diff", "--cached"],
                     cwd=workspace_path,
                     capture_output=True,
@@ -452,7 +454,7 @@ def get_diff_only(
         commits_included = 0
         if num_commits > 0:
             # Get diff of last N commits
-            result = subprocess.run(
+            result = run_subprocess(
                 ["git", "log", f"-{num_commits}", "--oneline"],
                 cwd=workspace_path,
                 capture_output=True,
@@ -467,7 +469,7 @@ def get_diff_only(
                 commits_included = len(commit_lines)
 
                 # Get combined diff
-                diff_result = subprocess.run(
+                diff_result = run_subprocess(
                     ["git", "diff", "--no-color", f"HEAD~{num_commits}..HEAD"],
                     cwd=workspace_path,
                     capture_output=True,
@@ -481,7 +483,7 @@ def get_diff_only(
                 # Fallback cho repo nông/ít history (ví dụ clone depth=1, initial commit)
                 # nơi HEAD~N không resolve được trên một số máy Windows.
                 if diff_result.returncode != 0:
-                    diff_result = subprocess.run(
+                    diff_result = run_subprocess(
                         ["git", "diff", "--no-color", "--root", "HEAD"],
                         cwd=workspace_path,
                         capture_output=True,
@@ -503,7 +505,7 @@ def get_diff_only(
                     diff_parts.append(diff_result.stdout)
 
                     # Get stats
-                    stat_result = subprocess.run(
+                    stat_result = run_subprocess(
                         ["git", "diff", "--stat", f"HEAD~{num_commits}..HEAD"],
                         cwd=workspace_path,
                         capture_output=True,
@@ -513,7 +515,7 @@ def get_diff_only(
                         timeout=30,
                     )
                     if stat_result.returncode != 0:
-                        stat_result = subprocess.run(
+                        stat_result = run_subprocess(
                             ["git", "diff", "--stat", "--root", "HEAD"],
                             cwd=workspace_path,
                             capture_output=True,

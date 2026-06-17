@@ -1,6 +1,5 @@
 <files>
   <file path="config.json">
-    <role>Config</role>
     <content><![CDATA[
 {
   "version": "1.0",
@@ -10,7 +9,6 @@
 ]]></content>
   </file>
   <file path="hello.py">
-    <role>Hello</role>
     <content><![CDATA[
 def greet(name):
     return f"Hello, {name}!"

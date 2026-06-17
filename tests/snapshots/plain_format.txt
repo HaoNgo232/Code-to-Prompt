@@ -1,13 +1,13 @@
-===== FILE: config.json =====
-ROLE: Config
+FILE: config.json
+-----------------
 
 {
   "version": "1.0",
   "debug": false
 }
 
-===== FILE: hello.py =====
-ROLE: Hello
+FILE: hello.py
+--------------
 
 def greet(name):
     return f"Hello, {name}!"

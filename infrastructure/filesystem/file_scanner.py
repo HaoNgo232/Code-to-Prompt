@@ -25,8 +25,8 @@ from infrastructure.filesystem.ignore_engine import IgnoreEngine
 from infrastructure.filesystem.file_utils import (
     TreeItem,
     is_system_path,
-    is_binary_file,
 )
+from shared.utils.file_utils import is_binary_file
 from shared.constants import DIRECTORY_QUICK_SKIP
 
 # Try import scandir_rs (Rust-based)

@@ -38,12 +38,16 @@ def run_subprocess(*args: Any, **kwargs: Any) -> subprocess.CompletedProcess:
     Accepts the same arguments as subprocess.run(). The `creationflags`
     keyword is automatically set to CREATE_NO_WINDOW on Windows unless
     the caller explicitly provides a different value.
-
-    Returns:
-        subprocess.CompletedProcess — identical to subprocess.run().
+    Also ensures UTF-8 encoding is used in text mode on Windows to prevent UnicodeDecodeError.
     """
     if _IS_WINDOWS and "creationflags" not in kwargs:
         kwargs["creationflags"] = _NO_WINDOW_FLAGS
+
+    if kwargs.get("text") or kwargs.get("universal_newlines"):
+        if "encoding" not in kwargs:
+            kwargs["encoding"] = "utf-8"
+            if "errors" not in kwargs:
+                kwargs["errors"] = "replace"
 
     return subprocess.run(*args, **kwargs)
 
@@ -53,11 +57,15 @@ def popen_subprocess(*args: Any, **kwargs: Any) -> subprocess.Popen:
     Wrapper around subprocess.Popen() that suppresses console windows on Windows.
 
     Useful for long-running subprocesses or streaming output.
-
-    Returns:
-        subprocess.Popen instance.
+    Also ensures UTF-8 encoding is used in text mode on Windows to prevent UnicodeDecodeError.
     """
     if _IS_WINDOWS and "creationflags" not in kwargs:
         kwargs["creationflags"] = _NO_WINDOW_FLAGS
+
+    if kwargs.get("text") or kwargs.get("universal_newlines"):
+        if "encoding" not in kwargs:
+            kwargs["encoding"] = "utf-8"
+            if "errors" not in kwargs:
+                kwargs["errors"] = "replace"
 
     return subprocess.Popen(*args, **kwargs)
