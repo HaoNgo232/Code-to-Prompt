@@ -14,6 +14,7 @@ Tat ca format deu bao gom:
 - Git Diff / Git Log instructions (neu co)
 """
 
+import logging
 import re
 from pathlib import Path
 from typing import Optional
@@ -28,7 +29,7 @@ from domain.prompt.formatters.xml import (
     generate_file_summary_xml_minimal,
 )
 from domain.prompt.formatters.system_prompts import (
-    AGENT_ROLE_INSTRUCTION,
+    build_context_legend,
     GENERATION_HEADER,
     SUMMARY_PURPOSE,
     SUMMARY_FILE_FORMAT_PLAIN,
@@ -39,6 +40,18 @@ from domain.prompt.formatters.system_prompts import (
     GIT_DIFF_INSTRUCTION,
     GIT_LOG_INSTRUCTION,
 )
+
+logger = logging.getLogger(__name__)
+
+
+def _has_git_content(
+    git_diffs: Optional[GitDiffResult],
+    git_logs: Optional[GitLogResult],
+) -> bool:
+    """True neu prompt thuc su co git diff hoac git log de hien thi."""
+    has_diffs = bool(git_diffs and (git_diffs.work_tree_diff or git_diffs.staged_diff))
+    has_logs = bool(git_logs and git_logs.log_content)
+    return has_diffs or has_logs
 
 
 def assemble_prompt(
@@ -58,14 +71,17 @@ def assemble_prompt(
     Lắp ráp prompt hoàn chỉnh từ các sections.
     """
 
-    # Ensure user_instructions is cleaned of any legacy output formats
-    if user_instructions:
-        idx = user_instructions.find("## Output format")
-        if idx != -1:
-            user_instructions = user_instructions[:idx].strip()
-        idx = user_instructions.find("## REPORT STRUCTURE")
-        if idx != -1:
-            user_instructions = user_instructions[:idx].strip()
+    # Khong con tu dong cat '## Output format' / '## REPORT STRUCTURE' nua —
+    # viec cat chuoi cung de gay xoa nham noi dung nguoi dung tu viet.
+    # Chi log canh bao neu phat hien legacy section (vd tu saved session cu).
+    if user_instructions and (
+        "## Output format" in user_instructions
+        or "## REPORT STRUCTURE" in user_instructions
+    ):
+        logger.warning(
+            "user_instructions contains a legacy output-format section; "
+            "it is kept as-is (no longer auto-stripped)."
+        )
 
     if output_style == OutputStyle.XML:
         return _assemble_xml(
@@ -134,7 +150,10 @@ def assemble_smart_prompt(
             semantic_index=semantic_index,
         )
 
-    file_summary = generate_smart_summary_xml()
+    legend = build_context_legend(
+        is_smart=True, has_git=_has_git_content(git_diffs, git_logs)
+    )
+    file_summary = generate_smart_summary_xml(context_legend=legend)
 
     prompt = ""
     # Nếu instructions_at_top=True
@@ -185,9 +204,12 @@ def _assemble_smart_plain(
     """Lắp ráp prompt Copy Smart theo Plain Text format."""
     prompt_parts: list[str] = []
 
-    # System/Role info
+    # Context legend (khong ap role) thay cho agent role cu
+    legend = build_context_legend(
+        is_smart=True, has_git=_has_git_content(git_diffs, git_logs)
+    )
     prompt_parts.append(
-        f"{'=' * 48}\nSYSTEM INSTRUCTION (SMART CONTEXT)\n{'=' * 48}\n{AGENT_ROLE_INSTRUCTION}"
+        f"{'=' * 48}\nCONTEXT NOTES (SMART CONTEXT)\n{'=' * 48}\n{legend}"
     )
 
     prompt_parts.append(
@@ -296,12 +318,15 @@ def _assemble_xml(
     )
     current_date = datetime.now().strftime("%Y-%m-%d")
 
+    has_git = _has_git_content(git_diffs, git_logs)
+
     if include_xml_formatting:
-        # In OPX mode, XML_FORMATTING_INSTRUCTIONS already defines the agent role precisely.
-        # Injecting a separate <agent_role> here would create conflicting instructions.
+        # OPX mode: XML_FORMATTING_INSTRUCTIONS da dinh nghia format patch chinh xac.
+        # Khong chen context legend o day de tranh nhieu; summary giu minimal.
         file_summary = generate_file_summary_xml_minimal()
     else:
-        file_summary = generate_file_summary_xml()
+        legend = build_context_legend(is_smart=False, has_git=has_git)
+        file_summary = generate_file_summary_xml(context_legend=legend)
 
     prompt = "<project>\n"
     prompt += f"  <metadata>\n    <name>{project_name}</name>\n    <generated_at>{current_date}</generated_at>\n  </metadata>\n\n"
@@ -336,15 +361,16 @@ def _assemble_xml(
     if not instructions_at_top and project_rules and project_rules.strip():
         prompt += f"\n  <project_rules>\n{project_rules.strip()}\n  </project_rules>\n"
 
-    # 7. Output Format Instructions
+    # 7. Output Format Instructions + Language directive
+    from domain.prompt.template_manager import _get_language_directive
+
     if include_xml_formatting:
         prompt += f"\n{XML_FORMATTING_INSTRUCTIONS}\n"
-    else:
-        from domain.prompt.template_manager import _get_output_format_only
 
-        fmt = _get_output_format_only()
-        if fmt:
-            prompt += f"\n<output_format>\n{fmt}\n</output_format>\n"
+    # Language directive luon ap dung (ke ca OPX, vi phan giai thich cung can dung ngon ngu)
+    lang = _get_language_directive()
+    if lang:
+        prompt += f"\n<output_language>\n{lang}\n</output_language>\n"
 
     # 8. User Instructions (bottom)
     if user_instructions and user_instructions.strip():
@@ -386,15 +412,17 @@ def _assemble_plain(
                 f"{'=' * 48}\nSEMANTIC INDEX\n{'=' * 48}\n{_strip_xml_simple(semantic_index)}"
             )
 
-    # Minimizing Agent Role in OPX mode
-    role = (
-        AGENT_ROLE_INSTRUCTION
-        if not include_xml_formatting
-        else "Analyze the provided codebase."
-    )
+    # Context legend (khong ap role). OPX giu thong diep toi gian.
+    has_git = _has_git_content(git_diffs, git_logs)
+    if include_xml_formatting:
+        role = "Analyze the provided codebase."
+        header = "SYSTEM INSTRUCTION"
+    else:
+        role = build_context_legend(is_smart=False, has_git=has_git)
+        header = "CONTEXT NOTES"
 
-    # Thêm Agent Role và File Summary ở đầu prompt
-    prompt_parts.append(f"{'=' * 48}\nSYSTEM INSTRUCTION\n{'=' * 48}\n{role}")
+    # Thêm Context Notes và File Summary ở đầu prompt
+    prompt_parts.append(f"{'=' * 48}\n{header}\n{'=' * 48}\n{role}")
 
     prompt_parts.append(
         f"{'=' * 48}\n"
@@ -443,13 +471,12 @@ def _assemble_plain(
             f"{'=' * 48}\nPROJECT RULES\n{'=' * 48}\n{project_rules.strip()}"
         )
 
-    # Output Format (Single Source of Truth)
-    if not include_xml_formatting:
-        from domain.prompt.template_manager import _get_output_format_only
+    # Language directive (Single Source of Truth) — luon ap dung ke ca OPX
+    from domain.prompt.template_manager import _get_language_directive
 
-        fmt = _get_output_format_only()
-        if fmt:
-            prompt_parts.append(f"{'=' * 48}\nOUTPUT FORMAT:\n{fmt}")
+    lang = _get_language_directive()
+    if lang:
+        prompt_parts.append(f"{'=' * 48}\nOUTPUT LANGUAGE:\n{lang}")
 
     # User instructions ở cuối cùng (recency bias giúp LLM xử lý tốt hơn)
     if user_instructions and user_instructions.strip():

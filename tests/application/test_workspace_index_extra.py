@@ -247,7 +247,11 @@ class TestWorkspaceIndexExtra:
             # filenames = ["other.py", "ignored.py", "node_modules/pkg.py"]
             # directory skip (line 321) is triggered if rel_path contains directory in DIRECTORY_QUICK_SKIP
             mock_walk.return_value = [
-                ("/other/dir", [], ["other.py", "ignored.py", os.path.normpath("node_modules/pkg.py")])
+                (
+                    "/other/dir",
+                    [],
+                    ["other.py", "ignored.py", os.path.normpath("node_modules/pkg.py")],
+                )
             ]
 
             res = collect_files_from_disk(tmp_path, workspace_path=tmp_path)
@@ -257,7 +261,9 @@ class TestWorkspaceIndexExtra:
             # ignored.py is skipped (match_file is True)
             assert os.path.normpath("/other/dir/ignored.py") not in res_normalized
             # node_modules/pkg.py is skipped (directory check contains sep + node_modules + sep)
-            assert os.path.normpath("/other/dir/node_modules/pkg.py") not in res_normalized
+            assert (
+                os.path.normpath("/other/dir/node_modules/pkg.py") not in res_normalized
+            )
 
     def test_workspace_scanner_adapter(self, tmp_path):
         adapter = WorkspaceScanner()

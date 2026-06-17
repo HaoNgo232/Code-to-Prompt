@@ -45,7 +45,7 @@ class TestPresetStore:
         assert entry.updated_at
 
         # Verify relative paths
-        selected_paths_posix = [p.replace('\\', '/') for p in entry.selected_paths]
+        selected_paths_posix = [p.replace("\\", "/") for p in entry.selected_paths]
         assert "src/main.py" in selected_paths_posix
         assert "src/utils.py" in selected_paths_posix
 

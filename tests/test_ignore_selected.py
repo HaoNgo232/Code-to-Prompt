@@ -90,6 +90,7 @@ from domain.ports.registry import DomainRegistry
 from domain.config.app_settings import AppSettings
 from typing import Any
 
+
 class FakeSettingsService:
     def __init__(self):
         self._settings = AppSettings()

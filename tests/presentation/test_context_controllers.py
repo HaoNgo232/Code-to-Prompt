@@ -155,7 +155,7 @@ def test_tree_management_add_and_undo_ignore(qtbot):
     ) as mock_remove:
         controller.undo_ignore()
         mock_remove.assert_called_once()
-        removed_patterns = {p.replace('\\', '/') for p in mock_remove.call_args[0][0]}
+        removed_patterns = {p.replace("\\", "/") for p in mock_remove.call_args[0][0]}
         assert removed_patterns == {"file1.py", "sub/file2.py"}
         assert controller._last_ignored_patterns == []
         assert any("Removed" in s[0] for s in view.statuses)

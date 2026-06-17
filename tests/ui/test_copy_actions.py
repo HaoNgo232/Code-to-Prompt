@@ -138,11 +138,15 @@ def test_save_instruction_to_history(context_view):
     """Kiem tra _save_instruction_to_history (line 428-437)."""
     view = context_view
     from domain.ports.registry import DomainRegistry
-    mock_settings_svc = MagicMock()
-    with patch.object(DomainRegistry, "settings_service", return_value=mock_settings_svc):
-        view._copy_controller._save_instruction_to_history("Test instruction")
-        mock_settings_svc.add_instruction_history.assert_called_once_with("Test instruction")
 
+    mock_settings_svc = MagicMock()
+    with patch.object(
+        DomainRegistry, "settings_service", return_value=mock_settings_svc
+    ):
+        view._copy_controller._save_instruction_to_history("Test instruction")
+        mock_settings_svc.add_instruction_history.assert_called_once_with(
+            "Test instruction"
+        )
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -222,6 +226,7 @@ def test_copy_context_background_no_security(context_view, tmp_path):
     view.file_tree_widget.get_selected_paths = MagicMock(return_value=[str(py_file)])
 
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.enable_security_check = False
     mock_settings.include_git_changes = False
@@ -236,7 +241,6 @@ def test_copy_context_background_no_security(context_view, tmp_path):
         mock_do.assert_called_once()
 
 
-
 def test_copy_context_security_enabled(context_view, tmp_path):
     """Kiem tra _copy_context dispatches security check (line 484-488)."""
     view = context_view
@@ -246,6 +250,7 @@ def test_copy_context_security_enabled(context_view, tmp_path):
     view.file_tree_widget.get_selected_paths = MagicMock(return_value=[str(py_file)])
 
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.enable_security_check = True
 
@@ -259,7 +264,6 @@ def test_copy_context_security_enabled(context_view, tmp_path):
     ):
         view._copy_controller._copy_context()
         mock_sec.assert_called_once()
-
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -310,7 +314,6 @@ def test_copy_smart_cache_hit(context_view, tmp_path):
             view._clipboard_service.copy_to_clipboard.assert_called_with("smart prompt")
 
 
-
 def test_copy_smart_background(context_view, tmp_path):
     """Kiem tra _copy_smart_context dispatches to background (line 798-832)."""
     view = context_view
@@ -319,6 +322,7 @@ def test_copy_smart_background(context_view, tmp_path):
     view.file_tree_widget.get_selected_paths = MagicMock(return_value=[str(py_file)])
 
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.include_git_changes = False
 
@@ -330,7 +334,6 @@ def test_copy_smart_background(context_view, tmp_path):
     ):
         view._copy_controller._copy_smart_context()
         mock_run.assert_called_once()
-
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -368,7 +371,6 @@ def test_copy_tree_map_cache_hit(context_view, tmp_path):
             view._copy_controller._copy_tree_map_only()
 
 
-
 def test_copy_tree_map_background(context_view, tmp_path):
     """Kiem tra _copy_tree_map_only dispatches background (line 871-911)."""
     view = context_view
@@ -382,7 +384,6 @@ def test_copy_tree_map_background(context_view, tmp_path):
     ):
         view._copy_controller._copy_tree_map_only()
         mock_run.assert_called_once()
-
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -417,7 +418,6 @@ def test_scan_full_tree(context_view, tmp_path):
         mock_scan.assert_called_once()
 
 
-
 # ═══════════════════════════════════════════════════════════════
 # _show_diff_only_dialog
 # ═══════════════════════════════════════════════════════════════
@@ -436,6 +436,7 @@ def test_show_diff_only_dialog(context_view):
     """Kiem tra _show_diff_only_dialog opens dialog (line 933-974)."""
     view = context_view
     from domain.ports.registry import DomainRegistry
+
     with (
         patch(
             "presentation.components.dialogs.dialogs_qt.DiffOnlyDialogQt"
@@ -449,11 +450,11 @@ def test_show_diff_only_dialog(context_view):
         mock_instance.exec.assert_called_once()
 
 
-
 def test_show_diff_only_dialog_exception(context_view):
     """Kiem tra _show_diff_only_dialog xu ly exception (line 973-974)."""
     view = context_view
     from domain.ports.registry import DomainRegistry
+
     with (
         patch(
             "presentation.components.dialogs.dialogs_qt.DiffOnlyDialogQt",
@@ -465,7 +466,6 @@ def test_show_diff_only_dialog_exception(context_view):
         view._copy_controller._show_diff_only_dialog()
         assert mock_status.called
         assert "Error" in mock_status.call_args[0][0]
-
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -563,6 +563,7 @@ def test_do_copy_context_dispatches(context_view, tmp_path):
     gen = view._copy_controller._begin_copy_operation()
 
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.include_git_changes = False
 
@@ -574,7 +575,6 @@ def test_do_copy_context_dispatches(context_view, tmp_path):
             gen, tmp_path, [tmp_path / "a.py"], "instructions", False
         )
         mock_run.assert_called_once()
-
 
 
 def test_do_copy_context_exception(context_view, tmp_path):
@@ -591,8 +591,6 @@ def test_do_copy_context_exception(context_view, tmp_path):
         view._copy_controller._do_copy_context(gen, tmp_path, [], "instr", False)
         assert mock_status.called
         assert "Error" in mock_status.call_args[0][0]
-
-
 
 
 # ═══════════════════════════════════════════════════════════════

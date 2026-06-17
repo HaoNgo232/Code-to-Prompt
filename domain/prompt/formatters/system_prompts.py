@@ -12,30 +12,59 @@ de dam bao nhat quan noi dung huong dan cho AI.
 """
 
 # ===========================================================================
-# Agent Role - Vai tro va nhiem vu cua AI khi nhan context nay
+# Context Usage Notes - Chu thich cach DOC context (khong ap role/persona).
+#
+# Day KHONG phai agent role. Chi mo ta du lieu, khong ra lenh "ban la ai"
+# hay "phai tra loi the nao", de khong xung dot voi template hoac prompt rieng
+# do nguoi dung tu viet. Cac dong duoc tach rieng de inject co dieu kien
+# theo feature dang bat (xem build_context_legend()).
 # ===========================================================================
 
-AGENT_ROLE_INSTRUCTION = """You are an expert programming assistant partnering with a developer. You've been given a packed representation of their codebase to help understand the project's architecture, logic, and recent changes.
+# Dong nen tang - luon ap dung (chong hallucination)
+CONTEXT_NOTE_BASE = (
+    "Reference only code present in this context; if something isn't shown, "
+    "say so rather than assuming or fabricating it."
+)
 
-How to work with this context:
-- Analyze the provided code thoroughly before responding
-- Use the directory structure to understand project organization
-- Reference specific file paths and code when making suggestions
-- Consider git changes (if included) to understand recent development context
-- Follow the developer's instructions precisely while leveraging the full codebase context
-- If a user_instructions block (or an "Instructions" section) appears later in this document, treat it as the highest-priority task directive and follow it first
-- Only reference code explicitly present in the provided context; don't fabricate or assume code that isn't shown
-- If the context is insufficient, clearly state what additional files or information you'd need before proceeding
-- If the developer specifies a different role or perspective in their instructions, adopt that role; their instructions always take priority
+# Chi inject khi Smart Context mode bat
+CONTEXT_NOTE_SMART = (
+    "Smart Context blocks show signatures/declarations only — you can describe "
+    "what functions/classes exist and their signatures, but not their hidden "
+    "implementation or internal logic."
+)
 
-When viewing Smart Context (signatures/declarations only):
-- You can describe what functions/classes exist and their signatures
-- You can't describe implementation details or internal logic
+# Chi inject khi co git diff/log
+CONTEXT_NOTE_GIT = (
+    "Git sections show recent changes; distinguish them from current code in the "
+    'files section. Use temporal language ("before this change" vs "currently").'
+)
 
-When git diffs are included:
-- Distinguish between current code (files section) vs changes (diffs section)
-- Use temporal language: "Before this change..." vs "After this change..." vs "Currently in the codebase..."
-"""
+
+def build_context_legend(
+    *,
+    is_smart: bool = False,
+    has_git: bool = False,
+) -> str:
+    """
+    Xay dung 'context legend' dong — chi gom cac dong lien quan den
+    feature dang bat. Luon giu CONTEXT_NOTE_BASE (chong hallucination).
+
+    Day thay the cho AGENT_ROLE_INSTRUCTION cu. KHONG ap role.
+
+    Args:
+        is_smart: True neu dang o Smart Context mode (them dong smart)
+        has_git: True neu prompt co git diff/log (them dong git)
+
+    Returns:
+        Chuoi cac dong bullet (mo ta cach doc context), hoac chi rieng base.
+    """
+    lines = [CONTEXT_NOTE_BASE]
+    if is_smart:
+        lines.append(CONTEXT_NOTE_SMART)
+    if has_git:
+        lines.append(CONTEXT_NOTE_GIT)
+    return "\n".join(f"- {ln}" for ln in lines)
+
 
 # ===========================================================================
 # Generation Header - Dong mo dau chung cho tat ca format

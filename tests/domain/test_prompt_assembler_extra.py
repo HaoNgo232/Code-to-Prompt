@@ -22,7 +22,7 @@ class TestPromptAssemblerExtra(unittest.TestCase):
         self.assertIn("<file_summary>", prompt)
 
     def test_assemble_prompt_legacy_strip(self):
-        # Test legacy format clean
+        # Test legacy format is kept (no longer auto-stripped)
         user_inst = "My instructions\n## Output format\nLegacy detail"
         prompt = assemble_prompt(
             file_map="src/",
@@ -31,7 +31,7 @@ class TestPromptAssemblerExtra(unittest.TestCase):
             output_style=OutputStyle.XML,
         )
         self.assertIn("My instructions", prompt)
-        self.assertNotIn("Legacy detail", prompt)
+        self.assertIn("Legacy detail", prompt)
 
         user_inst_2 = "My instructions 2\n## REPORT STRUCTURE\nLegacy structure"
         prompt_2 = assemble_prompt(
@@ -41,7 +41,7 @@ class TestPromptAssemblerExtra(unittest.TestCase):
             output_style=OutputStyle.XML,
         )
         self.assertIn("My instructions 2", prompt_2)
-        self.assertNotIn("Legacy structure", prompt_2)
+        self.assertIn("Legacy structure", prompt_2)
 
     def test_assemble_smart_prompt_plain(self):
         prompt = assemble_smart_prompt(
@@ -50,7 +50,7 @@ class TestPromptAssemblerExtra(unittest.TestCase):
             user_instructions="Do something",
             output_style=OutputStyle.PLAIN,
         )
-        self.assertIn("SYSTEM INSTRUCTION (SMART CONTEXT)", prompt)
+        self.assertIn("CONTEXT NOTES (SMART CONTEXT)", prompt)
         self.assertIn("COMPRESSED FILE CONTEXT", prompt)
 
     def test_assemble_smart_prompt_instructions_at_top(self):

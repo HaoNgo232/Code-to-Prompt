@@ -21,7 +21,6 @@ __all__ = [
 ]
 
 from domain.prompt.formatters.system_prompts import (
-    AGENT_ROLE_INSTRUCTION,
     GENERATION_HEADER,
     SUMMARY_PURPOSE,
     SUMMARY_FILE_FORMAT,
@@ -76,27 +75,31 @@ def format_files_xml(entries: list[FileEntry]) -> str:
     return "<files>\n" + "\n".join(file_elements) + "\n</files>"
 
 
-def generate_file_summary_xml() -> str:
+def generate_file_summary_xml(context_legend: str = "") -> str:
     """
     Tao section file_summary theo chuan Repomix AI-Friendly format.
 
-    Section nay giup LLM hieu:
-    - Vai tro cua AI khi xu ly context nay (Agent Role)
-    - Muc dich cua file context
-    - Cau truc du lieu ben trong
-    - Cach su dung dung cach
-    - Cac luu y quan trong
+    KHONG con <agent_role>. Neu context_legend duoc truyen vao,
+    no se duoc chen vao <context_notes> — mo ta CACH DOC context,
+    khong ap role. Caller (assembler) chiu trach nhiem build legend
+    phu hop voi mode dang chay.
+
+    Args:
+        context_legend: Chuoi legend dong tu build_context_legend().
+                        Empty -> khong chen <context_notes>.
 
     Returns:
-        XML string chua file_summary section voi agent role
+        XML string chua file_summary section
     """
+    legend_block = ""
+    if context_legend and context_legend.strip():
+        legend_block = (
+            f"\n<context_notes>\n{context_legend.strip()}\n</context_notes>\n"
+        )
+
     return f"""<file_summary>
 {GENERATION_HEADER}
-
-<agent_role>
-{AGENT_ROLE_INSTRUCTION}
-</agent_role>
-
+{legend_block}
 <purpose>
 {SUMMARY_PURPOSE}
 </purpose>
@@ -116,23 +119,29 @@ def generate_file_summary_xml() -> str:
 """
 
 
-def generate_smart_summary_xml() -> str:
+def generate_smart_summary_xml(context_legend: str = "") -> str:
     """
     Tao file_summary cho Smart Context mode.
 
-    Mo ta rang day la code structure (signatures, docstrings) chu khong phai full content.
-    Bao gom Agent Role de AI hieu nhiem vu cua minh.
+    Mo ta rang day la code structure (signatures, docstrings) chu khong phai
+    full content. KHONG con <agent_role>; context_legend (neu co) duoc chen
+    vao <context_notes>.
+
+    Args:
+        context_legend: Chuoi legend dong tu build_context_legend().
 
     Returns:
         XML string chua file_summary section cho Smart Context
     """
+    legend_block = ""
+    if context_legend and context_legend.strip():
+        legend_block = (
+            f"\n<context_notes>\n{context_legend.strip()}\n</context_notes>\n"
+        )
+
     return f"""<file_summary>
 {GENERATION_HEADER}
-
-<agent_role>
-{AGENT_ROLE_INSTRUCTION}
-</agent_role>
-
+{legend_block}
 <purpose>
 {SMART_SUMMARY_PURPOSE}
 </purpose>

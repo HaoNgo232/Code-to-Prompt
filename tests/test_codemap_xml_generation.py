@@ -6,7 +6,10 @@ Tests the _generate_codemap_xml_elements() helper and generate_file_contents_xml
 
 import pytest
 from unittest.mock import patch, Mock
-from domain.prompt.generator import generate_file_contents_xml, _generate_codemap_xml_elements
+from domain.prompt.generator import (
+    generate_file_contents_xml,
+    _generate_codemap_xml_elements,
+)
 
 
 class TestCodemapXMLGeneration:
@@ -132,7 +135,9 @@ class TestCodemapXMLGeneration:
         with (
             patch("domain.prompt.generator.collect_files") as mock_collect,
             patch("domain.prompt.generator.format_files_xml") as mock_format_xml,
-            patch("domain.prompt.generator._generate_codemap_xml_elements") as mock_codemap,
+            patch(
+                "domain.prompt.generator._generate_codemap_xml_elements"
+            ) as mock_codemap,
         ):
             # Mock full content collection
             mock_entry = Mock()

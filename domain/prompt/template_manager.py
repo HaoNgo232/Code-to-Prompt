@@ -309,10 +309,11 @@ def _get_output_language() -> str:
         return "Vietnamese"
 
 
-def _get_output_format_only() -> str:
+def _get_language_directive() -> str:
     """
-    Doc shared output format va inject output_language.
-    Dung cho assembler de dam bao tinh nhat quan.
+    Doc language directive va inject output_language.
+    Luon ap dung cho moi task (ke ca OPX) — chi quy dinh ngon ngu output,
+    khong quy dinh style trinh bay (de nguoi dung tu do trong prompt rieng).
     """
     fmt_path = _OUTPUT_FORMAT_PATH
     try:
@@ -321,6 +322,10 @@ def _get_output_format_only() -> str:
         return fmt.replace("{{output_language}}", language).strip()
     except OSError:
         return ""
+
+
+# Alias backward-compatible (callers cu van goi duoc)
+_get_output_format_only = _get_language_directive
 
 
 def list_templates() -> list[TemplateInfo]:

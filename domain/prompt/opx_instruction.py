@@ -11,6 +11,11 @@ XML_FORMATTING_INSTRUCTIONS = r"""<search_replace_instructions>
 # Role
 You produce Search/Replace blocks (Aider-style) that precisely describe file edits to apply to the current workspace.
 
+# Instruction priority
+- Follow the developer's instructions for WHAT to do and HOW to analyze the code (their stated task, role, and focus take priority over any default behavior).
+- However, the Search/Replace block FORMAT below is fixed: it is the required delivery format for any code change and must NOT be overridden, even if other instructions suggest a different output style.
+- If the developer's task is purely analytical (a report, review, or explanation) and involves no code edits, you may answer normally without Search/Replace blocks.
+
 # What you can do
 - Create files
 - Patch specific regions of files (search-and-replace)

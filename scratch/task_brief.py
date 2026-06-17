@@ -2,6 +2,7 @@ import sys
 import re
 from pathlib import Path
 
+
 def main():
     if len(sys.argv) < 3 or len(sys.argv) > 4:
         print("Usage: python scratch/task_brief.py PLAN_FILE TASK_NUMBER [OUTFILE]")
@@ -9,7 +10,7 @@ def main():
 
     plan_path = Path(sys.argv[1])
     task_num = sys.argv[2]
-    
+
     if not plan_path.exists():
         print(f"No such plan file: {plan_path}", file=sys.stderr)
         sys.exit(2)
@@ -36,14 +37,14 @@ def main():
     for line in lines:
         if line.startswith("```"):
             in_fence = not in_fence
-        
+
         if not in_fence:
             if task_header_re.match(line):
                 in_task = True
             elif any_task_header_re.match(line) and in_task:
                 # Reached next task heading
                 break
-        
+
         if in_task:
             task_lines.append(line)
 
@@ -55,6 +56,7 @@ def main():
         f.writelines(task_lines)
 
     print(f"Wrote {out_path}: {len(task_lines)} lines")
+
 
 if __name__ == "__main__":
     main()

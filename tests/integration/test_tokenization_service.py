@@ -396,7 +396,9 @@ class TestFileHandlingEdgeCases:
         result = service.count_tokens_for_file(f)
         assert result > 0
 
-    @pytest.mark.skipif(sys.platform == 'win32', reason="Symlinks require admin privileges on Windows")
+    @pytest.mark.skipif(
+        sys.platform == "win32", reason="Symlinks require admin privileges on Windows"
+    )
     def test_symlink_to_file(self, tmp_path):
         """Symlink tro den file thuc -> dem duoc."""
         service = TokenizationService()
@@ -419,10 +421,12 @@ class TestBatchProcessing:
 
     def setup_method(self):
         from domain.tokenization.cancellation import start_token_counting
+
         start_token_counting()
 
     def teardown_method(self):
         from domain.tokenization.cancellation import stop_token_counting
+
         stop_token_counting()
 
     def test_empty_list(self):
@@ -485,6 +489,7 @@ class TestBatchProcessing:
 
         # Cancellation flag = False -> return empty
         from domain.tokenization.cancellation import stop_token_counting
+
         stop_token_counting()
 
         result = service.count_tokens_batch_parallel(files)

@@ -212,7 +212,7 @@ def _build_fingerprint(
 
     # Sorted file paths + mtimes
     for p in sorted(selected_paths):
-        p_posix = p.replace('\\', '/')
+        p_posix = p.replace("\\", "/")
         try:
             mtime = Path(p).stat().st_mtime
         except OSError:

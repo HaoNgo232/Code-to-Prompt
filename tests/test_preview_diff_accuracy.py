@@ -7,9 +7,13 @@ import pytest
 from pathlib import Path
 
 from domain.ports.registry import DomainRegistry
-from infrastructure.filesystem.file_actions import FileActionsService, apply_file_actions
+from infrastructure.filesystem.file_actions import (
+    FileActionsService,
+    apply_file_actions,
+)
 from domain.prompt.opx_parser import ChangeBlock, FileAction
 from application.services.preview_analyzer import generate_preview_diff_lines
+
 
 @pytest.fixture(autouse=True)
 def setup_real_file_actions():

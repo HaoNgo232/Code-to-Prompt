@@ -83,6 +83,7 @@ class TestBug2OSErrorBypassSizeCheck:
 
         # Mock stat() to raise OSError (mock ca WindowsPath/PosixPath tren Python 3.12)
         import pathlib
+
         original_stat = pathlib.Path.stat
 
         def mock_stat(self):

@@ -66,7 +66,7 @@ class TestAssemblePrompt:
             include_xml_formatting=False,
         )
 
-        assert "SYSTEM INSTRUCTION" in prompt
+        assert "CONTEXT NOTES" in prompt
         assert "FILE SUMMARY" in prompt
         assert "DIRECTORY STRUCTURE" in prompt
         assert sample_file_map in prompt
@@ -247,7 +247,7 @@ class TestAssembleDiffOnlyPrompt:
         )
 
         assert "<related_files_content>" in prompt
-        assert "src/utils.py" in prompt.replace('\\', '/')
+        assert "src/utils.py" in prompt.replace("\\", "/")
         assert "def helper()" in prompt
         assert "</related_files_content>" in prompt
 

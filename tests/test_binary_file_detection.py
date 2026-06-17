@@ -258,8 +258,6 @@ class TestPromptGeneratorSkipsBinary:
         # Text file content should be included
         assert "print" in result
 
-
-
     def test_plain_format_skip_binary(self, tmp_path):
         """generate_file_contents_plain phải skip binary KHÔNG có extension"""
         from domain.prompt.generator import generate_file_contents_plain

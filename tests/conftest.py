@@ -19,13 +19,14 @@ from domain.ports.file_actions_port import IFileActionsService
 from domain.ports.action_result import ActionResult
 from domain.prompt.opx_parser import FileAction
 from domain.ports.mcp_installer_port import IMCPInstaller
-from domain.ports.repo_manager_port import IRepoManager, CachedRepo, RemoteRepoInfo
-from domain.ports.preset_store_port import IPresetStore, IPresetStoreFactory, PresetEntry
+from domain.ports.repo_manager_port import IRepoManager, CachedRepo
+from domain.ports.preset_store_port import (
+    IPresetStore,
+    IPresetStoreFactory,
+    PresetEntry,
+)
 from domain.ports.memory_port import IMemoryMonitor, MemoryStats
 from domain.ports.recent_folders_port import IRecentFoldersService
-
-
-
 
 
 class DummyDirectoryScanner(IDirectoryScanner):
@@ -477,6 +478,7 @@ def setup_dummy_domain_ports():
         DomainRegistry.workspace_scanner()
     except RuntimeError:
         from application.services.workspace_index import WorkspaceScanner
+
         DomainRegistry.register_workspace_scanner(WorkspaceScanner())
 
     try:
@@ -511,6 +513,3 @@ def setup_dummy_domain_ports():
         pass
     # Always register settings provider for tests to ensure a default exists
     DomainRegistry.register_settings_provider(lambda: AppSettings())
-
-
-

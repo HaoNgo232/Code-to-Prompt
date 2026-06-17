@@ -59,7 +59,6 @@ def test_context_view_default_services_injected(qtbot):
         assert view._clipboard_service == DomainRegistry.clipboard_service()
 
 
-
 def test_context_view_set_get_instructions(context_view):
     """Kiem tra set va get instructions text."""
     view = context_view
@@ -123,6 +122,7 @@ def test_on_workspace_changed(context_view):
     view._preset_controller = MagicMock()
 
     from domain.ports.registry import DomainRegistry
+
     mock_registry = MagicMock()
 
     new_path = Path("/new/workspace")
@@ -138,7 +138,6 @@ def test_on_workspace_changed(context_view):
     assert len(view._related_controller._last_added_related_files) == 0
     mock_registry.invalidate_for_workspace.assert_called_once()
     view.file_tree_widget.load_tree.assert_called_once_with(new_path)
-
 
 
 def test_on_workspace_changed_starts_watcher(context_view, tmp_path):
@@ -316,6 +315,7 @@ def test_populate_history_menu_empty(context_view):
     """Kiem tra _populate_history_menu khi history empty (lines 269-283)."""
     view = context_view
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.instruction_history = []
     with patch.object(DomainRegistry, "settings", return_value=mock_settings):
@@ -331,6 +331,7 @@ def test_populate_history_menu_with_entries(context_view):
     """Kiem tra _populate_history_menu voi entries (lines 285-291)."""
     view = context_view
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.instruction_history = [
         "Short instruction",
@@ -342,7 +343,6 @@ def test_populate_history_menu_with_entries(context_view):
     actions = view._history_menu.actions()
     # 4 items: Header + Separator + 2 history entries
     assert len(actions) == 4
-
 
 
 def test_on_history_selected(context_view):
@@ -370,6 +370,7 @@ def test_on_model_changed(context_view):
     view.file_tree_widget._start_token_counting = MagicMock()
 
     from domain.ports.registry import DomainRegistry
+
     mock_settings = MagicMock()
     mock_settings.model_id = "claude-3"
     mock_config = MagicMock()
@@ -385,10 +386,8 @@ def test_on_model_changed(context_view):
             ) as mock_set_conf:
                 view._on_model_changed("claude-3")
 
-
     mock_set_conf.assert_called_once_with(tokenizer_repo="test/repo")
     view.file_tree_widget._start_token_counting.assert_called_once()
-
 
 
 def test_show_status_error(context_view):

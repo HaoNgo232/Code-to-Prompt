@@ -154,6 +154,7 @@ def test_edge_file_deletion_during_operation(app_e2e, qtbot, tmp_path):
 
     # Xoa file tren disk (voi retry loop vi file co the dang bi lock boi FileTree/Watcher tren Windows)
     import time
+
     for _ in range(20):
         try:
             f.unlink()
