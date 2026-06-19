@@ -1240,3 +1240,13 @@ class ApplyViewQt(QWidget):
                 self._summary_label.show()
             if self._apply_btn:
                 self._apply_btn.setEnabled(False)
+
+    def on_workspace_changed(self, workspace_path: Optional[Path]) -> None:
+        """Update workspace label and clear inputs when workspace changes."""
+        if workspace_path:
+            self._workspace_label.setText(workspace_path.name)
+            self._workspace_label.setToolTip(str(workspace_path))
+        else:
+            self._workspace_label.setText("No workspace")
+            self._workspace_label.setToolTip("")
+        self._clear_input()

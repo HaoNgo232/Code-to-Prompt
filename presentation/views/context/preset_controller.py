@@ -75,11 +75,14 @@ class PresetController(QObject):
         self._store: Optional[IPresetStore] = None
         self._active_preset_id: Optional[str] = None
 
-    def on_workspace_changed(self, workspace_path: Path) -> None:
+    def on_workspace_changed(self, workspace_path: Optional[Path]) -> None:
         """Khởi tạo/reset PresetStore khi workspace thay đổi."""
-        self._store = DomainRegistry.preset_store_factory().create_preset_store(
-            workspace_path
-        )
+        if workspace_path is None:
+            self._store = None
+        else:
+            self._store = DomainRegistry.preset_store_factory().create_preset_store(
+                workspace_path
+            )
         self._active_preset_id = None
         self.presets_changed.emit()
 

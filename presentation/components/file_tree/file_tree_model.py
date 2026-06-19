@@ -565,7 +565,7 @@ class FileTreeModel(QAbstractItemModel):
         """Get current workspace path."""
         return self._workspace_path
 
-    def load_tree(self, workspace_path: Path) -> None:
+    def load_tree(self, workspace_path: Optional[Path]) -> None:
         """
         Load file tree cho workspace mới.
 
@@ -589,44 +589,49 @@ class FileTreeModel(QAbstractItemModel):
         self._search_index.clear()
         self._search_index_ready = False
 
-        try:
-            # Get excluded patterns from settings
-            from application.services.workspace_config import get_excluded_patterns
+        if workspace_path is not None:
+            try:
+                # Get excluded patterns from settings
+                from application.services.workspace_config import get_excluded_patterns
 
-            excluded = get_excluded_patterns()
+                excluded = get_excluded_patterns()
 
-            from domain.ports.registry import DomainRegistry
+                from domain.ports.registry import DomainRegistry
 
-            tree_item = DomainRegistry.directory_scanner().scan_directory_shallow(
-                workspace_path,
-                ignore_engine=self._ignore_engine,
-                depth=1,
-                excluded_patterns=excluded if excluded else None,
-            )
-            if tree_item:
-                self._root_tree_item = tree_item
-                # Consolidate build + index vao 1 recursion duy nhat de tiet kiem thoi gian
-                self._root_node = TreeNode.from_tree_item(
-                    tree_item,
-                    parent=self._invisible_root,
-                    row=0,
-                    depth=0,
-                    max_depth=1,
-                    path_index=self._path_to_node,  # Pass index dict de update luon khi build
+                tree_item = DomainRegistry.directory_scanner().scan_directory_shallow(
+                    workspace_path,
+                    ignore_engine=self._ignore_engine,
+                    depth=1,
+                    excluded_patterns=excluded if excluded else None,
                 )
-                self._invisible_root.children = [self._root_node]
-            else:
+                if tree_item:
+                    self._root_tree_item = tree_item
+                    # Consolidate build + index vao 1 recursion duy nhat de tiet kiem thoi gian
+                    self._root_node = TreeNode.from_tree_item(
+                        tree_item,
+                        parent=self._invisible_root,
+                        row=0,
+                        depth=0,
+                        max_depth=1,
+                        path_index=self._path_to_node,  # Pass index dict de update luon khi build
+                    )
+                    self._invisible_root.children = [self._root_node]
+                else:
+                    self._root_node = None
+                    self._invisible_root.children = []
+            except Exception as e:
+                logger.error(f"Error loading tree: {e}")
                 self._root_node = None
                 self._invisible_root.children = []
-        except Exception as e:
-            logger.error(f"Error loading tree: {e}")
+        else:
+            self._root_tree_item = None
             self._root_node = None
             self._invisible_root.children = []
 
         self.endResetModel()
 
         # Build flat search index in background (independent of lazy loading)
-        if workspace_path.exists():
+        if workspace_path is not None and workspace_path.exists():
             self._build_search_index_async(workspace_path)
 
     def get_selected_paths(self) -> List[str]:

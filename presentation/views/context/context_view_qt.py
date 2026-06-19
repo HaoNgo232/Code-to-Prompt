@@ -215,7 +215,7 @@ class ContextViewQt(
         except (RuntimeError, AttributeError):
             pass  # intentionally silent — widget may be deleted or not initialized
 
-    def on_workspace_changed(self, workspace_path: Path) -> None:
+    def on_workspace_changed(self, workspace_path: Optional[Path]) -> None:
         """Handle workspace change."""
         if (
             not self._copy_controller
@@ -268,7 +268,7 @@ class ContextViewQt(
             self._limit_warning.hide()
 
         # 7. Start file watcher for new workspace
-        if self._file_watcher and workspace_path.exists():
+        if self._file_watcher and workspace_path is not None and workspace_path.exists():
             self._file_watcher.start(
                 path=workspace_path,
                 callbacks=WatcherCallbacks(

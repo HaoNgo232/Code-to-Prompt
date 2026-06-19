@@ -373,3 +373,30 @@ def test_flow_e_settings_persistence(app_e2e, qtbot, workspace_dir):
     assert load_app_settings().output_format == target_format
 
     new_window.close()
+
+
+def test_flow_f_close_workspace(app_e2e, qtbot, workspace_dir):
+    """
+    Kiem tra tinh nang Close Workspace xoa trang thai app va don dep file tree.
+    """
+    window = app_e2e
+    window._set_workspace(workspace_dir)
+
+    # Cho tree load xong
+    qtbot.waitUntil(
+        lambda: window.context_view.file_tree_widget.get_model()._root_node is not None,
+        timeout=3000,
+    )
+    assert window.workspace_path == workspace_dir
+    assert window._close_workspace_btn.isVisible()
+
+    # Click nut Close Workspace
+    qtbot.mouseClick(window._close_workspace_btn, Qt.MouseButton.LeftButton)
+
+    # Verify resets
+    assert window.workspace_path is None
+    assert not window._close_workspace_btn.isVisible()
+    assert "No project open" in window.windowTitle()
+    assert window._folder_path_label.text() == "No folder selected"
+    assert window.context_view.file_tree_widget.get_model()._root_node is None
+

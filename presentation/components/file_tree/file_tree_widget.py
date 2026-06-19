@@ -276,7 +276,7 @@ class FileTreeWidget(QWidget):
 
     # ===== Public API =====
 
-    def load_tree(self, workspace_path: Path) -> None:
+    def load_tree(self, workspace_path: Optional[Path]) -> None:
         """Load file tree cho workspace."""
         # Cancel pending token counting
         if self._current_token_worker:
@@ -294,15 +294,19 @@ class FileTreeWidget(QWidget):
         self._last_search_results = []
         self._select_results_btn.hide()
 
-        # Start selection poll timer
-        self._selection_poll_timer.start()
+        # Start selection poll timer only if workspace is open
+        if workspace_path is not None:
+            self._selection_poll_timer.start()
+        else:
+            self._selection_poll_timer.stop()
 
         self._model.load_tree(workspace_path)
 
-        # Expand root node
-        root_idx = self._filter_proxy.index(0, 0)
-        if root_idx.isValid():
-            self._tree_view.expand(root_idx)
+        if workspace_path is not None:
+            # Expand root node
+            root_idx = self._filter_proxy.index(0, 0)
+            if root_idx.isValid():
+                self._tree_view.expand(root_idx)
 
     def get_selected_paths(self) -> List[str]:
         """Get danh sách selected file paths."""
