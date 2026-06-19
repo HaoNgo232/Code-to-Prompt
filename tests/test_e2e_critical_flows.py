@@ -380,6 +380,12 @@ def test_flow_f_close_workspace(app_e2e, qtbot, workspace_dir):
     Kiem tra tinh nang Close Workspace xoa trang thai app va don dep file tree.
     """
     window = app_e2e
+
+    # 1. Ban dau chua co workspace, xac nhan empty state duoc hien thi
+    assert window.workspace_path is None
+    assert window.context_view._left_stacked_widget.currentIndex() == 1
+
+    # 2. Mo workspace
     window._set_workspace(workspace_dir)
 
     # Cho tree load xong
@@ -388,15 +394,21 @@ def test_flow_f_close_workspace(app_e2e, qtbot, workspace_dir):
         timeout=3000,
     )
     assert window.workspace_path == workspace_dir
-    assert window._close_workspace_btn.isVisible()
 
-    # Click nut Close Workspace
-    qtbot.mouseClick(window._close_workspace_btn, Qt.MouseButton.LeftButton)
+    # Xac nhan stacked widget chuyen sang file tree (index 0)
+    assert window.context_view._left_stacked_widget.currentIndex() == 0
+    # Xac nhan co Close button trong toolbar file tree
+    assert window.context_view.file_tree_widget._close_workspace_btn is not None
+
+    # 3. Click nut Close Workspace tren toolbar cua FileTreeWidget de dong project
+    qtbot.mouseClick(window.context_view.file_tree_widget._close_workspace_btn, Qt.MouseButton.LeftButton)
 
     # Verify resets
     assert window.workspace_path is None
-    assert not window._close_workspace_btn.isVisible()
     assert "No project open" in window.windowTitle()
     assert window._folder_path_label.text() == "No folder selected"
     assert window.context_view.file_tree_widget.get_model()._root_node is None
+
+    # Xac nhan da ve empty state (index 1)
+    assert window.context_view._left_stacked_widget.currentIndex() == 1
 

@@ -324,3 +324,7 @@ def test_collect_expanded_empty(widget):
     result = []
     widget._collect_expanded(QModelIndex(), result)
     assert result == []
+
+
+def test_widget_has_close_workspace_button(widget):
+    assert widget._close_workspace_btn is not None

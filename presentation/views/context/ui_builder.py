@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QSplitter,
     QSizePolicy,
+    QStackedWidget,
 )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
@@ -585,9 +586,94 @@ class UIBuilderMixin:
                 self.file_tree_widget.selection_changed
             )
 
-        layout.addWidget(self.file_tree_widget, stretch=1)
+        # ── Stacked widget for switching between file tree and empty state ──
+        self._left_stacked_widget = QStackedWidget()
+        self._left_stacked_widget.addWidget(self.file_tree_widget)
+
+        # Build beautiful empty state widget
+        empty_state = QFrame()
+        empty_state.setStyleSheet("background: transparent;")
+        empty_layout = QVBoxLayout(empty_state)
+        empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.setSpacing(16)
+        empty_layout.setContentsMargins(20, 40, 20, 40)
+
+        # Folder Icon with styling
+        icon_label = QLabel()
+        from shared.utils.path_utils import get_assets_dir
+        assets_dir = str(get_assets_dir())
+        icon_folder = create_colored_icon(
+            os.path.join(assets_dir, "folder.svg"), ThemeColors.TEXT_MUTED
+        )
+        icon_label.setPixmap(icon_folder.pixmap(QSize(48, 48)))
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addWidget(icon_label)
+
+        # Title
+        title_label = QLabel("No Folder Opened")
+        title_label.setStyleSheet(
+            f"font-size: 14px; font-weight: 600; color: {ThemeColors.TEXT_SECONDARY};"
+        )
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addWidget(title_label)
+
+        # Description
+        desc_label = QLabel("Open a workspace folder to scan and select files for AI context.")
+        desc_label.setWordWrap(True)
+        desc_label.setStyleSheet(
+            f"font-size: 12px; color: {ThemeColors.TEXT_MUTED}; line-height: 1.4;"
+        )
+        desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.addWidget(desc_label)
+
+        # Spacer
+        empty_layout.addSpacing(4)
+
+        # Open Folder Button
+        self._empty_open_btn = QPushButton(" Open Folder")
+        self._empty_open_btn.setIcon(
+            create_colored_icon(os.path.join(assets_dir, "folder.svg"), "#FFFFFF")
+        )
+        self._empty_open_btn.setIconSize(QSize(14, 14))
+        self._empty_open_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._empty_open_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {ThemeColors.PRIMARY};
+                color: #FFFFFF;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }}
+            QPushButton:hover {{
+                background-color: {ThemeColors.PRIMARY_HOVER};
+            }}
+            QPushButton:pressed {{
+                background-color: {ThemeColors.PRIMARY_PRESSED};
+            }}
+        """)
+        self._empty_open_btn.clicked.connect(self._on_empty_open_clicked)
+        empty_layout.addWidget(self._empty_open_btn)
+
+        self._left_stacked_widget.addWidget(empty_state)
+
+        # Set default active widget based on workspace
+        workspace = self.get_workspace()
+        if workspace is None:
+            self._left_stacked_widget.setCurrentIndex(1)  # Show empty state
+        else:
+            self._left_stacked_widget.setCurrentIndex(0)  # Show file tree
+
+        layout.addWidget(self._left_stacked_widget, stretch=1)
 
         return panel
+
+    def _on_empty_open_clicked(self: Any) -> None:
+        """Slot to handle 'Open Folder' button click when in empty state."""
+        win = self.window()
+        if win and hasattr(win, "_open_folder_dialog"):
+            win._open_folder_dialog()
 
     def build_instructions_panel(self: Any) -> QFrame:
         """Build center panel voi instructions textarea va format selector."""

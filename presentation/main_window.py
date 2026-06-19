@@ -275,23 +275,7 @@ class SynapseMainWindow(QMainWindow):
         self._folder_path_label.setToolTip("Current workspace folder")
         layout.addWidget(self._folder_path_label, stretch=1)
 
-        # ── Close workspace button ──
-        self._close_workspace_btn = QToolButton()
-        self._close_workspace_btn.setIcon(
-            create_colored_icon(
-                str(self.assets_dir / "x.svg"), ThemeColors.TEXT_SECONDARY
-            )
-        )
-        self._close_workspace_btn.setIconSize(QSize(14, 14))
-        self._close_workspace_btn.setToolTip("Close Workspace")
-        self._close_workspace_btn.setStyleSheet(
-            f"QToolButton {{ padding: 4px 6px; border-radius: 4px; }}"
-            f"QToolButton:hover {{ background-color: {ThemeColors.BG_ELEVATED}; }}"
-        )
-        self._close_workspace_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._close_workspace_btn.clicked.connect(self._close_workspace)
-        self._close_workspace_btn.setVisible(False)
-        layout.addWidget(self._close_workspace_btn)
+
 
         # ── Memory indicator (compact) ──
         self._memory_icon_label = QLabel()
@@ -623,8 +607,7 @@ class SynapseMainWindow(QMainWindow):
         self._cached_git_branch = None  # Clear stale branch
         self._git_branch_pending = False  # Allow immediate re-detection
 
-        # Show close button
-        self._close_workspace_btn.setVisible(True)
+
 
         # Update top bar breadcrumb
         self._folder_path_label.setText(str(path))
@@ -654,8 +637,7 @@ class SynapseMainWindow(QMainWindow):
         self._cached_git_branch = None
         self._git_branch_pending = False
 
-        # Hide close button
-        self._close_workspace_btn.setVisible(False)
+
 
         # Reset folder path label
         self._folder_path_label.setText("No folder selected")
@@ -773,7 +755,6 @@ class SynapseMainWindow(QMainWindow):
             workspace = Path(recent_folders[0])
             if workspace.exists() and workspace.is_dir():
                 self.workspace_path = workspace
-                self._close_workspace_btn.setVisible(True)
 
                 self._folder_path_label.setText(str(workspace))
                 self._folder_path_label.setStyleSheet(

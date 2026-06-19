@@ -258,6 +258,13 @@ class ContextViewQt(
         self.file_tree_widget.load_tree(workspace_path)
         self.tree = self.file_tree_widget.get_model()._root_node  # type: ignore
 
+        # Toggle stacked widget between file tree and empty state
+        if hasattr(self, "_left_stacked_widget"):
+            if workspace_path is None:
+                self._left_stacked_widget.setCurrentIndex(1)
+            else:
+                self._left_stacked_widget.setCurrentIndex(0)
+
         # 6. Reset token display
         if hasattr(self, "_token_usage_bar"):
             self._token_usage_bar.update_stats(tokens=0, limit=200000, files=0)

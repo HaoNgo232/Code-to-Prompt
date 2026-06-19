@@ -229,6 +229,26 @@ class FileTreeWidget(QWidget):
         actions_layout.addWidget(self._expand_btn)
 
         actions_layout.addStretch()
+
+        # Close Workspace Button (far right)
+        self._close_workspace_btn = QPushButton()
+        self._close_workspace_btn.setIcon(
+            create_colored_icon(
+                os.path.join(assets_dir, "x.svg"), ThemeColors.TEXT_SECONDARY
+            )
+        )
+        self._close_workspace_btn.setIconSize(QSize(20, 20))
+        self._close_workspace_btn.setProperty("class", "flat")
+        self._close_workspace_btn.setFixedSize(30, 30)
+        self._close_workspace_btn.setToolTip("Close Workspace")
+        self._close_workspace_btn.setStyleSheet(
+            f"QPushButton {{ color: #CBD5E1; background: transparent; border: 1px solid {ThemeColors.BORDER}; border-radius: 4px; padding: 0; min-width: 30px; min-height: 30px; }} "
+            f"QPushButton:hover {{ color: {ThemeColors.ERROR}; background: {ThemeColors.BG_HOVER}; border-color: {ThemeColors.ERROR}50; }}"
+        )
+        self._close_workspace_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._close_workspace_btn.clicked.connect(self._on_close_workspace_clicked)
+        actions_layout.addWidget(self._close_workspace_btn)
+
         layout.addLayout(actions_layout)
 
         # Tree view
@@ -1036,3 +1056,10 @@ class FileTreeWidget(QWidget):
                 f.write("\n")
         except Exception as e:
             logger.debug(f"Failed to write selection.json: {e}")
+
+    @Slot()
+    def _on_close_workspace_clicked(self) -> None:
+        """Trigger close workspace on main window."""
+        win = self.window()
+        if win and hasattr(win, "_close_workspace"):
+            win._close_workspace()
