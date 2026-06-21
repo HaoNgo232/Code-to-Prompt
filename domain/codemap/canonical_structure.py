@@ -20,7 +20,7 @@ from typing import Optional
 from domain.prompt.context_builder_prompts import build_full_tree_string
 from domain.prompt.generator import generate_file_map
 from shared.types.git_types import GitDiffResult
-from domain.workflow.interfaces.ast_parser_port import IAstParser
+from domain.ports.ast_parser_port import IAstParser
 from domain.smart_context.tree_item import TreeItem
 
 logger = logging.getLogger(__name__)

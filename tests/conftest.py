@@ -5,8 +5,8 @@ from typing import Any, Optional, List, Dict, Callable
 from domain.ports.registry import DomainRegistry
 from domain.ports.cache_registry_port import ICacheRegistry
 from domain.ports.directory_scanner import IDirectoryScanner
-from domain.workflow.interfaces.git_port import IGitService
-from domain.workflow.interfaces.ast_parser_port import IAstParser
+from domain.ports.git_port import IGitService
+from domain.ports.ast_parser_port import IAstParser
 from domain.smart_context.tree_item import TreeItem
 from domain.ports.settings_service_port import ISettingsService
 from domain.ports.file_watcher_port import IFileWatcherService

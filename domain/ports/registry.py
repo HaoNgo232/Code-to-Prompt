@@ -2,8 +2,8 @@ from typing import Callable, Optional
 from domain.ports.tokenization_port import ITokenizationService
 from domain.ports.workspace_scanner import IWorkspaceScanner
 from domain.ports.directory_scanner import IDirectoryScanner
-from domain.workflow.interfaces.git_port import IGitService
-from domain.workflow.interfaces.ast_parser_port import IAstParser
+from domain.ports.git_port import IGitService
+from domain.ports.ast_parser_port import IAstParser
 from domain.config.app_settings import AppSettings
 from domain.ports.ai_port import IAIProvider
 

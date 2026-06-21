@@ -7,7 +7,6 @@ from application.errors import (
     UseCaseValidationError,
     OrchestrationError,
     DependencyContractError,
-    WorkflowExecutionError,
 )
 from domain.errors import DomainError
 
@@ -87,8 +86,4 @@ def test_dependency_contract_error():
     assert err.code == "dependency_contract_error"
 
 
-def test_workflow_execution_error():
-    """Test WorkflowExecutionError khởi tạo đúng."""
-    err = WorkflowExecutionError("workflow failed", details={"workflow_id": "abc"})
-    assert isinstance(err, ApplicationError)
-    assert err.code == "workflow_execution_error"
+

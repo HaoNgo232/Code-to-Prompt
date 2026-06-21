@@ -114,19 +114,4 @@ class DependencyContractError(ApplicationError):
         )
 
 
-class WorkflowExecutionError(ApplicationError):
-    """Loi thuc thi workflow use case."""
 
-    def __init__(
-        self,
-        message: str,
-        *,
-        details: Optional[Dict[str, Any]] = None,
-        cause: Optional[BaseException] = None,
-    ) -> None:
-        super().__init__(
-            message,
-            code="workflow_execution_error",
-            details=details,
-            cause=cause,
-        )

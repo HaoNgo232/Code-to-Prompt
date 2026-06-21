@@ -18,7 +18,7 @@ from infrastructure.adapters.subprocess_utils import run_subprocess
 from shared.utils.path_utils import path_for_display
 from shared.types.git_types import DiffOnlyResult
 from shared.types.git_types import GitDiffResult, GitCommit, GitLogResult
-from domain.workflow.interfaces.git_port import IGitService
+from domain.ports.git_port import IGitService
 
 
 # Diff Only - file_summary mo ta context la git changes

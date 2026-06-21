@@ -27,7 +27,7 @@ import logging
 import re
 from pathlib import Path
 from typing import Optional, Any, Dict
-from domain.workflow.interfaces.ast_parser_port import IAstParser
+from domain.ports.ast_parser_port import IAstParser
 
 logger = logging.getLogger(__name__)
 
