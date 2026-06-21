@@ -275,7 +275,11 @@ class ContextViewQt(
             self._limit_warning.hide()
 
         # 7. Start file watcher for new workspace
-        if self._file_watcher and workspace_path is not None and workspace_path.exists():
+        if (
+            self._file_watcher
+            and workspace_path is not None
+            and workspace_path.exists()
+        ):
             self._file_watcher.start(
                 path=workspace_path,
                 callbacks=WatcherCallbacks(

@@ -21,7 +21,7 @@ VSVersionInfo(
             StringStruct('FileVersion', '1.0.0'),
             StringStruct('InternalName', 'Synapse-Desktop'),
             StringStruct('LegalCopyright', 'Copyright © 2026 Synapse Desktop. All rights reserved.'),
-            StringStruct('OriginalFilename', 'Synapse-Desktop.exe'),
+            StringStruct('OriginalFilename', 'Synapse.exe'),
             StringStruct('ProductName', 'Synapse Desktop'),
             StringStruct('ProductVersion', '1.0.0')
           ]

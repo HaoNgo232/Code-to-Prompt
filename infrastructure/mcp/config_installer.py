@@ -5,7 +5,7 @@ Ho tro:
 - Cursor:              ~/.cursor/mcp.json                    (workspace/global)
 - GitHub Copilot:      VS Code User mcp.json (servers)       (user-level)
 - GitHub Copilot CLI:  ~/.copilot/mcp-config.json            (global)
-- Antigravity:         ~/.gemini/antigravity/mcp_config.json
+- Antigravity:         ~/.gemini/config/mcp_config.json
 
 Moi target deu:
 1. Doc file config hien tai (neu co)
@@ -37,7 +37,7 @@ MCP_TARGETS: dict[str, dict] = {
         "extra_fields": {},
     },
     "Antigravity": {
-        "config_path": "~/.gemini/antigravity/mcp_config.json",
+        "config_path": "~/.gemini/config/mcp_config.json",
         "root_key": "mcpServers",
         "extra_fields": {},
     },

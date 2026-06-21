@@ -279,4 +279,3 @@ class DomainRegistry:
         if cls._memory_monitor is None:
             raise RuntimeError("IMemoryMonitor is not registered")
         return cls._memory_monitor
-

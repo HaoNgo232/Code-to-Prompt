@@ -957,7 +957,6 @@ class SettingsViewQt(QWidget):
 
         col3_layout.addWidget(card6)
 
-
         # ─────────────────────────────
         # CARD 5: Data & Session
         # ─────────────────────────────
@@ -1682,4 +1681,3 @@ class SettingsViewQt(QWidget):
 
         if msg:
             self._show_status(msg, is_error=True)
-

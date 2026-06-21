@@ -275,8 +275,6 @@ class SynapseMainWindow(QMainWindow):
         self._folder_path_label.setToolTip("Current workspace folder")
         layout.addWidget(self._folder_path_label, stretch=1)
 
-
-
         # ── Memory indicator (compact) ──
         self._memory_icon_label = QLabel()
         icon_brain = create_colored_icon(
@@ -607,8 +605,6 @@ class SynapseMainWindow(QMainWindow):
         self._cached_git_branch = None  # Clear stale branch
         self._git_branch_pending = False  # Allow immediate re-detection
 
-
-
         # Update top bar breadcrumb
         self._folder_path_label.setText(str(path))
         self._folder_path_label.setStyleSheet(
@@ -637,8 +633,6 @@ class SynapseMainWindow(QMainWindow):
         self._cached_git_branch = None
         self._git_branch_pending = False
 
-
-
         # Reset folder path label
         self._folder_path_label.setText("No folder selected")
         self._folder_path_label.setStyleSheet(
@@ -657,7 +651,9 @@ class SynapseMainWindow(QMainWindow):
         self.context_view.on_workspace_changed(None)
 
         # Notify apply view
-        if hasattr(self, "apply_view") and hasattr(self.apply_view, "on_workspace_changed"):
+        if hasattr(self, "apply_view") and hasattr(
+            self.apply_view, "on_workspace_changed"
+        ):
             self.apply_view.on_workspace_changed(None)
 
     def _get_workspace_path(self) -> Optional[Path]:

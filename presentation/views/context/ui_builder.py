@@ -601,6 +601,7 @@ class UIBuilderMixin:
         # Folder Icon with styling
         icon_label = QLabel()
         from shared.utils.path_utils import get_assets_dir
+
         assets_dir = str(get_assets_dir())
         icon_folder = create_colored_icon(
             os.path.join(assets_dir, "folder.svg"), ThemeColors.TEXT_MUTED
@@ -618,7 +619,9 @@ class UIBuilderMixin:
         empty_layout.addWidget(title_label)
 
         # Description
-        desc_label = QLabel("Open a workspace folder to scan and select files for AI context.")
+        desc_label = QLabel(
+            "Open a workspace folder to scan and select files for AI context."
+        )
         desc_label.setWordWrap(True)
         desc_label.setStyleSheet(
             f"font-size: 12px; color: {ThemeColors.TEXT_MUTED}; line-height: 1.4;"

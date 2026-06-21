@@ -401,7 +401,10 @@ def test_flow_f_close_workspace(app_e2e, qtbot, workspace_dir):
     assert window.context_view.file_tree_widget._close_workspace_btn is not None
 
     # 3. Click nut Close Workspace tren toolbar cua FileTreeWidget de dong project
-    qtbot.mouseClick(window.context_view.file_tree_widget._close_workspace_btn, Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        window.context_view.file_tree_widget._close_workspace_btn,
+        Qt.MouseButton.LeftButton,
+    )
 
     # Verify resets
     assert window.workspace_path is None
@@ -411,4 +414,3 @@ def test_flow_f_close_workspace(app_e2e, qtbot, workspace_dir):
 
     # Xac nhan da ve empty state (index 1)
     assert window.context_view._left_stacked_widget.currentIndex() == 1
-
